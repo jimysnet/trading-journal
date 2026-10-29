@@ -1,0 +1,69 @@
+//@version=6
+// Καθηγητής · Αντιστροφή σε range — backtest για το Ημερολόγιο Συναλλαγών
+// Ιδέα: όταν η αγορά δεν έχει τάση (χαμηλό ADX) και κινείται ανάμεσα σε στήριξη και αντίσταση,
+// πουλάμε όταν απορρίπτεται στο πάνω άκρο και αγοράζουμε όταν απορρίπτεται στο κάτω άκρο.
+// Ίδιοι κανόνες με τη σελίδα: stop πάντα, stop έως 9%, τουλάχιστον 1,5R, 1.000 περιθώριο × 10 μόχλευση.
+strategy("Καθηγητής · Αντιστροφή σε range", overlay = true,
+     initial_capital = 1000, currency = currency.USD,
+     default_qty_type = strategy.fixed,
+     commission_type = strategy.commission.percent, commission_value = 0.05,
+     slippage = 2, pyramiding = 0,
+     margin_long = 10, margin_short = 10)
+
+// ---------- Ρυθμίσεις ----------
+len        = input.int(40,     "Μήκος range (κεριά)", minval = 10)
+adxMax     = input.float(20,   "Μέγιστο ADX (χωρίς τάση)", minval = 5)
+zonePct    = input.float(15,   "Ζώνη άκρου (% του range)", minval = 1, maxval = 45)
+minRR      = input.float(1.5,  "Ελάχιστο R:R", minval = 0.5, step = 0.1)
+maxStopPct = input.float(9,    "Μέγιστο stop (%)", minval = 0.1)
+atrBuf     = input.float(0.25, "Περιθώριο stop πάνω από το φυτίλι (× ATR)", minval = 0, step = 0.05)
+tpMode     = input.string("Απέναντι άκρο", "Στόχος", options = ["Απέναντι άκρο", "Μέση του range"])
+marginUsd  = input.float(1000, "Περιθώριο ανά συναλλαγή", minval = 1)
+lev        = input.float(10,   "Μόχλευση", minval = 1)
+showRange  = input.bool(true,  "Δείξε το range")
+
+// ---------- Range και φίλτρα ----------
+zone = zonePct / 100
+rh   = ta.highest(high, len)[1]
+rl   = ta.lowest(low, len)[1]
+mid  = (rh + rl) / 2
+w    = rh - rl
+atr  = ta.atr(14)
+[diPlus, diMinus, adx] = ta.dmi(14, 14)
+isRange = adx < adxMax and w > 0
+
+// ---------- Σήματα: απόρριψη στο άκρο, κλείσιμο ξανά μέσα στο range ----------
+shortSig = isRange and high >= rh - zone * w and close < rh and close < open and close > mid
+longSig  = isRange and low  <= rl + zone * w and close > rl and close > open and close < mid
+
+shortStop = math.max(high, rh) + atrBuf * atr
+longStop  = math.min(low, rl)  - atrBuf * atr
+shortTp   = tpMode == "Μέση του range" ? mid : rl + zone * w
+longTp    = tpMode == "Μέση του range" ? mid : rh - zone * w
+
+shortRisk = shortStop - close
+longRisk  = close - longStop
+shortR    = shortRisk > 0 ? (close - shortTp) / shortRisk : 0.0
+longR     = longRisk  > 0 ? (longTp - close) / longRisk   : 0.0
+
+okShort = shortSig and shortR >= minRR and shortRisk / close * 100 <= maxStopPct
+okLong  = longSig  and longR  >= minRR and longRisk  / close * 100 <= maxStopPct
+
+qty = marginUsd * lev / close
+
+// ---------- Εντολές: μία θέση κάθε φορά ----------
+if strategy.position_size == 0
+    if okShort
+        strategy.entry("Short", strategy.short, qty = qty)
+        strategy.exit("Short X", "Short", stop = shortStop, limit = shortTp)
+    else if okLong
+        strategy.entry("Long", strategy.long, qty = qty)
+        strategy.exit("Long X", "Long", stop = longStop, limit = longTp)
+
+// ---------- Γράφημα ----------
+plot(showRange ? rh  : na, "Πάνω άκρο",  color = color.new(color.red, 30),   style = plot.style_linebr)
+plot(showRange ? rl  : na, "Κάτω άκρο",  color = color.new(color.green, 30), style = plot.style_linebr)
+plot(showRange ? mid : na, "Μέση",       color = color.new(color.gray, 50),  style = plot.style_linebr)
+bgcolor(isRange ? color.new(color.blue, 93) : na, title = "Χωρίς τάση (ADX χαμηλό)")
+plotshape(okShort, "Σήμα short", shape.triangledown, location.abovebar, color.red,   size = size.tiny)
+plotshape(okLong,  "Σήμα long",  shape.triangleup,   location.belowbar, color.green, size = size.tiny)
