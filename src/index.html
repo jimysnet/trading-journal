@@ -6351,7 +6351,10 @@ function gmFind(x,dep){if(dep>4||x==null)return null;
 function gmParse(r,tf){var A=gmFind(r,0);if(!A)return null;var ms=GM.ms[tf]||36e5,now=Date.now();
   var B=A.map(function(a){var t=+a[0];if(t<1e12)t*=1000;return {t:t,o:+a[1],h:+a[2],l:+a[3],c:+a[4],v:+a[5]||0}}).filter(function(b){return isFinite(b.o)&&isFinite(b.c)&&b.h>=b.l&&b.t+ms<=now+60000}).sort(function(a,b){return a.t-b.t});
   var m={},o=[];B.forEach(function(b){if(!m[b.t]){m[b.t]=1;o.push(b)}});return o}
-function gmFetch(base,tf){var gt=GM.tf[tf];if(!CG.mcp||!gt)return Promise.reject({code:'no_gemini'});if(GM.bad&&Date.now()-GM.bad.at<10*60000)return Promise.reject({code:GM.bad.code});
+/* χωρίς συνδεδεμένο Gemini στον λογαριασμό του μέλους, η σελίδα ΔΕΝ το καλεί μόνη της (αλλιώς το claude.ai βγάζει παράθυρο άδειας κάθε φορά)· μόνο όταν το ζητήσει το μέλος με κουμπί */
+function gmReady(){if(GM.diag&&Date.now()-(GM.diagAt||0)<10*60000)return Promise.resolve(GM.diag);return gmDiag().then(function(d){GM.diagAt=Date.now();return d})}
+function gmFetch(base,tf,force){if(!force&&CG.mcp&&CG.mcp.listTools){return gmReady().then(function(d){if(d&&!d.err&&(!d.hit||(d.auth&&d.auth!=='connected')))throw {code:'server_not_connected'};return gmFetch0(base,tf)})}return gmFetch0(base,tf)}
+function gmFetch0(base,tf){var gt=GM.tf[tf];if(!CG.mcp||!gt)return Promise.reject({code:'no_gemini'});if(GM.bad&&Date.now()-GM.bad.at<10*60000)return Promise.reject({code:GM.bad.code});
   var k=base+'|'+tf,m=GM.mem[k];if(m&&Date.now()-m.at<5*60000)return Promise.resolve(m.r);
   return CG.mcp.callTool(GM.srv,'gemini_list_candles',{symbol:base+'USD',time_frame:gt},{cache:{staleTime:120000,gcTime:900000}}).then(function(r){var bars=gmParse(r,tf);if(!bars||bars.length<30)throw {code:'parse',message:'κεριά: '+(bars?bars.length:0)};GM.bad=null;GM.err=null;GM.ok=Date.now();var o={inst:base+'_USD',bars:bars,src:'Gemini'};GM.mem[k]={at:Date.now(),r:o};try{shbSave(base+'_USD',tf,bars,1500)}catch(e){}return o})
     .catch(function(e){var c=(e&&e.code)||'tool_error';GM.err={code:c,msg:String((e&&e.message)||'').slice(0,140),at:Date.now()};if(/server_not_connected|server_not_found|needs_reauth|blocked_by_policy/.test(c))GM.bad={code:c,at:Date.now()};throw {code:c}})}
@@ -6408,7 +6411,7 @@ function arcBackfill(force){if(!CG.mcp||!arcCan()||ARC.bf)return;var lk='tj-arcb
   coins.forEach(function(c){['1D','6h','1h','15m'].forEach(function(t){jobs.push([c,t])})});
   (function next(){if(i>=jobs.length){ARC.bf=false;add=Math.max(0,arcTot()-tot0);ARC.bfMsg=ok?('Έτοιμο: ήρθαν κεριά για '+ok+' από '+jobs.length+' συνδυασμούς'+(add?' · '+fmt(add,0)+' νέα κεριά στο αρχείο':' · τίποτα καινούργιο')+'.'):'Το Gemini δεν έδωσε κεριά αυτή τη φορά.';if(ok)try{localStorage.setItem(lk,String(Date.now()))}catch(e){}arcPanel();return}
     var j=jobs[i++];ARC.bfMsg='Συμπληρώνω '+j[0]+' '+j[1]+' ('+i+'/'+jobs.length+')…';arcPanel();
-    gmFetch(j[0],j[1]).then(function(r){ok++;return arcAdd(j[0],j[1],r.bars,'Gemini')}).catch(function(){if(GM.bad)i=jobs.length}).then(function(){setTimeout(next,900)})})()}
+    gmFetch(j[0],j[1],!!force).then(function(r){ok++;return arcAdd(j[0],j[1],r.bars,'Gemini')}).catch(function(){if(GM.bad)i=jobs.length}).then(function(){setTimeout(next,900)})})()}
 function arcTot(){var k=ARC.idx||{};return Object.keys(k).reduce(function(s,x){return s+(k[x].n||0)},0)}
 function arcAgo(t){var m=Math.round((Date.now()-t)/60000);return m<60?m+'′':m<2880?Math.round(m/60)+' ώρ.':Math.round(m/1440)+' μέρ.'}
 function arcD(t,withTime){var d=new Date(t);return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2)+(withTime?' '+pad2(d.getHours())+':'+pad2(d.getMinutes()):'')}
@@ -7176,7 +7179,7 @@ function apGmRender(){var el=$('#apGm');if(!el)return;var h='';
   if(GM.diag&&!AP.via&&(GM.err||!GM.ok))h+='<div class="muted" style="margin-top:.25rem;font-size:.78rem">Συνδέσεις που βλέπει η σελίδα: '+esc((GM.diag.names||[]).join(', ')||'καμία')+(GM.diag.hit?' · Gemini ως «'+esc(GM.diag.hit)+'»'+(GM.diag.auth?' ('+esc(GM.diag.auth)+')':''):' · Gemini: δεν βρέθηκε')+(GM.diag.err?' · σφάλμα λίστας: '+esc(GM.diag.err):'')+'</div>';
   el.innerHTML=h;el.hidden=!h}
 function apGmTest(){var b=$('#ap-gm');if(b){b.disabled=true;b.textContent='Ελέγχω…'}GM.bad=null;GM.mem={};
-  gmDiag().then(function(){return gmFetch('BTC','1h')}).then(function(r){toast('Gemini OK: ήρθαν '+r.bars.length+' κεριά BTC.')}).catch(function(e){toast('Gemini: '+gmErrText(e))}).then(function(){if(b){b.disabled=false;b.textContent='🔌 Σύνδεση Gemini'}apGmRender()})}
+  gmDiag().then(function(){GM.diagAt=Date.now();return gmFetch('BTC','1h',true)}).then(function(r){toast('Gemini OK: ήρθαν '+r.bars.length+' κεριά BTC.')}).catch(function(e){toast('Gemini: '+gmErrText(e))}).then(function(){if(b){b.disabled=false;b.textContent='🔌 Σύνδεση Gemini'}apGmRender()})}
 var SX_LIQ={asia:.42,lon:.72,ovl:1,ny:.82,late:.32},SX_NOTE={asia:'Ήρεμη αγορά, στενά εύρη',lon:'Ανοίγει η Ευρώπη, πρώτες κινήσεις',ovl:'Μέγιστη ρευστότητα και όγκος',ny:'Ανακοινώσεις ΗΠΑ, δυνατές κινήσεις',late:'Χαμηλός όγκος, ψεύτικα σπασίματα'};
 function sxDur(m){m=Math.max(0,Math.round(m));var h=Math.floor(m/60),mm=m%60;return (h?h+'ω ':'')+mm+'λ'}
 function sxEnd(now){var d=new Date(now),wd=d.getUTCDay(),cur=sessOf(now);
