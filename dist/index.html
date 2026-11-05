@@ -1162,6 +1162,26 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 @media (max-width:600px){.prof-panel.compact.csm,.prof-panel.compact.cmd{left:8px;right:8px;bottom:8px;width:auto!important}.prof-panel.compact.csm{height:min(62vh,520px)}.prof-panel.compact.cmd{height:min(85vh,700px)}#profWide{display:inline-flex!important}}
 
 
+
+
+/* κοινός Καθηγητής: ποιος τρέχει / ποιος άλλαξε */
+.aprunrow{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.45rem;font-size:.8rem}
+.aprun{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .6rem;border-radius:99px;border:1px solid var(--line);background:var(--sunk)}
+.aprun.on{border-color:color-mix(in srgb,var(--gain) 55%,var(--line));color:var(--fg)}.aprun.wait{border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}.aprun.off{color:var(--muted)}
+.aplchg{color:var(--muted);align-self:center}.aplchg b{color:var(--fg)}
+.apchg{list-style:none;margin:0;padding:0;display:grid;gap:.25rem;font-size:.82rem}
+.apchg li{display:grid;grid-template-columns:auto auto 1fr;gap:.5rem;align-items:baseline;padding:.3rem .5rem;border-radius:8px;background:var(--sunk)}
+.apchg .apt{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.74rem}
+/* αρχείο κεριών */
+.arcsum{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;font-size:.86rem;margin-bottom:.6rem}.arcsum .warn{color:var(--warn)}.arcsum .pos{color:var(--gain)}
+.arctw{overflow-x:auto}.arct{width:100%;border-collapse:collapse;font-size:.8rem}
+.arct th{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;padding:.35rem .5rem;border-bottom:1px solid var(--line);white-space:nowrap}
+.arct td{padding:.4rem .5rem;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+.arct td small{display:block;color:var(--muted);font-size:.7rem;margin-top:.1rem}
+.arct td .pos{color:var(--gain);font-weight:700}.arct td .warn{color:var(--warn);font-weight:700}
+.arct td.arcnone{color:var(--muted);text-align:center}
+.arcbar{display:block;height:4px;border-radius:2px;background:var(--sunk);margin-top:.25rem;overflow:hidden;min-width:70px}.arcbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gain))}
+.arct td.arcold .arcbar i{background:var(--warn)}
 /* ομοιόμορφο κάτω μέρος chat */
 .gfoot{position:sticky;bottom:-1.4rem;z-index:6;background:var(--bg);box-shadow:0 1.6rem 0 var(--bg);border-top:1px solid var(--line);margin-top:.5rem;padding:.35rem 0 .3rem}
 .gfoot .pinput{position:static;border-top:0;margin-top:.35rem;padding:0;background:none}
@@ -1661,6 +1681,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
       <div class="row" style="gap:.4rem;flex-wrap:wrap;margin-top:.7rem"><button type="button" class="btn small" id="mkDemo">Demo συναλλαγή</button><button type="button" class="btn small" id="mkTrade">Νέα συναλλαγή</button><button type="button" class="btn small primary" id="mkAsk">Στείλε το γράφημα στον Καθηγητή</button></div>
     </div>
     <div class="mkgrid" id="mkGridBox" hidden></div>
+    <div class="card" id="arcCard"><div class="formhead"><h2 style="margin:0">🗄️ Αρχείο κεριών</h2><span class="muted" style="font-size:.8rem">κοινό · μόνιμο</span></div><p class="muted" style="font-size:.84rem;margin:.3rem 0 .6rem">Κάθε κερί που φέρνει οποιοδήποτε μέλος (Gemini, Crypto.com) αποθηκεύεται εδώ για πάντα, ανά μήνα, και δεν σβήνεται. Τα γραφήματα και τα backtest γεμίζουν από εδώ. Για κάθε νόμισμα βλέπεις <b>από πότε → μέχρι πότε</b> έχουμε κεριά, πόσα είναι και τι ποσοστό καλύπτουν (τα κενά μετριούνται με ειλικρίνεια).</p><div id="arcBody"><p class="muted">Φορτώνω…</p></div></div>
     <p class="disc" style="margin-top:.8rem">Κεριά crypto από Crypto.com και τιμές από CoinGecko, μέσω των συνδέσεων του κάθε μέλους στο claude.ai. Οι λίστες είναι για μελέτη, όχι προτάσεις αγοράς.</p>
   </section>
 
@@ -1734,7 +1755,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
         <label class="f" style="max-width:16rem">Ελάχιστο μέσο R σε νέα δεδομένα<input id="ap-minEdge" inputmode="decimal"></label>
       </details>
       <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><button type="button" class="btn small" id="ap-gm">🔌 Σύνδεση Gemini</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
-      <div id="apBody"><div id="apWatch"></div><span class="lbl" style="display:block;margin-top:.7rem">Τι αποφάσισε</span><div id="apLog"></div></div>
+      <div id="apBody"><div id="apWatch"></div><span class="lbl" style="display:block;margin-top:.7rem">Τι αποφάσισε <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">· ίδιο για όλη την παρέα</span></span><div id="apLog"></div><span class="lbl" style="display:block;margin-top:.9rem">📝 Ποιος άλλαξε τι</span><div id="apChg"></div></div>
     </div>
     <div class="card" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
       <p class="muted" style="font-size:.84rem;margin:.4rem 0 .5rem">Ο Αυτόματος Καθηγητής δεν περιορίζεται στις κλασικές τεχνικές: φτιάχνει δικές του από «τουβλάκια» κανόνων (τάση, EMA, RSI, ADX, Bollinger, όγκος, κεριά, δομή, ώρες αγορών). Ο <b>🧬 γενετικός αλγόριθμος</b> ξεκινά από tips μεγάλων αναλυτών (Raschke, Connors, Minervini, Wyckoff, Livermore, Brooks, Elder, Seykota…) και τα «διασταυρώνει» και «μεταλλάσσει» για εκατοντάδες συνδυασμούς. Με το <b>🎓</b> ο Claude σχεδιάζει νέες ιδέες διαβάζοντας την αγορά τώρα, τις ειδήσεις και το ημερολόγιο. Η κρίση είναι αυστηρή: μαθαίνει στο πρώτο 60% των κεριών, διαλέγει στο επόμενο 20% και <b>η τελική κρίση γίνεται μία φορά στο τελευταίο 20% που δεν είδε ποτέ</b>, σε πολλά νομίσματα. Όσες περάσουν μπαίνουν μόνες τους στις στρατηγικές του Αυτόματου (με τα ίδια φίλτρα και προστασίες) και φαίνεται πώς τα πάνε ζωντανά. Όταν ο Αυτόματος είναι ενεργός, ψάχνει μόνος του νέες μία φορά τη μέρα.</p>
