@@ -3787,7 +3787,7 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
       var b1=r.bars.filter(function(x){return !x.approx&&x.t+36e5<=Date.now()+60000});
       AP.noData=AP.noData||{};var lb1=b1[b1.length-1];if(lb1&&Date.now()-lb1.t>3*36e5){AP.noData[coin]='παλιά κεριά';SH.fail[coin]=1;apAdd(coin,'err','Τα κεριά του '+coin+' είναι παλιά (τελευταίο '+arcD(lb1.t,true)+', '+(r.src||'')+'). Δεν σαρώνω με παλιά δεδομένα.',true);return}if(b1.length<300){AP.noData[coin]='μόνο '+b1.length+' κεριά';SH.fail[coin]=1;apAdd(coin,'need','Μόνο '+b1.length+' κεριά ('+(r.src||'')+'). Δεν υπάρχει ακόμα βαθύ ιστορικό για '+coin+'.',true);return}
       if(AP.noData&&b1.length>=300)delete AP.noData[coin];if(Date.now()-(b1[b1.length-1].t+36e5)>3*36e5){apAdd(coin,'skip','Τα κεριά σταματούν '+apAgo(b1[b1.length-1].t+36e5)+' ('+(r.src||'')+'). Δεν ανοίγω τίποτα.');return}
-      var best=null,openOn=(RC.id?apMineR():dmOf(PROF)).some(function(t){return !dmClosed(t)&&dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')===coin}),blk=[];
+      var best=null,onT=apMine().find(function(t){return !dmClosed(t)&&dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')===coin}),cyc=(AP.cycOpen||{})[coin],openOn=!!onT||!!(cyc&&Date.now()-cyc.at<30*60000),blk=[];/* ΜΙΑ θέση ανά νόμισμα για ΟΛΑ τα προφίλ μαζί */
       tfs.forEach(function(tf){var E=evalTf(coin,b1,tf,r);if(!E)return;var g=E.g,ev=E.ev;if(coin==='BTC'&&tf==='1h'){ctx.btc=g;SH.btc=g}
         ev.cands.forEach(function(x){x.grade=apGrade(x)});
         var good=ev.cands.filter(function(x){return x.reliable&&x.test.avgR>0&&x.fit>=0}).sort(function(a,z){return (z.grade-a.grade)||((z.test.avgR+Math.min(0,z.best.st.avgR))-(a.test.avgR+Math.min(0,a.best.st.avgR)))});
@@ -3802,7 +3802,7 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
       if(blk.length&&!best){blocked+=blk.length;var b0=blk.sort(function(a,z){return z.it.x.grade-a.it.x.grade})[0];apAdd(coin,'block','Σήμα «'+b0.it.x.s.t+'» '+(b0.it.x.d>0?'Long':'Short')+' ('+b0.it.tf+') αλλά το σταμάτησε προστασία: '+b0.why+'.');return}
       if(!best){var w0=watch.filter(function(w){return w.coin===coin});apAdd(coin,'wait',w0.map(function(w){return w.tf+': '+w.mk+(w.name?' · παρακολουθεί «'+w.name+'» '+(w.dir>0?'Long':'Short')+(w.bestSess?', καλύτερη ώρα '+sessInfo(w.bestSess.id).t:''):' · καμία στρατηγική με πλεονέκτημα')}).join(' | ')+'. Κανένα σήμα τώρα.');return}
       if(best.x.grade<2){apAdd(coin,'prop','Σήμα «'+best.x.s.t+'» '+(best.x.d>0?'Long':'Short')+' ('+best.tf+') αλλά με λίγα δεδομένα ('+fR(best.x.test.avgR)+' σε '+best.x.test.n+' νέες). Είναι στις προτάσεις για έγκριση.');return}
-      if(openOn){apAdd(coin,'prop','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά υπάρχει ήδη ανοιχτή demo στο '+coin+'. Μπήκε στις προτάσεις.');return}
+      if(openOn){var onP=onT&&onT.auto&&onT.auto.profile?onT.auto.profile.name:cyc?cyc.name:'';apAdd(coin,'block','Σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά ο Καθηγητής έχει ήδη θέση στο '+coin+(onP?' (από το προφίλ '+onP+')':'')+'. Μία θέση ανά νόμισμα για όλα τα προφίλ μαζί.');return}
       if(brk){props.push(best);apAdd(coin,'block','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά ο διακόπτης ασφαλείας είναι ενεργός: '+brk+' Μπήκε στις προτάσεις.');return}
       var mine=apMineR(),op=mine.filter(function(t){return !dmClosed(t)}).length+opened,td=mine.filter(function(t){return t.date===lday(new Date())}).length+opened;
       if(op>=c.maxOpen||td>=c.maxDay){props.push(best);apAdd(coin,'lim','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά '+(op>=c.maxOpen?'έφτασε το όριο ανοιχτών ('+c.maxOpen+')':'έφτασε το όριο ημέρας ('+c.maxDay+')')+'. Μπήκε στις προτάσεις.');return}
@@ -3831,7 +3831,7 @@ function apOpen(it,manual){var c=apC(),pid=AP.rc&&AP.rc.id,coin=it.coin,top=it.x
     riskPct:dmR2(riskAmt/bal*100),riskAmt:dmR2(riskAmt),qty:qty,notional:dmR2(notional),lev:lev,margin:dmR2(margin),liq:isFinite(liq)?liq:null,exp:ord==='limit'?Math.max(2,Math.round(3*ms/36e5)):null,
     src:'auto',mgmt:c.mgmt||'none',cfId:null,tech:top.s.mid||'',title:top.s.t,stratId:null,notes:('🤖 '+why).slice(0,500),status:'open',createdAt:now,
     auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual}};
-  apMark(sk);
+  apMark(sk);AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin]={at:Date.now(),name:AP.rc&&AP.rc.name||''};
   put('demo',newId(),doc).then(function(){apRender()}).catch(function(err){apAdd(coin,'err','Δεν αποθηκεύτηκε: '+writeErr(err));apRender()});
   apAdd(coin,'open',(manual?'Εγκρίθηκε και άνοιξε ':'Άνοιξε ')+(d>0?'Long':'Short')+' ('+(ord==='limit'?'εντολή με όριο':'market')+', '+tf+') με «'+top.s.t+'»: είσοδος '+fmtPx(e)+', stop '+fmtPx(stp)+', στόχος '+fmtPx(tg)+' ('+fmt(X,X%1?1:0)+'R). '+mk+'. Σε νέα δεδομένα '+fR(top.test.avgR)+' σε '+top.test.n+' συναλλαγές.');
   return true}
