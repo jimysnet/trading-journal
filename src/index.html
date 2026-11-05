@@ -1164,6 +1164,24 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 
 
 
+
+/* 📱 λειτουργία σταθμού */
+body.station>*:not(#stnView):not(.toast){display:none!important}
+body.station *{animation:none!important;transition:none!important}
+#stnView{max-width:640px;margin:0 auto;padding:16px;display:grid;gap:12px;font-size:16px;color:var(--fg)}
+.stn-top{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem}.stn-clock{font-variant-numeric:tabular-nums;color:var(--muted)}
+.stn-st{display:flex;gap:12px;align-items:center;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.stn-st b{display:block;font-size:1.15rem}.stn-st small{display:block;color:var(--muted);margin-top:2px}
+.stn-dot{font-size:1.6rem;width:2.2rem;text-align:center}.stn-run{border-color:var(--gain)}.stn-run .stn-dot{color:var(--gain)}.stn-wait{border-color:var(--warn)}.stn-off{opacity:.85}
+.stn-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stn-kpi div{padding:10px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.stn-kpi span{display:block;font-size:.72rem;color:var(--muted)}.stn-kpi b{font-size:1.05rem}
+.stn-op,.stn-log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.stn-op li{display:flex;gap:8px;align-items:baseline;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}.stn-op li>b:last-child{margin-left:auto}
+.stn-op .pos{color:var(--gain)}.stn-op .neg{color:var(--loss)}
+.stn-log li{font-size:.82rem;color:var(--muted)}.stn-log span{font-variant-numeric:tabular-nums;margin-right:6px;color:var(--fg)}
+.stn-none{color:var(--muted);margin:0}.stn-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;font-size:.8rem}
+.stn-ok{color:var(--gain)}.stn-warn{color:var(--warn)}
+@media (max-width:420px){.stn-kpi{grid-template-columns:repeat(2,1fr)}}
 /* κοινός Καθηγητής: ποιος τρέχει / ποιος άλλαξε */
 .aprunrow{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.45rem;font-size:.8rem}
 .aprun{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .6rem;border-radius:99px;border:1px solid var(--line);background:var(--sunk)}
@@ -1754,7 +1772,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
         <label class="apchk"><input type="checkbox" id="ap-pBrk"><span>Διακόπτης ασφαλείας<small>Παύση αν οι αυτόματες χάσουν −3R σε μία μέρα ή 3 συνεχόμενες.</small></span></label>
         <label class="f" style="max-width:16rem">Ελάχιστο μέσο R σε νέα δεδομένα<input id="ap-minEdge" inputmode="decimal"></label>
       </details>
-      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
+      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><button type="button" class="btn small" data-stn="1" title="Ελαφριά οθόνη για ένα παλιό κινητό/tablet που μένει ανοιχτό στην πρίζα και τρέχει τον Καθηγητή">📱 Λειτουργία σταθμού</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
       <div id="apBody"><div id="apWatch"></div><span class="lbl" style="display:block;margin-top:.7rem">Τι αποφάσισε <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">· ίδιο για όλη την παρέα</span></span><div id="apLog"></div><span class="lbl" style="display:block;margin-top:.9rem">📝 Ποιος άλλαξε τι</span><div id="apChg"></div></div>
     </div>
     <div class="card" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
@@ -6435,6 +6453,35 @@ function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db)
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true)});
 window.__ARC={A:ARC,bf:arcBackfill,load:arcLoad,chart:arcChart,add:arcAdd,deep:function(a,b,c){return deepBars(a,b,c)}};
 
+/* ===== 📱 Λειτουργία σταθμού: ελαφριά οθόνη για παλιό κινητό/tablet που μένει ανοιχτό και τρέχει τον Καθηγητή ===== */
+var STN={on:false,t:null,wl:null,wlMsg:'',since:0};
+function stnOn(){try{return localStorage.getItem('tj-station')==='1'}catch(e){return false}}
+function stnWake(){if(!STN.on)return;if(!('wakeLock' in navigator)){STN.wlMsg='no';stnRender();return}
+  if(STN.wl&&!STN.wl.released)return;navigator.wakeLock.request('screen').then(function(l){STN.wl=l;STN.wlMsg='ok';l.addEventListener('release',function(){if(STN.on){STN.wlMsg='lost';stnRender()}});stnRender()}).catch(function(){STN.wlMsg='no';stnRender()})}
+function stnEnter(){STN.on=true;STN.since=Date.now();try{localStorage.setItem('tj-station','1')}catch(e){}document.body.classList.add('station');
+  try{profOpen(false)}catch(e){}try{ccStop()}catch(e){}var v=$('#stnView');if(!v){v=document.createElement('div');v.id='stnView';v.setAttribute('role','main');document.body.appendChild(v)}v.hidden=false;
+  stnWake();stnRender();clearInterval(STN.t);STN.t=setInterval(stnTick,15000);try{dmLiveTick()}catch(e){}}
+function stnExit(){STN.on=false;try{localStorage.removeItem('tj-station')}catch(e){}document.body.classList.remove('station');var v=$('#stnView');if(v)v.hidden=true;clearInterval(STN.t);try{if(STN.wl)STN.wl.release()}catch(e){}STN.wl=null;try{render();apRender()}catch(e){}}
+function stnTick(){if(!STN.on)return;stnRender();
+  /* μία φορά τη μέρα (04:00–05:00) ξαναφορτώνει για να μη «βαραίνει» ο browser· γυρίζει μόνο του σε λειτουργία σταθμού */
+  var h=new Date().getHours();if(h===4&&Date.now()-STN.since>20*36e5&&!AP.busy){try{location.reload()}catch(e){}}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&STN.on){stnWake();stnRender()}});
+function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},L=AP.state||{},now=Date.now(),alive=L.runner&&now-(L.at||0)<180000,me=L.tab===AP.tab;
+  var mine=typeof apMine==='function'?apMine():[],op=mine.filter(function(t){return !dmClosed(t)}),td=mine.filter(function(t){return t.date===lday(new Date())}).length,cl=mine.filter(dmCounts),R=sum(cl.map(function(t){return n(t.r)}));
+  var st=!c.on?['off','⏸','Σβηστός','Ο Καθηγητής είναι σβηστός για όλους. Άναψέ τον από την καρτέλα AI Bot.']:!qCanSave()?['off','👀','Μόνο προβολή','Αυτός ο λογαριασμός δεν μπορεί να αποθηκεύει, άρα δεν μπορεί να τρέχει τον Καθηγητή.']:AP.busy?['run','🔎','Σαρώνει'+(AP.cur?' '+AP.cur:'')+'…','']:me?['run','●','Τρέχει από αυτή τη συσκευή','']:alive?['wait','↔','Τρέχει από άλλη συσκευή',(L.runner===S.uid?'Εσένα, σε άλλη καρτέλα/συσκευή':name(L.runner))+'. Αυτή περιμένει και αναλαμβάνει αν εκείνη κλείσει.']:['wait','⏳','Αναλαμβάνει σε λιγότερο από 1′',''];
+  var nx=c.on&&AP.last?Math.max(0,Math.round(((AP.last+(c.iv||15)*60000)-now)/60000)):null;
+  var idx=ARC.idx||{},fr=Object.keys(idx).filter(function(k){return idx[k].tf==='1h'}).map(function(k){return idx[k].to||0}),lastBar=fr.length?Math.max.apply(null,fr):0;
+  var lg=(typeof apSharedLog==='function'?apSharedLog():[]).filter(function(x){return x.k!=='scan'}).slice(0,5);
+  var wl=STN.wlMsg==='ok'?'<span class="stn-ok">🔆 Η οθόνη μένει ανοιχτή</span>':STN.wlMsg?'<span class="stn-warn">⚠️ Ο browser δεν κρατά μόνος του την οθόνη ανοιχτή: ρύθμισε τη συσκευή να μη σβήνει η οθόνη όσο φορτίζει</span>':'';
+  var d=new Date();
+  v.innerHTML='<div class="stn-top"><b>🤖 Σταθμός Καθηγητή</b><span class="stn-clock">'+pad2(d.getHours())+':'+pad2(d.getMinutes())+'</span></div>'+
+    '<div class="stn-st stn-'+st[0]+'"><span class="stn-dot">'+st[1]+'</span><div><b>'+esc(st[2])+'</b>'+(st[3]?'<small>'+esc(st[3])+'</small>':'')+'</div></div>'+
+    '<div class="stn-kpi"><div><span>Τελευταία σάρωση</span><b>'+(AP.last?esc(apAgo(AP.last)):'–')+'</b></div><div><span>Επόμενη</span><b>'+(nx!=null?'σε '+nx+'′':'–')+'</b></div><div><span>Ανοιχτές</span><b>'+op.length+'</b></div><div><span>Σήμερα</span><b>'+td+'</b></div><div><span>Σύνολο R</span><b class="'+cls(R)+'">'+(cl.length?fR(R):'–')+'</b></div><div><span>Τελευταίο κερί 1h</span><b>'+(lastBar?'πριν '+esc(arcAgo(lastBar+36e5)):'–')+'</b></div></div>'+
+    (op.length?'<ul class="stn-op">'+op.map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:(t.curR!=null?n(t.curR):NaN),pend=dmIsPend(t);return '<li><b>'+esc(String(t.symbol||'').replace(/USDT$/,''))+'</b> <span class="'+(t.dir==='short'?'neg':'pos')+'">'+(t.dir==='short'?'Short':'Long')+'</span> <span class="muted">'+esc(t.title||'')+'</span><b class="num '+(pend?'':cls(cr))+'">'+(pend?'⏳ αναμονή':isFinite(cr)?fR(cr):'–')+'</b></li>'}).join('')+'</ul>':'<p class="stn-none">Καμία ανοιχτή θέση.</p>')+
+    (lg.length?'<ul class="stn-log">'+lg.map(function(x){var t=new Date(x.t);return '<li><span>'+pad2(t.getHours())+':'+pad2(t.getMinutes())+'</span>'+esc((x.c?x.c+' · ':'')+String(x.m).replace(/^\[[^\]]*\]\s*/,'').slice(0,120))+'</li>'}).join('')+'</ul>':'')+
+    '<div class="stn-foot">'+wl+'<button type="button" class="btn small" id="stnExit">Έξοδος από τον σταθμό</button></div>'}
+document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
+
 /* deepBars(sym, tf, days): με days>0 προσθέτει από το αρχείο τα παλαιότερα κεριά (για backtest σε περισσότερα δεδομένα) · αν όλα τα άλλα αποτύχουν, δίνει ό,τι έχει το αρχείο */
 function deepBars(sym,tf,days){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$/,'');
   return deepBars0(sym,tf).then(function(r){if(!days||!S.db||!r||!r.bars||!r.bars.length)return r;
@@ -6995,7 +7042,7 @@ function mktPrice(sym){sym=dmSym(sym);if(!/(USDT|USDC|USD)$/.test(sym)&&CGID[sym
 /* ζωντανό R για τις ανοιχτές: ίδια τιμή με τον «Έλεγχο με πραγματικές τιμές» (κερί 1 λεπτού Crypto.com) */
 DM.live={};
 function dmLiveR(t){var q=DM.live[dmSym(t.symbol)];if(!q||Date.now()-q.at>3*60000||!t.filledAt&&t.ord==='limit')return null;var e=n(t.entry),risk=Math.abs(e-n(t.stop));if(!(risk>0))return null;return {r:(q.px-e)*(t.dir==='short'?-1:1)/risk,px:q.px}}
-function dmLiveTick(){clearTimeout(DM.lt);DM.lt=setTimeout(dmLiveTick,60000);var sec=$('section[data-panel=demo]');if(!sec||sec.hidden||document.hidden||!CG.mcp)return;
+function dmLiveTick(){clearTimeout(DM.lt);DM.lt=setTimeout(dmLiveTick,60000);var sec=$('section[data-panel=demo]');if(!STN.on&&(!sec||sec.hidden)||document.hidden||!CG.mcp)return;
   var syms={};dmOf('prof').filter(function(t){return !dmClosed(t)&&!dmIsPend(t)}).forEach(function(t){syms[dmSym(t.symbol)]=1});var L=Object.keys(syms);if(!L.length)return;
   Promise.all(L.map(function(sy){return mktPrice(sy).then(function(q){if(q&&!q.old)DM.live[sy]={px:q.px,at:Date.now()}}).catch(function(){})})).then(function(){try{renderDmOpen();renderPf()}catch(e){}})}
 function dmManualClose(id){var t=(S.demo||[]).find(function(x){return x.id===id});if(!t)return;var btn=document.querySelector('[data-dmx="'+id+'"]'),inp=document.querySelector('[data-dmxin="'+id+'"]'),typed=n(inp&&!inp.hidden&&inp.value);
@@ -7125,7 +7172,7 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
     SH.fail=SH.fail||{};if(SH.fail[coin]){setTimeout(step,0);return}/* ήδη χωρίς δεδομένα σε αυτή τη σάρωση: τα άλλα προφίλ το προσπερνούν σιωπηλά */
     SH.bars(coin).then(function(r){AP.via=r.src||'';
       var b1=r.bars.filter(function(x){return !x.approx&&x.t+36e5<=Date.now()+60000});
-      AP.noData=AP.noData||{};if(b1.length<300){AP.noData[coin]='μόνο '+b1.length+' κεριά';SH.fail[coin]=1;apAdd(coin,'need','Μόνο '+b1.length+' κεριά ('+(r.src||'')+'). Δεν υπάρχει ακόμα βαθύ ιστορικό για '+coin+'.',true);return}
+      AP.noData=AP.noData||{};var lb1=b1[b1.length-1];if(lb1&&Date.now()-lb1.t>3*36e5){AP.noData[coin]='παλιά κεριά';SH.fail[coin]=1;apAdd(coin,'err','Τα κεριά του '+coin+' είναι παλιά (τελευταίο '+arcD(lb1.t,true)+', '+(r.src||'')+'). Δεν σαρώνω με παλιά δεδομένα.',true);return}if(b1.length<300){AP.noData[coin]='μόνο '+b1.length+' κεριά';SH.fail[coin]=1;apAdd(coin,'need','Μόνο '+b1.length+' κεριά ('+(r.src||'')+'). Δεν υπάρχει ακόμα βαθύ ιστορικό για '+coin+'.',true);return}
       if(AP.noData&&b1.length>=300)delete AP.noData[coin];if(Date.now()-(b1[b1.length-1].t+36e5)>3*36e5){apAdd(coin,'skip','Τα κεριά σταματούν '+apAgo(b1[b1.length-1].t+36e5)+' ('+(r.src||'')+'). Δεν ανοίγω τίποτα.');return}
       var best=null,openOn=(RC.id?apMineR():dmOf(PROF)).some(function(t){return !dmClosed(t)&&dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')===coin}),blk=[];
       tfs.forEach(function(tf){var E=evalTf(coin,b1,tf,r);if(!E)return;var g=E.g,ev=E.ev;if(coin==='BTC'&&tf==='1h'){ctx.btc=g;SH.btc=g}
@@ -7236,6 +7283,7 @@ function apChgSub(){if(!S.db||AP.chgSub)return;try{AP.chgSub=S.db.collection('ap
 function apChgRender(){var el=$('#apChg');if(!el)return;var L=AP.chg||[];if(!L.length){el.innerHTML='<div class="empty" style="padding:.6rem">Δεν έχει καταγραφεί αλλαγή ακόμα. Από εδώ και πέρα κάθε αλλαγή ρυθμίσεων ή προφίλ γράφεται εδώ με όνομα και ώρα.</div>';return}
   el.innerHTML='<ul class="apchg">'+L.slice(0,AP.chgMore?60:6).map(function(c){var d=new Date(c.at);return '<li><span class="apt">'+esc(pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+' '+pad2(d.getHours())+':'+pad2(d.getMinutes()))+'</span><b>'+esc(c.by===S.uid?'Εσύ':name(c.by))+'</b><span>'+esc(c.what)+'</span></li>'}).join('')+'</ul>'+(L.length>6?'<button type="button" class="btn small" id="apChgMore">'+(AP.chgMore?'Λιγότερα':'Όλες οι αλλαγές ('+L.length+')')+'</button>':'')}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#apChgMore')){AP.chgMore=!AP.chgMore;apChgRender()}});
+function apStnHook(){try{if(STN.on)stnRender()}catch(e){}}
 function apRunnerHtml(){var L=AP.state||{},c=AP.cfg||{},now=Date.now(),alive=L.runner&&now-(L.at||0)<180000,me=L.tab===AP.tab;
   if(!c.on)return '<span class="aprun off">⏸ Σβηστός για όλους</span>';
   if(alive)return '<span class="aprun on" title="Ο Καθηγητής είναι ένας και κοινός. Σαρώνει από τον browser ενός μέλους που έχει ανοιχτή τη σελίδα· αν κλείσει, αναλαμβάνει αυτόματα όποιος άλλος την έχει ανοιχτή.">🖥️ Τρέχει από: <b>'+(me?'αυτή τη σελίδα (εσύ)':L.runner===S.uid?'εσένα (άλλη καρτέλα/συσκευή)':esc(name(L.runner)))+'</b></span>';
@@ -7244,7 +7292,7 @@ function apLastChgHtml(){var c=(AP.chg||[])[0];if(!c)return '';return '<span cla
 function apStatus(){var el=$('#apStat');if(!el||!AP.cfg)return;var c=AP.cfg,mine=apMine(),op=mine.filter(function(t){return !dmClosed(t)}).length,td=mine.filter(function(t){return t.date===lday(new Date())}).length;
   var st=!qCanSave()?'<span class="pill">μόνο προβολή</span>':AP.busy?'<span class="pill acc apdot"><i></i>Σαρώνει'+(AP.cur?' '+esc(AP.cur):'')+'…</span>':c.on?'<span class="pill gain apdot"><i></i>Ενεργός</span>':'<span class="pill">Σβηστός</span>';
   var nx=c.on&&!AP.busy?Math.max(0,Math.round(((AP.last+c.iv*60000)-Date.now())/60000)):null;
-  el.innerHTML=st+' <span class="muted">Τελευταία σάρωση: <b>'+(AP.last?apAgo(AP.last):'–')+'</b>'+(nx!=null?' · επόμενη σε <b>'+nx+'′</b>':'')+' · ανοιχτές <b>'+op+'/'+c.maxOpen+'</b> · σήμερα <b>'+td+'/'+c.maxDay+'</b></span><div class="aprunrow">'+apRunnerHtml()+apLastChgHtml()+'</div>'}
+  el.innerHTML=st+' <span class="muted">Τελευταία σάρωση: <b>'+(AP.last?apAgo(AP.last):'–')+'</b>'+(nx!=null?' · επόμενη σε <b>'+nx+'′</b>':'')+' · ανοιχτές <b>'+op+'/'+c.maxOpen+'</b> · σήμερα <b>'+td+'/'+c.maxDay+'</b></span><div class="aprunrow">'+apRunnerHtml()+apLastChgHtml()+'</div>';apStnHook()}
 function apRender(){var box=$('#apBody');if(!box||!AP.cfg)return;var c=AP.cfg,ro=!qCanSave();
   $('#ap-on').checked=!!c.on;$('#ap-on').disabled=ro;
   ['iv','tf','coins','maxOpen','maxDay','margin','lev','sess','size','riskPct','minEdge','strats','mgmt','slip'].forEach(function(k){var x=$('#ap-'+k);if(x&&document.activeElement!==x)x.value=c[k]});['pNews','pMtf','pBtc','pVol','pCool','pCorr','pBrk'].forEach(function(k){var x=$('#ap-'+k);if(x)x.checked=c[k]!==false});
@@ -9351,7 +9399,7 @@ function boot(){
     if(r[1]===false)S.canWrite=false;
     if(!S.db){var had2=loadLocal();notice('Η κοινή αποθήκευση δεν είναι διαθέσιμη σε αυτή την προβολή. Οι εγγραφές κρατιούνται μόνο σε αυτόν τον browser'+(had2?' (φορτώθηκαν οι αποθηκευμένες)':'')+'.');render()}
     else if(!r[0]){notice('Συνδέσου στο claude.ai για να γράφεις στο κοινό ημερολόγιο.');S.canWrite=false}
-    if(S.db)subscribe();setTimeout(function(){if(!MOOD.data&&!MOOD.loading)moodLoad()},3000);setTimeout(function(){try{apInit()}catch(e){console.error('apInit',e)}},2500);setTimeout(function(){try{agInit()}catch(e){console.error('agInit',e)}},1800);setTimeout(function(){try{nwInit()}catch(e){console.error('nwInit',e)}},3500);setTimeout(function(){try{funInit()}catch(e){console.error('funInit',e)}},1200);
+    if(S.db)subscribe();setTimeout(function(){if(!MOOD.data&&!MOOD.loading)moodLoad()},3000);setTimeout(function(){try{apInit()}catch(e){console.error('apInit',e)}},2500);setTimeout(function(){try{if(stnOn())stnEnter()}catch(e){}},3200);setTimeout(function(){try{agInit()}catch(e){console.error('agInit',e)}},1800);setTimeout(function(){try{nwInit()}catch(e){console.error('nwInit',e)}},3500);setTimeout(function(){try{funInit()}catch(e){console.error('funInit',e)}},1200);
     if(S.db&&r[0]&&window.Manual)Manual.attachStore(S.db,r[0]);
     applyWriteState();loadNames();render();fillCheckin();fillAccount();
   }).catch(function(){S.uid='me';render()});

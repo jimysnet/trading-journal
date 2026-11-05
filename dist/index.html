@@ -1164,6 +1164,24 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 
 
 
+
+/* 📱 λειτουργία σταθμού */
+body.station>*:not(#stnView):not(.toast){display:none!important}
+body.station *{animation:none!important;transition:none!important}
+#stnView{max-width:640px;margin:0 auto;padding:16px;display:grid;gap:12px;font-size:16px;color:var(--fg)}
+.stn-top{display:flex;justify-content:space-between;align-items:center;font-size:1.05rem}.stn-clock{font-variant-numeric:tabular-nums;color:var(--muted)}
+.stn-st{display:flex;gap:12px;align-items:center;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.stn-st b{display:block;font-size:1.15rem}.stn-st small{display:block;color:var(--muted);margin-top:2px}
+.stn-dot{font-size:1.6rem;width:2.2rem;text-align:center}.stn-run{border-color:var(--gain)}.stn-run .stn-dot{color:var(--gain)}.stn-wait{border-color:var(--warn)}.stn-off{opacity:.85}
+.stn-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stn-kpi div{padding:10px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.stn-kpi span{display:block;font-size:.72rem;color:var(--muted)}.stn-kpi b{font-size:1.05rem}
+.stn-op,.stn-log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.stn-op li{display:flex;gap:8px;align-items:baseline;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}.stn-op li>b:last-child{margin-left:auto}
+.stn-op .pos{color:var(--gain)}.stn-op .neg{color:var(--loss)}
+.stn-log li{font-size:.82rem;color:var(--muted)}.stn-log span{font-variant-numeric:tabular-nums;margin-right:6px;color:var(--fg)}
+.stn-none{color:var(--muted);margin:0}.stn-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;font-size:.8rem}
+.stn-ok{color:var(--gain)}.stn-warn{color:var(--warn)}
+@media (max-width:420px){.stn-kpi{grid-template-columns:repeat(2,1fr)}}
 /* κοινός Καθηγητής: ποιος τρέχει / ποιος άλλαξε */
 .aprunrow{display:flex;flex-wrap:wrap;gap:.35rem .9rem;margin-top:.45rem;font-size:.8rem}
 .aprun{display:inline-flex;align-items:center;gap:.3rem;padding:.18rem .6rem;border-radius:99px;border:1px solid var(--line);background:var(--sunk)}
@@ -1754,7 +1772,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
         <label class="apchk"><input type="checkbox" id="ap-pBrk"><span>Διακόπτης ασφαλείας<small>Παύση αν οι αυτόματες χάσουν −3R σε μία μέρα ή 3 συνεχόμενες.</small></span></label>
         <label class="f" style="max-width:16rem">Ελάχιστο μέσο R σε νέα δεδομένα<input id="ap-minEdge" inputmode="decimal"></label>
       </details>
-      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
+      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><button type="button" class="btn small" data-stn="1" title="Ελαφριά οθόνη για ένα παλιό κινητό/tablet που μένει ανοιχτό στην πρίζα και τρέχει τον Καθηγητή">📱 Λειτουργία σταθμού</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
       <div id="apBody"><div id="apWatch"></div><span class="lbl" style="display:block;margin-top:.7rem">Τι αποφάσισε <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">· ίδιο για όλη την παρέα</span></span><div id="apLog"></div><span class="lbl" style="display:block;margin-top:.9rem">📝 Ποιος άλλαξε τι</span><div id="apChg"></div></div>
     </div>
     <div class="card" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
