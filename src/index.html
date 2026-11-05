@@ -6557,12 +6557,12 @@ function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db)
   h+='<div class="tw arctw"><table class="arct"><thead><tr><th>Νόμισμα</th>'+tfs.map(function(t){return '<th>'+TFN[t]+'</th>'}).join('')+'</tr></thead><tbody>'+coins.map(function(c){
     return '<tr><td><span class="dmsym">'+symIcon(c,18)+'<b>'+esc(c)+'</b></span></td>'+tfs.map(function(t){var e=idx[arcK(c,t)];if(!e||!e.n)return '<td class="arcnone">—</td>';
       var ms=ARC.ms[t],exp=Math.round((e.to-e.from)/ms)+1,cov=exp>0?Math.min(1,e.n/exp):1,age=Date.now()-(e.to+ms),fresh=age<=Math.max(3*ms,2*36e5);
-      return '<td class="'+(fresh?'arcok':'arcold')+'" title="'+esc(fmt(e.n,0)+' κεριά · από '+arcD(e.from,true)+' έως '+arcD(e.to,true)+' · κάλυψη '+Math.round(cov*100)+'%'+(e.gaps?' · λείπουν '+e.gaps:'')+(e.src?' · πηγή: '+e.src:''))+'"><b>'+arcD(e.from)+'</b> → '+(fresh?'<span class="pos">σήμερα</span>':'<span class="warn">'+arcD(e.to)+'</span>')+'<small>'+fmt(e.n,0)+' · '+Math.round(cov*100)+'%</small><i class="arcbar"><i style="width:'+Math.round(cov*100)+'%"></i></i></td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
+      return '<td class="'+(fresh?'arcok':'arcold')+'"'+(fresh?'':' data-armgo="'+esc(c+'|'+t)+'" style="cursor:pointer"')+' title="'+esc(fmt(e.n,0)+' κεριά · από '+arcD(e.from,true)+' έως '+arcD(e.to,true)+' · κάλυψη '+Math.round(cov*100)+'%'+(e.gaps?' · λείπουν '+e.gaps:'')+(e.src?' · πηγή: '+e.src:'')+(fresh?'':' · πάτα για συμπλήρωση από Binance'))+'"><b>'+arcD(e.from)+'</b> → '+(fresh?'<span class="pos">σήμερα</span>':'<span class="warn">'+arcD(e.to)+'</span>')+'<small>'+fmt(e.n,0)+' · '+Math.round(cov*100)+'%</small><i class="arcbar"><i style="width:'+Math.round(cov*100)+'%"></i></i></td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
   h+='<div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">'+(can?'<button type="button" class="btn small" id="arcFill"'+(ARC.bf?' disabled':'')+'>'+(ARC.bf?'⏳ Συμπληρώνει…':'⬇️ Συμπλήρωσε τώρα')+'</button>':'<span class="muted" style="font-size:.8rem">Συμπληρώνεται αυτόματα όταν ανοίγει τη σελίδα μέλος με σύνδεση Crypto.com, και κάθε πρωί από την καθημερινή εργασία.</span>')+'<span class="muted" id="arcMsg" style="font-size:.8rem">'+esc(ARC.bfMsg||'')+'</span></div>'+(ARC.err?'<p class="arcerr">'+esc(ARC.err.code==='resource_exhausted'?'⏳ Η βάση ζήτησε να πάμε πιο αργά· συνεχίζει μόνο του σε λίγα δευτερόλεπτα.':ARC.err.code==='unavailable'?'⏳ Προσωρινό πρόβλημα σύνδεσης με τη βάση· ξαναδοκιμάζει μόνο του.':ARC.err.code==='quota_exceeded'?'⚠️ Γέμισε ο χώρος της βάσης: '+(ARC.err.msg||''):'⚠️ Δεν αποθηκεύτηκαν κάποια κεριά ('+ARC.err.code+(ARC.err.msg?': '+ARC.err.msg:'')+').')+'</p>':'');
   el.innerHTML=h}
-document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true)});
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true);var g=e.target.closest&&e.target.closest('[data-armgo]');if(g){var p=g.getAttribute('data-armgo').split('|');ARM.coin=p[0];ARM.tf=p[1];ARM.msg='';var d=$('#arcManD');if(d)d.open=true;var a=$('#armCoin'),b=$('#armTf');if(a){if(!a.options.length)armRender();a.value=p[0]}if(b)b.value=p[1];armScan();if(d)d.scrollIntoView({behavior:'smooth',block:'start'})}});
 /* ✍️ Χειροκίνητη συμπλήρωση του αρχείου από το Binance: άνοιγμα σελίδας με 1.000 κεριά → αντιγραφή → επικόλληση */
-var ARM={coin:'BTC',tf:'1h',info:null,msg:'',busy:false};
+var ARM={coin:'BTC',tf:'1h',info:null,msg:'',busy:false},ARC_NOCC={BNB:1,TRX:1};
 var ARM_BI={'15m':'15m','1h':'1h','4h':'4h','1D':'1d'};
 function armUrl(coin,tf,start,end){return 'https://api.binance.com/api/v3/klines?symbol='+coin+'USDT&interval='+ARM_BI[tf]+'&limit=1000'+(start?'&startTime='+Math.floor(start):'')+(end?'&endTime='+Math.floor(end):'')}
 function armScan(){var c=ARM.coin,tf=ARM.tf,ms=ARC.ms[tf];ARM.info={loading:true};armRender();
@@ -6574,8 +6574,9 @@ function armRender(){var el=$('#arcMan');if(!el)return;var I=ARM.info,c=ARM.coin
   if(!I||I.loading)h='<span class="muted">Κοιτάζω τι έχουμε…</span>';
   else{var old=I.n?I.from-ms:Date.now();h='<div>Έχουμε <b>'+fmt(I.n,0)+'</b> κεριά'+(I.n?' από <b>'+arcD(I.from,true)+'</b> έως <b>'+arcD(I.to,true)+'</b>':'')+'.</div><div class="armbtns">'+
       [0,1,2].map(function(i){var e=old-i*1000*ms,st=e-999*ms;return '<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,0,e))+'" title="'+esc(arcD(st)+' → '+arcD(e))+'">⬅️ Πακέτο '+(i+1)+' <small>'+esc(arcD(st))+'→'+esc(arcD(e))+'</small></a>'}).join('')+
+      (I.n&&I.to<Date.now()-2*ms?'<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,I.to+ms,0))+'" title="Από το τελευταίο κερί που έχουμε μέχρι τώρα">➡️ Ως σήμερα <small>από '+esc(arcD(I.to+ms,true))+'</small></a>':'')+
       (I.gaps||[]).map(function(g){return '<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,g.a,g.b))+'">🧩 Κενό '+arcD(g.a,true)+' → '+arcD(g.b,true)+' ('+g.n+')</a>'}).join('')+
-      (I.n&&!(I.gaps||[]).length?'<span class="pos" style="font-size:.8rem">✓ χωρίς κενά</span>':'')+'</div>'}
+      (I.n&&!(I.gaps||[]).length?'<span class="pos" style="font-size:.8rem">✓ χωρίς κενά</span>':'')+'</div>'+(ARC_NOCC[c]?'<div class="warn" style="font-size:.8rem;margin-top:.3rem">ℹ️ Το '+esc(c)+' δεν υπάρχει στο Crypto.com, οπότε δεν ανανεώνεται μόνο του. Πάτα «➡️ Ως σήμερα» όποτε θες φρέσκα κεριά.</div>':'')}
   box.innerHTML=h;var m=$('#armMsg');if(m)m.innerHTML=ARM.msg||''}
 /* χωρίζει κείμενο με πολλά JSON πακέτα το ένα μετά το άλλο ([[...]][[...]]) */
 function armSplit(t){t=String(t||'').trim();var out=[],d=0,st=-1,q=false;for(var i=0;i<t.length;i++){var ch=t[i];if(q){if(ch==='\\'){i++;continue}if(ch==='"')q=false;continue}if(ch==='"'){q=true;continue}if(ch==='['){if(d===0)st=i;d++}else if(ch===']'){d--;if(d===0&&st>=0){out.push(t.slice(st,i+1));st=-1}}}return out.length?out:[t]}
@@ -6626,7 +6627,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=187,VERS={sub:null,t:null};
+var APP_VER=188,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
