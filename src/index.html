@@ -1184,6 +1184,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 .dmlog-tl li{display:grid;grid-template-columns:1.6rem 5.6rem 1fr;gap:.35rem;align-items:baseline;padding:.3rem .4rem;font-size:.84rem;margin-left:-.45rem}
 .dmlog-tl li.now{background:var(--sunk);border-radius:8px}.dmlog-t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.76rem}
 @media (max-width:560px){.dmlog-k{grid-template-columns:repeat(2,1fr)}.dmlog-tl li{grid-template-columns:1.5rem 1fr}.dmlog-t{grid-column:2}.dmlog-tl li>span:last-child{grid-column:2}}
+.verbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10060;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:.55rem .8rem;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);font-size:.86rem;display:flex;gap:.6rem;align-items:center}
 /* 📱 λειτουργία σταθμού */
 body.station>*:not(#stnView):not(.toast){display:none!important}
 body.station *{animation:none!important;transition:none!important}
@@ -3561,7 +3562,7 @@ function subscribe(){
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
   db.collection('class').onSnapshot(function(s){S.cls={};s.docs.forEach(function(d){S.cls[d.id]=d.data()});if(!CLS.dirty){var m0=S.cls[clsId()];CLS.me=m0?JSON.parse(JSON.stringify(m0)):null}renderProfIfClass()},onErr);
   db.collection('confirms').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
-  arcSub();setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
+  arcSub();verSub();setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
   db.collection('chatrx').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.chatrx=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(grpIsOpen()&&GRP.view==='chat')renderGroup()},function(){});
   db.collection('typing').onSnapshot(function(s){S.typing=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});grpTypeShow()},function(){});
   db.collection('chat').orderBy('at','desc').limit(500).onSnapshot(function(s){S.chat=s.docs.map(function(d){return Object.assign({id:d.id},d.data())}).reverse();grpOnData();loadNames()},onErr);
@@ -6560,6 +6561,15 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
     '<div class="stn-foot">'+wl+'<button type="button" class="btn small" id="stnExit">Έξοδος από τον σταθμό</button></div>'}
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
+/* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
+var APP_VER=182,VERS={sub:null,t:null};
+function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
+  if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
+  else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
+function verReload(v){if(VERS.t)return;var b=document.createElement('div');b.className='verbar';b.innerHTML='🔄 Υπάρχει νεότερη έκδοση της σελίδας. Ανανεώνεται σε λίγα δευτερόλεπτα… <button type="button" class="btn small" id="verNow">Τώρα</button>';document.body.appendChild(b);
+  var go=function(){var a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)&&a.value&&Date.now()-VERS.st<120000){VERS.t=setTimeout(go,10000);return}try{location.reload()}catch(e){}};VERS.st=Date.now();VERS.t=setTimeout(go,15000);
+  b.querySelector('#verNow').addEventListener('click',function(){try{location.reload()}catch(e){}})}
+
 /* deepBars(sym, tf, days): με days>0 προσθέτει από το αρχείο τα παλαιότερα κεριά (για backtest σε περισσότερα δεδομένα) · αν όλα τα άλλα αποτύχουν, δίνει ό,τι έχει το αρχείο */
 function deepBars(sym,tf,days){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$/,'');
   return deepBars0(sym,tf).then(function(r){if(!days||!S.db||!r||!r.bars||!r.bars.length)return r;
@@ -6969,13 +6979,13 @@ function dmSaveEval(t,x,E){if(!(S.demo||[]).some(function(z){return z.id===t.id}
   else{d.status=x.status;d.exit=x.exit==null?null:x.exit;d.exitAt=x.exitAt||null;d.r=dmR2(x.r);d.pnl=dmR2(x.r*n(t.riskAmt));if(n(t.margin)>0)d.roe=dmR2(d.pnl/n(t.margin)*100);d.amb=!!x.amb;d.nofill=!!x.nofill;d.curR=null;
     if(t.cfId&&(d.status==='win'||d.status==='loss'))cfAutoOutcome(t.cfId,d.status)}
   return put('demo',t.id,d)}
-function dmRecheck(all){var since=Date.now()-14*864e5,L=dmOf('prof').filter(function(t){return dmClosed(t)&&t.evalSrc&&t.evalSrc!=='χειροκίνητα'&&(t.at||0)>since&&(all||t.ord!=='limit')});
+function dmRecheck(all){if(!CG.mcp){toast('Ο επανέλεγχος χρειάζεται τη σύνδεση Crypto.com σε αυτόν τον λογαριασμό.');return}if(!all)return;var since=Date.now()-14*864e5,L=dmOf('prof').filter(function(t){return dmClosed(t)&&t.evalSrc&&t.evalSrc!=='χειροκίνητα'&&(t.at||0)>since&&(all||t.ord!=='limit')});
   if(!L.length){if(all)toast('Δεν υπάρχουν demo συναλλαγές για επανέλεγχο.');return}
   var jobs=L.map(function(t){var d=dmClean(t);['exit','exitAt','r','pnl','roe','filledAt','curR','checkedAt','amb','nofill','mfe','mae','lastPx','lastT'].forEach(function(k){delete d[k]});d.status='open';d.ordChecked=false;
     var c=t.cfId&&(S.confirms||[]).find(function(x){return x.id===t.cfId});var p2=Promise.resolve();if(c&&c.auto&&c.by===S.uid){var cd=dmClean(c);cd.outcome=null;delete cd.auto;delete cd.outAt;c.outcome=null;p2=put('confirms',c.id,cd)}
     return Promise.all([put('demo',t.id,d),p2])});
   Promise.all(jobs).then(function(){toast('Επανέλεγχος '+L.length+' demo συναλλαγών με πραγματικές τιμές…');AE.busy=false;setTimeout(function(){autoEval(true)},1500)}).catch(function(e){toast(writeErr(e))})}
-setTimeout(function(){try{var k='tj-dmfix2-'+(S.uid||'');if(S.uid&&qCanSave()&&localStorage.getItem(k)!=='1'){localStorage.setItem(k,'1');dmRecheck(false)}}catch(e){}},12000);
+/* (αφαιρέθηκε η αυτόματη «επανεξέταση» που ξανάνοιγε κλεισμένες συναλλαγές όταν έμπαινε νέο μέλος) */
 function dmGroups(){var g={};dmOf('prof').filter(function(t){return !dmClosed(t)}).forEach(function(t){var k=(t.ex||'binance')+'|'+dmSym(t.symbol);(g[k]=g[k]||[]).push(t)});return g}
 function dmOpenEval(key){
   var gs=dmGroups();if(!key)key=Object.keys(gs)[0];var g=gs[key];if(!g){toast('Δεν έχεις ανοιχτές demo συναλλαγές.');return}
