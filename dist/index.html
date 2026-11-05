@@ -1185,6 +1185,27 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 .dmlog-tl li.now{background:var(--sunk);border-radius:8px}.dmlog-t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.76rem}
 @media (max-width:560px){.dmlog-k{grid-template-columns:repeat(2,1fr)}.dmlog-tl li{grid-template-columns:1.5rem 1fr}.dmlog-t{grid-column:2}.dmlog-tl li>span:last-child{grid-column:2}}
 .verbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:10060;background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:.55rem .8rem;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);font-size:.86rem;display:flex;gap:.6rem;align-items:center}
+
+/* 🧑‍🏫 ζωντανός Καθηγητής: σώμα + κεφάλι */
+.prof-svg.pph.cut .prig{position:absolute;left:50%;bottom:0;height:100%;aspect-ratio:357/420;transform:translateX(-50%);filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)) drop-shadow(0 0 1px rgba(0,0,0,.4))}
+.prof-btn:hover .prof-svg.pph.cut .prig{filter:drop-shadow(0 10px 14px rgba(0,0,0,.45)) drop-shadow(0 0 6px color-mix(in srgb,var(--accent) 70%,transparent))}
+.prof-svg.pph.cut .prig img{position:absolute;animation:none!important;filter:none!important;border:0;border-radius:0;box-shadow:none;object-fit:fill;max-width:none}
+.prof-svg.pph.cut .prig-b{left:0;top:0;width:100%!important;height:100%!important;transform-origin:50% 100%;animation:prbreath 4.6s ease-in-out infinite!important}
+@keyframes prbreath{0%,100%{transform:scale(1,1)}45%{transform:scale(1.008,1.016)}}
+.prof-svg.pph.cut .prig-h{position:absolute;left:30.25%;top:0;width:59.94%;height:60%;transform-origin:50% 95%;will-change:transform}
+.prof-svg.pph.cut .prig-h img{left:0;top:0;width:100%!important;height:100%!important}
+.plid{position:absolute;width:11.4%;height:4.2%;top:47.6%;border-radius:45% 45% 50% 50%;background:linear-gradient(180deg,#6e4a3b,#a47764 55%,#b98a76 80%,#3a2519);transform:scaleY(0);transform-origin:50% 0;transition:transform 60ms ease-in;pointer-events:none}
+.plid.l{left:31.3%}.plid.r{left:60.2%}.plid.on{transform:scaleY(1);transition-duration:50ms}
+.prig-fx{position:absolute;inset:0;pointer-events:none}
+.psplat{position:absolute;width:44%;aspect-ratio:1;pointer-events:none;animation:psp .18s ease-out}.psplat svg{width:100%;height:100%}
+.psplat .drip{animation:pdrip 3.2s ease-in forwards}.psplat.out{transition:opacity 1s;opacity:0}
+@keyframes psp{from{transform:translate(-50%,-50%) scale(.3)}}@keyframes pdrip{from{transform:translateY(-8px)}to{transform:translateY(6px)}}
+.prig.pwet .prig-h::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(120,200,255,.28),rgba(120,200,255,.05) 60%,transparent);-webkit-mask:url(prof_head.webp) center/100% 100%;mask:url(prof_head.webp) center/100% 100%;animation:pwet 3.2s ease-out forwards}
+@keyframes pwet{0%{opacity:1}80%{opacity:.7}100%{opacity:0}}
+.prof-svg.pph.cut.cheer .prig,.prof-svg.pph.cut.happy .prig{animation:pphjump .5s ease-out 2}
+.prof-svg.pph.cut.wow .prig{animation:pphpop .45s ease-out}
+.funobj{position:fixed;left:0;top:0;z-index:10070;pointer-events:none;will-change:transform}.funobj svg{width:100%;height:100%;display:block}
+@media (prefers-reduced-motion:reduce){.prof-svg.pph.cut .prig-b{animation:none!important}}
 /* 📱 λειτουργία σταθμού */
 body.station>*:not(#stnView):not(.toast){display:none!important}
 body.station *{animation:none!important;transition:none!important}

@@ -12,7 +12,7 @@ def sub(m):
 out = re.sub(r'<script>(.*?)</script>', sub, src, flags=re.S)
 assert k[0] == 3, k
 open(os.path.join(DIST, 'index.html'), 'w', encoding='utf-8').write(out)
-for f in ['prof.jpg', 'prof_face.jpg', 'prof_cut.webp']:
+for f in ['prof.jpg', 'prof_face.jpg', 'prof_cut.webp', 'prof_head.webp', 'prof_body.webp']:
     shutil.copy(os.path.join(ROOT, 'assets', f), os.path.join(DIST, f))
 for f in os.listdir(os.path.join(ROOT, 'agent')):
     shutil.copy(os.path.join(ROOT, 'agent', f), os.path.join(DIST, 'agent', f))
