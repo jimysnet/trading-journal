@@ -3038,13 +3038,17 @@ function armRender(){var el=$('#arcMan');if(!el)return;var I=ARM.info,c=ARM.coin
   var box=$('#armInfo');if(!box)return;var h='';
   if(!I||I.loading)h='<span class="muted">Κοιτάζω τι έχουμε…</span>';
   else{var old=I.n?I.from-ms:Date.now();h='<div>Έχουμε <b>'+fmt(I.n,0)+'</b> κεριά'+(I.n?' από <b>'+arcD(I.from,true)+'</b> έως <b>'+arcD(I.to,true)+'</b>':'')+'.</div><div class="armbtns">'+
-      '<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,0,old))+'">⬅️ Άνοιξε 1.000 παλαιότερα κεριά</a>'+
+      [0,1,2].map(function(i){var e=old-i*1000*ms,st=e-999*ms;return '<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,0,e))+'" title="'+esc(arcD(st)+' → '+arcD(e))+'">⬅️ Πακέτο '+(i+1)+' <small>'+esc(arcD(st))+'→'+esc(arcD(e))+'</small></a>'}).join('')+
       (I.gaps||[]).map(function(g){return '<a class="btn small" target="_blank" rel="noopener noreferrer" href="'+esc(armUrl(c,tf,g.a,g.b))+'">🧩 Κενό '+arcD(g.a,true)+' → '+arcD(g.b,true)+' ('+g.n+')</a>'}).join('')+
       (I.n&&!(I.gaps||[]).length?'<span class="pos" style="font-size:.8rem">✓ χωρίς κενά</span>':'')+'</div>'}
   box.innerHTML=h;var m=$('#armMsg');if(m)m.innerHTML=ARM.msg||''}
+/* χωρίζει κείμενο με πολλά JSON πακέτα το ένα μετά το άλλο ([[...]][[...]]) */
+function armSplit(t){t=String(t||'').trim();var out=[],d=0,st=-1,q=false;for(var i=0;i<t.length;i++){var ch=t[i];if(q){if(ch==='\\'){i++;continue}if(ch==='"')q=false;continue}if(ch==='"'){q=true;continue}if(ch==='['){if(d===0)st=i;d++}else if(ch===']'){d--;if(d===0&&st>=0){out.push(t.slice(st,i+1));st=-1}}}return out.length?out:[t]}
 function armAdd(){var ta=$('#armPaste'),txt=ta?ta.value:'';if(!txt.trim()){ARM.msg='<span class="warn">Επικόλλησε πρώτα τις τιμές.</span>';armRender();return}
   if(!arcCan()){ARM.msg='<span class="warn">Χρειάζεσαι δικαίωμα αποθήκευσης.</span>';armRender();return}
-  var r=parseAnyPx(txt,2);if(r.err){ARM.msg='<span class="warn">'+esc(r.err)+'</span>';armRender();return}
+  var parts=armSplit(txt),all={},bad='';parts.forEach(function(t){var r0=parseAnyPx(t,2);if(r0.err){bad=r0.err;return}r0.bars.forEach(function(b){all[b.t]=b})});
+  var B0=Object.keys(all).map(function(k){return all[k]}).sort(function(a,b){return a.t-b.t});if(!B0.length){ARM.msg='<span class="warn">'+esc(bad||'Δεν βρήκα κεριά.')+'</span>';armRender();return}
+  var r={bars:B0};
   var B=r.bars,ms=ARC.ms[ARM.tf],d=[];for(var i=1;i<Math.min(B.length,50);i++)d.push(B[i].t-B[i-1].t);var md=median(d)||ms;
   if(Math.abs(md-ms)>ms*0.2){var nm={9e5:'15 λεπτών',36e5:'1 ώρας',144e5:'4 ωρών',864e5:'1 μέρας'};ARM.msg='<span class="warn">Αυτά είναι κεριά '+(nm[Math.round(md)]||Math.round(md/60000)+' λεπτών')+', όχι '+(nm[ms]||ARM.tf)+'. Διάλεξε το σωστό πλαίσιο ή άνοιξε ξανά τον σύνδεσμο.</span>';armRender();return}
   var px=livePx(ARM.coin+'USDT'),lc=B[B.length-1].c;if(isFinite(px)&&px>0&&(lc/px>8||px/lc>8)){ARM.msg='<span class="warn">Οι τιμές δεν μοιάζουν με '+esc(ARM.coin)+' (τελευταία '+dmPx(lc)+', τώρα '+dmPx(px)+'). Μήπως αντέγραψες άλλο νόμισμα;</span>';armRender();return}
@@ -3087,7 +3091,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=183,VERS={sub:null,t:null};
+var APP_VER=185,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
