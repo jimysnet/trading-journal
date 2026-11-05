@@ -1219,6 +1219,7 @@ body.station *{animation:none!important;transition:none!important}
 .arct td.arcnone{color:var(--muted);text-align:center}
 .arcbar{display:block;height:4px;border-radius:2px;background:var(--sunk);margin-top:.25rem;overflow:hidden;min-width:70px}.arcbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gain))}
 .arct td.arcold .arcbar i{background:var(--warn)}
+.arcerr{font-size:.8rem;color:var(--warn);margin:.4rem 0 0}
 /* ομοιόμορφο κάτω μέρος chat */
 .gfoot{position:sticky;bottom:-1.4rem;z-index:6;background:var(--bg);box-shadow:0 1.6rem 0 var(--bg);border-top:1px solid var(--line);margin-top:.5rem;padding:.35rem 0 .3rem}
 .gfoot .pinput{position:static;border-top:0;margin-top:.35rem;padding:0;background:none}
@@ -6415,25 +6416,36 @@ function arcCan(){return !!(S.db&&S.canWrite!==false&&S.uid&&S.uid!=='me'&&qCanS
 function arcSub(){if(!S.db||ARC.sub)return;ARC.sub=1;try{ARC.sub=S.db.collection('barsarc').doc('_index').onSnapshot(function(sn){ARC.idx=(sn.exists&&sn.data()&&sn.data().k)||{};arcPanel()},function(){ARC.idx=ARC.idx||{};arcPanel()})}catch(e){}}
 function arcIdx(){if(!S.db)return Promise.resolve({});if(ARC.idx)return Promise.resolve(ARC.idx);return S.db.collection('barsarc').doc('_index').get().then(function(sn){ARC.idx=ARC.idx||(sn.exists&&sn.data()&&sn.data().k)||{};return ARC.idx}).catch(function(){ARC.idx=ARC.idx||{};return ARC.idx})}
 function arcGaps(f,l,n,ms){return Math.max(0,Math.round((l-f)/ms)+1-n)}
-/* προσθήκη κεριών: γράφει μόνο τους μήνες που έχουν πραγματικά κάτι καινούργιο */
+/* κλήσεις στη βάση για το αρχείο: μία-μία, με μικρή απόσταση, και αν η βάση πει «πιο αργά» (resource_exhausted) ή «προσωρινά» (unavailable) ξαναδοκιμάζει μόνη της */
+function arcSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function arcCall(fn,tries){tries=tries||0;var gap=Math.max(0,(ARC.lastCall||0)+300-Date.now());return arcSleep(gap).then(function(){ARC.lastCall=Date.now();return fn()}).then(function(x){if(ARC.err&&ARC.err.code!=='quota_exceeded'&&ARC.err.code!=='invalid_argument'){ARC.err=null;arcPanel()}return x},function(e){var c=(e&&e.code)||'unavailable';
+  if((c==='resource_exhausted'||c==='unavailable')&&tries<5){var w=[3000,8000,15000,30000,60000][tries];ARC.err={code:c,at:Date.now(),retry:w};arcPanel();return arcSleep(w).then(function(){return arcCall(fn,tries+1)})}
+  ARC.err={code:c,at:Date.now(),msg:String((e&&e.message)||'').slice(0,160)};arcPanel();throw e})}
+/* προσθήκη κεριών: γράφει μόνο τους μήνες που έχουν πραγματικά κάτι καινούργιο· κρατά στη μνήμη ό,τι έχει διαβάσει για να μην ξαναδιαβάζει */
 function arcAdd(coin,tf,bars,src){coin=String(coin||'').toUpperCase();if(!arcCan()||ARC.tfs.indexOf(tf)<0||!coin||!bars||!bars.length)return Promise.resolve(0);var ms=ARC.ms[tf],now=Date.now();
   var B=bars.filter(function(b){return b&&!b.approx&&isFinite(b.t)&&isFinite(+b.o)&&isFinite(+b.h)&&isFinite(+b.l)&&isFinite(+b.c)&&+b.c>0&&+b.h>=+b.l&&b.t%60000===0&&b.t+ms<=now+30000});if(!B.length)return Promise.resolve(0);
-  var added=0;ARC.q=ARC.q.then(function(){return arcIdx()}).then(function(idx){var key=arcK(coin,tf),E=idx[key]||{},MO=E.mo||{},g={};
+  var added=0;ARC.q=ARC.q.then(function(){return arcIdx()}).then(function(idx){var key=arcK(coin,tf),E=(ARC.pendIdx&&ARC.pendIdx[key])||idx[key]||{},MO=E.mo||{},g={};
     B.forEach(function(b){var m=arcMo(b.t);(g[m]=g[m]||[]).push(b)});
     var todo=Object.keys(g).filter(function(m){var k=MO[m];if(!k)return true;return g[m].some(function(b){return b.t>k.l||b.t<k.f})||g[m].length>k.n});if(!todo.length)return;
-    var chain=Promise.resolve(),changed={};
-    todo.forEach(function(m){chain=chain.then(function(){var id=arcDoc(coin,tf,m);return S.db.collection('barsarc').doc(id).get().then(function(sn){var d=(sn.exists&&sn.data())||{},map={};(d.b||[]).forEach(function(r){map[r[0]]=r});var before=Object.keys(map).length;
-      g[m].forEach(function(b){if(!map[b.t])map[b.t]=[b.t,+b.o,+b.h,+b.l,+b.c,isFinite(+b.v)?+b.v:0]});
-      var arr=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return a[0]-b[0]}),inf={n:arr.length,f:arr[0][0],l:arr[arr.length-1][0]};inf.g=arcGaps(inf.f,inf.l,inf.n,ms);
-      if(arr.length===before&&sn.exists){changed[m]=inf;return}
-      var srcs=String(d.src||'');if(src&&srcs.indexOf(src)<0)srcs=srcs?srcs+', '+src:src;added+=arr.length-before;
-      delete ARC.mem[id];changed[m]=inf;return S.db.collection('barsarc').doc(id).set({coin:coin,tf:tf,mo:m,n:inf.n,f:inf.f,l:inf.l,g:inf.g,src:srcs,at:Date.now(),by:S.uid,b:arr})})})});
+    var chain=Promise.resolve(),changed={};ARC.docs=ARC.docs||{};
+    todo.forEach(function(m){chain=chain.then(function(){var id=arcDoc(coin,tf,m),cached=ARC.docs[id];
+      var rd=cached?Promise.resolve(cached):arcCall(function(){return S.db.collection('barsarc').doc(id).get()}).then(function(sn){var d=(sn.exists&&sn.data())||{};return {b:d.b||[],src:d.src||'',exists:!!sn.exists}});
+      return rd.then(function(d){var map={};(d.b||[]).forEach(function(r){map[r[0]]=r});var before=Object.keys(map).length;
+        g[m].forEach(function(b){if(!map[b.t])map[b.t]=[b.t,+b.o,+b.h,+b.l,+b.c,isFinite(+b.v)?+b.v:0]});
+        var arr=Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return a[0]-b[0]}),inf={n:arr.length,f:arr[0][0],l:arr[arr.length-1][0]};inf.g=arcGaps(inf.f,inf.l,inf.n,ms);
+        if(arr.length===before&&d.exists){ARC.docs[id]={b:arr,src:d.src,exists:true};changed[m]=inf;return}
+        var srcs=String(d.src||'');if(src&&srcs.indexOf(src)<0)srcs=srcs?srcs+', '+src:src;
+        return arcCall(function(){return S.db.collection('barsarc').doc(id).set({coin:coin,tf:tf,mo:m,n:inf.n,f:inf.f,l:inf.l,g:inf.g,src:srcs,at:Date.now(),by:S.uid,b:arr})}).then(function(){added+=arr.length-before;ARC.docs[id]={b:arr,src:srcs,exists:true};delete ARC.mem[id];changed[m]=inf})})})});
     return chain.then(function(){if(!Object.keys(changed).length)return;
-      return S.db.collection('barsarc').doc('_index').get().then(function(sn){var k=(sn.exists&&sn.data()&&sn.data().k)||{},e=JSON.parse(JSON.stringify(k[key]||{coin:coin,tf:tf,mo:{}}));e.mo=e.mo||{};
-        Object.keys(changed).forEach(function(m){e.mo[m]=changed[m]});var L=Object.keys(e.mo).sort();e.coin=coin;e.tf=tf;e.from=e.mo[L[0]].f;e.to=e.mo[L[L.length-1]].l;
-        e.n=L.reduce(function(s,m){return s+e.mo[m].n},0);e.gaps=L.reduce(function(s,m){return s+(e.mo[m].g||0)},0);e.at=Date.now();if(src&&String(e.src||'').indexOf(src)<0)e.src=e.src?e.src+', '+src:src;
-        k[key]=e;ARC.idx=k;return S.db.collection('barsarc').doc('_index').set({k:k,at:Date.now()})})})})
-  .then(function(){if(added)arcPanel();return added}).catch(function(e){ARC.err=(e&&(e.code||e.message))||'error';return 0});return ARC.q}
+      ARC.pendIdx=ARC.pendIdx||{};var e=JSON.parse(JSON.stringify(ARC.pendIdx[key]||idx[key]||{coin:coin,tf:tf,mo:{}}));e.mo=e.mo||{};
+      Object.keys(changed).forEach(function(m){e.mo[m]=changed[m]});var L=Object.keys(e.mo).sort();e.coin=coin;e.tf=tf;e.from=e.mo[L[0]].f;e.to=e.mo[L[L.length-1]].l;
+      e.n=L.reduce(function(s,m){return s+e.mo[m].n},0);e.gaps=L.reduce(function(s,m){return s+(e.mo[m].g||0)},0);e.at=Date.now();if(src&&String(e.src||'').indexOf(src)<0)e.src=e.src?e.src+', '+src:src;
+      ARC.pendIdx[key]=e;var K=Object.assign({},ARC.idx||{});K[key]=e;ARC.idx=K;arcIdxFlush()})})
+  .then(function(){if(added)arcPanel();return added}).catch(function(e){if(!ARC.err)ARC.err={code:(e&&e.code)||'error',at:Date.now()};arcPanel();return 0});return ARC.q}
+/* το ευρετήριο γράφεται μαζεμένα (μία φορά ανά λίγα δευτερόλεπτα), όχι μετά από κάθε προσθήκη */
+function arcIdxFlush(force){clearTimeout(ARC.ixT);ARC.ixT=setTimeout(function(){var P=ARC.pendIdx;if(!P||!Object.keys(P).length)return;ARC.pendIdx={};
+  arcCall(function(){return S.db.collection('barsarc').doc('_index').get()}).then(function(sn){var k=(sn.exists&&sn.data()&&sn.data().k)||{};Object.keys(P).forEach(function(x){var o=k[x],n2=P[x];if(o&&o.mo){n2.mo=Object.assign({},o.mo,n2.mo);var L=Object.keys(n2.mo).sort();n2.from=n2.mo[L[0]].f;n2.to=n2.mo[L[L.length-1]].l;n2.n=L.reduce(function(s,m){return s+n2.mo[m].n},0);n2.gaps=L.reduce(function(s,m){return s+(n2.mo[m].g||0)},0)}k[x]=n2});
+    return arcCall(function(){return S.db.collection('barsarc').doc('_index').set({k:k,at:Date.now()})}).then(function(){ARC.idx=k;arcPanel()})}).catch(function(){ARC.pendIdx=Object.assign(P,ARC.pendIdx||{});setTimeout(function(){arcIdxFlush()},20000)})},force?0:2500)}
 /* ανάγνωση: όλοι οι μήνες από μια ημερομηνία και μετά (οι παλιοί μήνες μένουν στη μνήμη, ο τρέχων ανανεώνεται) */
 function arcLoad(coin,tf,since){if(!S.db)return Promise.resolve([]);return arcIdx().then(function(idx){var e=idx[arcK(coin,tf)];if(!e||!e.mo)return [];var cut=since?arcMo(since):'',cm=arcMo(Date.now());
   var L=Object.keys(e.mo).filter(function(m){return m>=cut}).sort();
@@ -6447,7 +6459,7 @@ function arcChart(coin,tf){var m=ARC_CH[tf];if(!m||!S.db)return Promise.resolve(
 /* γεμίζει το αρχείο: (α) μία φορά από το παλιό κοινό ιστορικό (bars), (β) τα τελευταία 50 κεριά από το Crypto.com για κάθε νόμισμα/πλαίσιο */
 function arcBackfill(force){if(!arcCan()||ARC.bf)return;var lk='tj-arcbf2';try{if(!force&&Date.now()-(+localStorage.getItem(lk)||0)<4*36e5)return}catch(e){}
   ARC.bf=true;var tot0=arcTot(),coins=(typeof TOP10!=='undefined'?TOP10:RPCOINS).slice(),jobs=[],i=0,ok=0;
-  var finish=function(){ARC.bf=false;var add=Math.max(0,arcTot()-tot0);ARC.bfMsg='Έτοιμο'+(ok?': ήρθαν κεριά για '+ok+' από '+jobs.length+' συνδυασμούς':'')+(add?' · '+fmt(add,0)+' νέα κεριά στο αρχείο.':' · τίποτα καινούργιο.');try{localStorage.setItem(lk,String(Date.now()))}catch(e){}arcPanel()};
+  var finish=function(){ARC.q.then(function(){arcIdxFlush(true)});ARC.bf=false;var add=Math.max(0,arcTot()-tot0);ARC.bfMsg='Έτοιμο'+(ok?': ήρθαν κεριά για '+ok+' από '+jobs.length+' συνδυασμούς':'')+(add?' · '+fmt(add,0)+' νέα κεριά στο αρχείο.':' · τίποτα καινούργιο.');try{localStorage.setItem(lk,String(Date.now()))}catch(e){}arcPanel()};
   var seed=shbLoadIdx(true).then(function(idx){var L=Object.keys(idx||{}).map(function(k){return idx[k]}).filter(function(e){return e&&e.inst&&ARC.tfs.indexOf(e.tf)>=0&&(e.n||0)>=30});var j=0;
     return new Promise(function(res){(function nx(){if(j>=L.length){res();return}var e=L[j++];ARC.bfMsg='Μεταφέρω το παλιό ιστορικό '+e.inst+' '+e.tf+' ('+j+'/'+L.length+')…';arcPanel();
       S.db.collection('bars').doc(shbKey(e.inst,e.tf)).get().then(function(sn){var d=sn.exists&&sn.data()||{},b=(d.b||[]).map(function(a){return {t:a[0],o:a[1],h:a[2],l:a[3],c:a[4],v:a[5]}});return arcAdd(String(e.inst).split('_')[0],e.tf,b,'κοινό ιστορικό')}).catch(function(){}).then(nx)})()})}).catch(function(){});
@@ -6467,7 +6479,7 @@ function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db)
     return '<tr><td><span class="dmsym">'+symIcon(c,18)+'<b>'+esc(c)+'</b></span></td>'+tfs.map(function(t){var e=idx[arcK(c,t)];if(!e||!e.n)return '<td class="arcnone">—</td>';
       var ms=ARC.ms[t],exp=Math.round((e.to-e.from)/ms)+1,cov=exp>0?Math.min(1,e.n/exp):1,age=Date.now()-(e.to+ms),fresh=age<=Math.max(3*ms,2*36e5);
       return '<td class="'+(fresh?'arcok':'arcold')+'" title="'+esc(fmt(e.n,0)+' κεριά · από '+arcD(e.from,true)+' έως '+arcD(e.to,true)+' · κάλυψη '+Math.round(cov*100)+'%'+(e.gaps?' · λείπουν '+e.gaps:'')+(e.src?' · πηγή: '+e.src:''))+'"><b>'+arcD(e.from)+'</b> → '+(fresh?'<span class="pos">σήμερα</span>':'<span class="warn">'+arcD(e.to)+'</span>')+'<small>'+fmt(e.n,0)+' · '+Math.round(cov*100)+'%</small><i class="arcbar"><i style="width:'+Math.round(cov*100)+'%"></i></i></td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
-  h+='<div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">'+(can?'<button type="button" class="btn small" id="arcFill"'+(ARC.bf?' disabled':'')+'>'+(ARC.bf?'⏳ Συμπληρώνει…':'⬇️ Συμπλήρωσε τώρα')+'</button>':'<span class="muted" style="font-size:.8rem">Συμπληρώνεται αυτόματα όταν ανοίγει τη σελίδα μέλος με σύνδεση Crypto.com, και κάθε πρωί από την καθημερινή εργασία.</span>')+'<span class="muted" id="arcMsg" style="font-size:.8rem">'+esc(ARC.bfMsg||'')+'</span></div>';
+  h+='<div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">'+(can?'<button type="button" class="btn small" id="arcFill"'+(ARC.bf?' disabled':'')+'>'+(ARC.bf?'⏳ Συμπληρώνει…':'⬇️ Συμπλήρωσε τώρα')+'</button>':'<span class="muted" style="font-size:.8rem">Συμπληρώνεται αυτόματα όταν ανοίγει τη σελίδα μέλος με σύνδεση Crypto.com, και κάθε πρωί από την καθημερινή εργασία.</span>')+'<span class="muted" id="arcMsg" style="font-size:.8rem">'+esc(ARC.bfMsg||'')+'</span></div>'+(ARC.err?'<p class="arcerr">'+esc(ARC.err.code==='resource_exhausted'?'⏳ Η βάση ζήτησε να πάμε πιο αργά· συνεχίζει μόνο του σε λίγα δευτερόλεπτα.':ARC.err.code==='unavailable'?'⏳ Προσωρινό πρόβλημα σύνδεσης με τη βάση· ξαναδοκιμάζει μόνο του.':ARC.err.code==='quota_exceeded'?'⚠️ Γέμισε ο χώρος της βάσης: '+(ARC.err.msg||''):'⚠️ Δεν αποθηκεύτηκαν κάποια κεριά ('+ARC.err.code+(ARC.err.msg?': '+ARC.err.msg:'')+').')+'</p>':'');
   el.innerHTML=h}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true)});
 window.__ARC={A:ARC,bf:arcBackfill,load:arcLoad,chart:arcChart,add:arcAdd,deep:function(a,b,c){return deepBars(a,b,c)}};
