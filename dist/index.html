@@ -1165,6 +1165,25 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 
 
 
+
+/* AI συναλλαγές: σύμπτυξη + ιστορικό */
+.dmtl.mini{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:.6rem;align-items:center;padding:.55rem .75rem;cursor:pointer}
+.dmtl.mini:hover{border-color:var(--accent)}.dmm-p{font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.dmm-r{font-size:.95rem}.dmm-arr{color:var(--muted);font-size:.9rem}
+.dmtl-col{border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:8px;padding:0 .45rem;cursor:pointer;margin-left:auto;margin-right:.5rem}
+@media (max-width:560px){.dmtl.mini{grid-template-columns:1fr auto auto}.dmm-p,.dmm-st{display:none}}
+.dmlogbox{position:fixed;inset:0;z-index:10040;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow:auto}
+.dmlogbox[hidden]{display:none}
+.dmlog-card{width:min(760px,100%);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+.dmlog-h{display:flex;justify-content:space-between;gap:.6rem;align-items:flex-start;margin-bottom:.6rem}
+.dmlog-k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:.6rem}.dmlog-k div{background:var(--sunk);border-radius:10px;padding:.45rem .6rem}.dmlog-k span{display:block;font-size:.7rem;color:var(--muted)}
+.dmlog-k .pos{color:var(--gain)}.dmlog-k .neg{color:var(--loss)}
+.dmlog-svg{width:100%;height:auto;display:block;background:var(--sunk);border-radius:10px}.dmlog-svg text{font-family:inherit}
+.dmlog-cap{font-size:.72rem;margin:.25rem 0 .6rem}
+.dmlog-tl{list-style:none;margin:0;padding:0 0 0 .2rem;display:grid;gap:.15rem;border-left:2px solid var(--line)}
+.dmlog-tl li{display:grid;grid-template-columns:1.6rem 5.6rem 1fr;gap:.35rem;align-items:baseline;padding:.3rem .4rem;font-size:.84rem;margin-left:-.45rem}
+.dmlog-tl li.now{background:var(--sunk);border-radius:8px}.dmlog-t{color:var(--muted);font-variant-numeric:tabular-nums;font-size:.76rem}
+@media (max-width:560px){.dmlog-k{grid-template-columns:repeat(2,1fr)}.dmlog-tl li{grid-template-columns:1.5rem 1fr}.dmlog-t{grid-column:2}.dmlog-tl li>span:last-child{grid-column:2}}
 /* 📱 λειτουργία σταθμού */
 body.station>*:not(#stnView):not(.toast){display:none!important}
 body.station *{animation:none!important;transition:none!important}
