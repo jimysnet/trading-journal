@@ -1219,6 +1219,10 @@ body.station *{animation:none!important;transition:none!important}
 .arct td.arcnone{color:var(--muted);text-align:center}
 .arcbar{display:block;height:4px;border-radius:2px;background:var(--sunk);margin-top:.25rem;overflow:hidden;min-width:70px}.arcbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gain))}
 .arct td.arcold .arcbar i{background:var(--warn)}
+.arcman{margin-top:.8rem;border-top:1px solid var(--line);padding-top:.6rem}.arcman summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.arcman textarea{width:100%;margin:.5rem 0;font:inherit;font-size:.82rem;padding:.5rem;border-radius:10px;box-sizing:border-box}
+.arminfo{font-size:.84rem;margin:.5rem 0}.armbtns{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem;align-items:center}.armbtns a{text-decoration:none}
+#armMsg .warn{color:var(--warn)}#armMsg .pos,.arminfo .pos{color:var(--gain)}
 .arcerr{font-size:.8rem;color:var(--warn);margin:.4rem 0 0}
 /* ομοιόμορφο κάτω μέρος chat */
 .gfoot{position:sticky;bottom:-1.4rem;z-index:6;background:var(--bg);box-shadow:0 1.6rem 0 var(--bg);border-top:1px solid var(--line);margin-top:.5rem;padding:.35rem 0 .3rem}
@@ -1719,7 +1723,14 @@ body.station *{animation:none!important;transition:none!important}
       <div class="row" style="gap:.4rem;flex-wrap:wrap;margin-top:.7rem"><button type="button" class="btn small" id="mkDemo">Demo συναλλαγή</button><button type="button" class="btn small" id="mkTrade">Νέα συναλλαγή</button><button type="button" class="btn small primary" id="mkAsk">Στείλε το γράφημα στον Καθηγητή</button></div>
     </div>
     <div class="mkgrid" id="mkGridBox" hidden></div>
-    <div class="card" id="arcCard"><div class="formhead"><h2 style="margin:0">🗄️ Αρχείο κεριών</h2><span class="muted" style="font-size:.8rem">κοινό · μόνιμο</span></div><p class="muted" style="font-size:.84rem;margin:.3rem 0 .6rem">Κάθε κερί που φέρνει οποιοδήποτε μέλος από το Crypto.com αποθηκεύεται εδώ για πάντα, ανά μήνα, και δεν σβήνεται. Τα γραφήματα και τα backtest γεμίζουν από εδώ. Για κάθε νόμισμα βλέπεις <b>από πότε → μέχρι πότε</b> έχουμε κεριά, πόσα είναι και τι ποσοστό καλύπτουν (τα κενά μετριούνται με ειλικρίνεια).</p><div id="arcBody"><p class="muted">Φορτώνω…</p></div></div>
+    <div class="card" id="arcCard"><div class="formhead"><h2 style="margin:0">🗄️ Αρχείο κεριών</h2><span class="muted" style="font-size:.8rem">κοινό · μόνιμο</span></div><p class="muted" style="font-size:.84rem;margin:.3rem 0 .6rem">Κάθε κερί που φέρνει οποιοδήποτε μέλος από το Crypto.com αποθηκεύεται εδώ για πάντα, ανά μήνα, και δεν σβήνεται. Τα γραφήματα και τα backtest γεμίζουν από εδώ. Για κάθε νόμισμα βλέπεις <b>από πότε → μέχρι πότε</b> έχουμε κεριά, πόσα είναι και τι ποσοστό καλύπτουν (τα κενά μετριούνται με ειλικρίνεια).</p><div id="arcBody"><p class="muted">Φορτώνω…</p></div>
+      <details class="arcman" id="arcManD"><summary>✍️ Συμπλήρωση με το χέρι από το Binance (για παλαιότερα κεριά και κενά)</summary><div id="arcMan">
+        <p class="muted" style="font-size:.82rem;margin:.4rem 0">Το Crypto.com δίνει μόνο τα τελευταία 50 κεριά. Το Binance δίνει έως 1.000 κάθε φορά και πολύ πιο πίσω: <b>1)</b> διάλεξε νόμισμα και πλαίσιο, <b>2)</b> πάτα έναν σύνδεσμο (ανοίγει σελίδα με τιμές), <b>3)</b> εκεί πάτα Ctrl+A και Ctrl+C (στο κινητό: «Επιλογή όλων» → «Αντιγραφή»), <b>4)</b> επικόλλησε εδώ και πάτα «Πρόσθεσε». Κάθε επικόλληση ≈ 1.000 κεριά: 10 μέρες σε 15λεπτα, 41 μέρες σε ωριαία, 5,5 μήνες σε 4ωρα, ~3 χρόνια σε ημερήσια.</p>
+        <div class="row" style="gap:.5rem;flex-wrap:wrap;align-items:center"><select id="armCoin" class="dmsel" aria-label="Νόμισμα"></select><select id="armTf" class="dmsel" aria-label="Πλαίσιο"><option value="15m">15 λεπτά</option><option value="1h" selected>1 ώρα</option><option value="4h">4 ώρες</option><option value="1D">1 μέρα</option></select></div>
+        <div id="armInfo" class="arminfo"></div>
+        <textarea id="armPaste" rows="3" placeholder="Επικόλλησε εδώ ό,τι αντέγραψες από τη σελίδα του Binance"></textarea>
+        <div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap"><button type="button" class="btn small primary" id="armAdd">➕ Πρόσθεσε στο αρχείο</button><span id="armMsg" style="font-size:.82rem"></span></div>
+      </div></details></div>
     <p class="disc" style="margin-top:.8rem">Κεριά crypto από Crypto.com και τιμές από CoinGecko, μέσω των συνδέσεων του κάθε μέλους στο claude.ai. Οι λίστες είναι για μελέτη, όχι προτάσεις αγοράς.</p>
   </section>
 
