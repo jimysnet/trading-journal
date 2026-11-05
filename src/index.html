@@ -1681,7 +1681,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
       <div class="row" style="gap:.4rem;flex-wrap:wrap;margin-top:.7rem"><button type="button" class="btn small" id="mkDemo">Demo συναλλαγή</button><button type="button" class="btn small" id="mkTrade">Νέα συναλλαγή</button><button type="button" class="btn small primary" id="mkAsk">Στείλε το γράφημα στον Καθηγητή</button></div>
     </div>
     <div class="mkgrid" id="mkGridBox" hidden></div>
-    <div class="card" id="arcCard"><div class="formhead"><h2 style="margin:0">🗄️ Αρχείο κεριών</h2><span class="muted" style="font-size:.8rem">κοινό · μόνιμο</span></div><p class="muted" style="font-size:.84rem;margin:.3rem 0 .6rem">Κάθε κερί που φέρνει οποιοδήποτε μέλος (Gemini, Crypto.com) αποθηκεύεται εδώ για πάντα, ανά μήνα, και δεν σβήνεται. Τα γραφήματα και τα backtest γεμίζουν από εδώ. Για κάθε νόμισμα βλέπεις <b>από πότε → μέχρι πότε</b> έχουμε κεριά, πόσα είναι και τι ποσοστό καλύπτουν (τα κενά μετριούνται με ειλικρίνεια).</p><div id="arcBody"><p class="muted">Φορτώνω…</p></div></div>
+    <div class="card" id="arcCard"><div class="formhead"><h2 style="margin:0">🗄️ Αρχείο κεριών</h2><span class="muted" style="font-size:.8rem">κοινό · μόνιμο</span></div><p class="muted" style="font-size:.84rem;margin:.3rem 0 .6rem">Κάθε κερί που φέρνει οποιοδήποτε μέλος από το Crypto.com αποθηκεύεται εδώ για πάντα, ανά μήνα, και δεν σβήνεται. Τα γραφήματα και τα backtest γεμίζουν από εδώ. Για κάθε νόμισμα βλέπεις <b>από πότε → μέχρι πότε</b> έχουμε κεριά, πόσα είναι και τι ποσοστό καλύπτουν (τα κενά μετριούνται με ειλικρίνεια).</p><div id="arcBody"><p class="muted">Φορτώνω…</p></div></div>
     <p class="disc" style="margin-top:.8rem">Κεριά crypto από Crypto.com και τιμές από CoinGecko, μέσω των συνδέσεων του κάθε μέλους στο claude.ai. Οι λίστες είναι για μελέτη, όχι προτάσεις αγοράς.</p>
   </section>
 
@@ -1754,7 +1754,7 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
         <label class="apchk"><input type="checkbox" id="ap-pBrk"><span>Διακόπτης ασφαλείας<small>Παύση αν οι αυτόματες χάσουν −3R σε μία μέρα ή 3 συνεχόμενες.</small></span></label>
         <label class="f" style="max-width:16rem">Ελάχιστο μέσο R σε νέα δεδομένα<input id="ap-minEdge" inputmode="decimal"></label>
       </details>
-      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><button type="button" class="btn small" id="ap-gm">🔌 Σύνδεση Gemini</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
+      <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
       <div id="apBody"><div id="apWatch"></div><span class="lbl" style="display:block;margin-top:.7rem">Τι αποφάσισε <span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">· ίδιο για όλη την παρέα</span></span><div id="apLog"></div><span class="lbl" style="display:block;margin-top:.9rem">📝 Ποιος άλλαξε τι</span><div id="apChg"></div></div>
     </div>
     <div class="card" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
@@ -6353,7 +6353,8 @@ function gmParse(r,tf){var A=gmFind(r,0);if(!A)return null;var ms=GM.ms[tf]||36e
   var m={},o=[];B.forEach(function(b){if(!m[b.t]){m[b.t]=1;o.push(b)}});return o}
 /* χωρίς συνδεδεμένο Gemini στον λογαριασμό του μέλους, η σελίδα ΔΕΝ το καλεί μόνη της (αλλιώς το claude.ai βγάζει παράθυρο άδειας κάθε φορά)· μόνο όταν το ζητήσει το μέλος με κουμπί */
 function gmReady(){if(GM.diag&&Date.now()-(GM.diagAt||0)<10*60000)return Promise.resolve(GM.diag);return gmDiag().then(function(d){GM.diagAt=Date.now();return d})}
-function gmFetch(base,tf,force){if(!force&&CG.mcp&&CG.mcp.listTools){return gmReady().then(function(d){if(d&&!d.err&&(!d.hit||(d.auth&&d.auth!=='connected')))throw {code:'server_not_connected'};return gmFetch0(base,tf)})}return gmFetch0(base,tf)}
+function gmFetch(base,tf,force){return Promise.reject({code:'no_gemini'})}
+function gmFetchOld(base,tf,force){if(!force&&CG.mcp&&CG.mcp.listTools){return gmReady().then(function(d){if(d&&!d.err&&(!d.hit||(d.auth&&d.auth!=='connected')))throw {code:'server_not_connected'};return gmFetch0(base,tf)})}return gmFetch0(base,tf)}
 function gmFetch0(base,tf){var gt=GM.tf[tf];if(!CG.mcp||!gt)return Promise.reject({code:'no_gemini'});if(GM.bad&&Date.now()-GM.bad.at<10*60000)return Promise.reject({code:GM.bad.code});
   var k=base+'|'+tf,m=GM.mem[k];if(m&&Date.now()-m.at<5*60000)return Promise.resolve(m.r);
   return CG.mcp.callTool(GM.srv,'gemini_list_candles',{symbol:base+'USD',time_frame:gt},{cache:{staleTime:120000,gcTime:900000}}).then(function(r){var bars=gmParse(r,tf);if(!bars||bars.length<30)throw {code:'parse',message:'κεριά: '+(bars?bars.length:0)};GM.bad=null;GM.err=null;GM.ok=Date.now();var o={inst:base+'_USD',bars:bars,src:'Gemini'};GM.mem[k]={at:Date.now(),r:o};try{shbSave(base+'_USD',tf,bars,1500)}catch(e){}return o})
@@ -6368,8 +6369,8 @@ function deepJoin(deep,fresh,tf){var ms=GM.ms[tf]||CC_TFMS[tf]||36e5,now=Date.no
 /* ===== 🗄️ Μόνιμο αρχείο κεριών (συλλογή barsarc): ένα έγγραφο ανά νόμισμα · χρονικό πλαίσιο · μήνα (UTC).
    Ό,τι κερί φέρνει οποιοδήποτε μέλος (Gemini, Crypto.com, κοινό ιστορικό) προστίθεται και δεν σβήνεται ποτέ.
    Το _index κρατά για κάθε νόμισμα/πλαίσιο από–έως, πλήθος και κενά, για να ξέρουμε πάντα τι έχουμε. ===== */
-var ARC={tfs:['15m','1h','6h','1D'],ms:{'15m':9e5,'30m':18e5,'1h':36e5,'4h':144e5,'6h':216e5,'1D':864e5,'7D':6048e5},idx:null,sub:null,mem:{},q:Promise.resolve(),thr:{},bf:false,bfMsg:'',chart:{},err:null};
-var ARC_CH={'15m':['15m',0,0,120],'30m':['15m',18e5,0,120],'1h':['1h',0,0,400],'4h':['1h',144e5,0,400],'1D':['1D',0,0,0],'7D':['1D',6048e5,1,0]};
+var ARC={tfs:['15m','1h','4h','1D'],ms:{'15m':9e5,'30m':18e5,'1h':36e5,'4h':144e5,'6h':216e5,'1D':864e5,'7D':6048e5},idx:null,sub:null,mem:{},q:Promise.resolve(),thr:{},bf:false,bfMsg:'',chart:{},err:null};
+var ARC_CH={'15m':['15m',0,0,120],'30m':['15m',18e5,0,120],'1h':['1h',0,0,400],'4h':['4h',0,0,400],'1D':['1D',0,0,0],'7D':['1D',6048e5,1,0]};
 function arcMo(t){var d=new Date(t);return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')}
 function arcK(coin,tf){return safeSeg(coin+'__'+tf)}
 function arcDoc(coin,tf,mo){return safeSeg(coin+'__'+tf+'__'+mo)}
@@ -6404,14 +6405,18 @@ function arcLoad(coin,tf,since){if(!S.db)return Promise.resolve([]);return arcId
   .then(function(parts){var out=[],seen={};parts.forEach(function(p){p.forEach(function(r){if(seen[r[0]])return;seen[r[0]]=1;out.push({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[5]})})});return out.sort(function(a,b){return a.t-b.t})})}).catch(function(){return []})}
 function arcAgg(b,ms,wk){var out=[],cur=null,off=wk?4*864e5:0;b.forEach(function(x){var s=Math.floor((x.t-off)/ms)*ms+off;if(!cur||cur.t!==s){if(cur)out.push(cur);cur={t:s,o:x.o,h:x.h,l:x.l,c:x.c,v:+x.v||0}}else{cur.h=Math.max(cur.h,x.h);cur.l=Math.min(cur.l,x.l);cur.c=x.c;cur.v+=+x.v||0}});if(cur)out.push(cur);return out}
 /* κεριά αρχείου για το γράφημα, στο πλαίσιο που δείχνει (π.χ. 4h από 1h) */
-function arcChart(coin,tf){var m=ARC_CH[tf];if(!m||!S.db)return Promise.resolve([]);return arcLoad(coin,m[0],m[3]?Date.now()-m[3]*864e5:0).then(function(b){return m[1]?arcAgg(b,m[1],m[2]):b})}
-/* γεμίζει το αρχείο από το Gemini (≈1 χρόνος ημερήσια και 6ωρα, ≈2 μήνες ωριαία, ≈2 εβδομάδες 15λεπτα) */
-function arcBackfill(force){if(!CG.mcp||!arcCan()||ARC.bf)return;var lk='tj-arcbf';try{if(!force&&Date.now()-(+localStorage.getItem(lk)||0)<6*36e5)return}catch(e){}
-  if(GM.bad&&Date.now()-GM.bad.at<10*60000&&!force)return;ARC.bf=true;var tot0=arcTot(),coins=(typeof TOP10!=='undefined'?TOP10:RPCOINS).slice(),jobs=[],i=0,ok=0,add=0;
-  coins.forEach(function(c){['1D','6h','1h','15m'].forEach(function(t){jobs.push([c,t])})});
-  (function next(){if(i>=jobs.length){ARC.bf=false;add=Math.max(0,arcTot()-tot0);ARC.bfMsg=ok?('Έτοιμο: ήρθαν κεριά για '+ok+' από '+jobs.length+' συνδυασμούς'+(add?' · '+fmt(add,0)+' νέα κεριά στο αρχείο':' · τίποτα καινούργιο')+'.'):'Το Gemini δεν έδωσε κεριά αυτή τη φορά.';if(ok)try{localStorage.setItem(lk,String(Date.now()))}catch(e){}arcPanel();return}
-    var j=jobs[i++];ARC.bfMsg='Συμπληρώνω '+j[0]+' '+j[1]+' ('+i+'/'+jobs.length+')…';arcPanel();
-    gmFetch(j[0],j[1],!!force).then(function(r){ok++;return arcAdd(j[0],j[1],r.bars,'Gemini')}).catch(function(){if(GM.bad)i=jobs.length}).then(function(){setTimeout(next,900)})})()}
+function arcChart(coin,tf){var m=ARC_CH[tf];if(!m||!S.db)return Promise.resolve([]);if(tf==='4h')return Promise.all([arcLoad(coin,'4h',Date.now()-400*864e5),arcLoad(coin,'1h',Date.now()-400*864e5)]).then(function(x){var mp={};arcAgg(x[1],144e5,0).forEach(function(b){mp[b.t]=b});x[0].forEach(function(b){mp[b.t]=b});return Object.keys(mp).map(function(k){return mp[k]}).sort(function(a,b){return a.t-b.t})});return arcLoad(coin,m[0],m[3]?Date.now()-m[3]*864e5:0).then(function(b){return m[1]?arcAgg(b,m[1],m[2]):b})}
+
+/* γεμίζει το αρχείο: (α) μία φορά από το παλιό κοινό ιστορικό (bars), (β) τα τελευταία 50 κεριά από το Crypto.com για κάθε νόμισμα/πλαίσιο */
+function arcBackfill(force){if(!arcCan()||ARC.bf)return;var lk='tj-arcbf2';try{if(!force&&Date.now()-(+localStorage.getItem(lk)||0)<4*36e5)return}catch(e){}
+  ARC.bf=true;var tot0=arcTot(),coins=(typeof TOP10!=='undefined'?TOP10:RPCOINS).slice(),jobs=[],i=0,ok=0;
+  var finish=function(){ARC.bf=false;var add=Math.max(0,arcTot()-tot0);ARC.bfMsg='Έτοιμο'+(ok?': ήρθαν κεριά για '+ok+' από '+jobs.length+' συνδυασμούς':'')+(add?' · '+fmt(add,0)+' νέα κεριά στο αρχείο.':' · τίποτα καινούργιο.');try{localStorage.setItem(lk,String(Date.now()))}catch(e){}arcPanel()};
+  var seed=shbLoadIdx(true).then(function(idx){var L=Object.keys(idx||{}).map(function(k){return idx[k]}).filter(function(e){return e&&e.inst&&ARC.tfs.indexOf(e.tf)>=0&&(e.n||0)>=30});var j=0;
+    return new Promise(function(res){(function nx(){if(j>=L.length){res();return}var e=L[j++];ARC.bfMsg='Μεταφέρω το παλιό ιστορικό '+e.inst+' '+e.tf+' ('+j+'/'+L.length+')…';arcPanel();
+      S.db.collection('bars').doc(shbKey(e.inst,e.tf)).get().then(function(sn){var d=sn.exists&&sn.data()||{},b=(d.b||[]).map(function(a){return {t:a[0],o:a[1],h:a[2],l:a[3],c:a[4],v:a[5]}});return arcAdd(String(e.inst).split('_')[0],e.tf,b,'κοινό ιστορικό')}).catch(function(){}).then(nx)})()})}).catch(function(){});
+  seed.then(function(){if(!CG.mcp){finish();return}coins.forEach(function(c){ARC.tfs.forEach(function(t){jobs.push([c,t])})});
+    (function next(){if(i>=jobs.length){finish();return}var j=jobs[i++];ARC.bfMsg='Crypto.com: '+j[0]+' '+j[1]+' ('+i+'/'+jobs.length+')…';arcPanel();
+      ccFetchBars(j[0]+'USDT',j[1]).then(function(r){ok++;return arcAdd(j[0],j[1],r.bars,'Crypto.com')}).catch(function(){}).then(function(){setTimeout(next,700)})})()})}
 function arcTot(){var k=ARC.idx||{};return Object.keys(k).reduce(function(s,x){return s+(k[x].n||0)},0)}
 function arcAgo(t){var m=Math.round((Date.now()-t)/60000);return m<60?m+'′':m<2880?Math.round(m/60)+' ώρ.':Math.round(m/1440)+' μέρ.'}
 function arcD(t,withTime){var d=new Date(t);return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2)+(withTime?' '+pad2(d.getHours())+':'+pad2(d.getMinutes()):'')}
@@ -6419,13 +6424,13 @@ function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db)
   if(!idx){el.innerHTML='<p class="muted">Φορτώνω το αρχείο…</p>';return}
   var tfs=ARC.tfs,keys=Object.keys(idx),coins=[];(typeof TOP10!=='undefined'?TOP10:[]).forEach(function(c){coins.push(c)});keys.forEach(function(k){var c=idx[k].coin;if(c&&coins.indexOf(c)<0)coins.push(c)});
   var tot=0,old=Infinity,newest=0,gaps=0;keys.forEach(function(k){var e=idx[k];tot+=e.n||0;gaps+=e.gaps||0;if(e.from<old)old=e.from;if(e.at>newest)newest=e.at});
-  var can=arcCan()&&!!CG.mcp,TFN={'15m':'15 λεπτά','1h':'1 ώρα','6h':'6 ώρες','1D':'1 μέρα'};
+  var can=arcCan(),TFN={'15m':'15 λεπτά','1h':'1 ώρα','4h':'4 ώρες','1D':'1 μέρα'};
   var h='<div class="arcsum"><span><b class="num">'+fmt(tot,0)+'</b> κεριά συνολικά</span>'+(isFinite(old)?'<span>παλαιότερο: <b>'+arcD(old)+'</b></span>':'')+(newest?'<span>τελευταία προσθήκη: <b>'+arcAgo(newest)+' πριν</b></span>':'')+(gaps?'<span class="warn">⚠️ '+fmt(gaps,0)+' κεριά λείπουν (κενά)</span>':tot?'<span class="pos">✓ χωρίς κενά</span>':'')+'</div>';
   h+='<div class="tw arctw"><table class="arct"><thead><tr><th>Νόμισμα</th>'+tfs.map(function(t){return '<th>'+TFN[t]+'</th>'}).join('')+'</tr></thead><tbody>'+coins.map(function(c){
     return '<tr><td><span class="dmsym">'+symIcon(c,18)+'<b>'+esc(c)+'</b></span></td>'+tfs.map(function(t){var e=idx[arcK(c,t)];if(!e||!e.n)return '<td class="arcnone">—</td>';
       var ms=ARC.ms[t],exp=Math.round((e.to-e.from)/ms)+1,cov=exp>0?Math.min(1,e.n/exp):1,age=Date.now()-(e.to+ms),fresh=age<=Math.max(3*ms,2*36e5);
       return '<td class="'+(fresh?'arcok':'arcold')+'" title="'+esc(fmt(e.n,0)+' κεριά · από '+arcD(e.from,true)+' έως '+arcD(e.to,true)+' · κάλυψη '+Math.round(cov*100)+'%'+(e.gaps?' · λείπουν '+e.gaps:'')+(e.src?' · πηγή: '+e.src:''))+'"><b>'+arcD(e.from)+'</b> → '+(fresh?'<span class="pos">σήμερα</span>':'<span class="warn">'+arcD(e.to)+'</span>')+'<small>'+fmt(e.n,0)+' · '+Math.round(cov*100)+'%</small><i class="arcbar"><i style="width:'+Math.round(cov*100)+'%"></i></i></td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
-  h+='<div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">'+(can?'<button type="button" class="btn small" id="arcFill"'+(ARC.bf?' disabled':'')+'>'+(ARC.bf?'⏳ Συμπληρώνει…':'⬇️ Συμπλήρωσε τώρα από το Gemini')+'</button>':'<span class="muted" style="font-size:.8rem">Συμπληρώνεται αυτόματα όταν ανοίγει τη σελίδα μέλος με σύνδεση Gemini/Crypto.com.</span>')+'<span class="muted" id="arcMsg" style="font-size:.8rem">'+esc(ARC.bfMsg||'')+'</span></div>';
+  h+='<div class="row" style="gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem">'+(can?'<button type="button" class="btn small" id="arcFill"'+(ARC.bf?' disabled':'')+'>'+(ARC.bf?'⏳ Συμπληρώνει…':'⬇️ Συμπλήρωσε τώρα')+'</button>':'<span class="muted" style="font-size:.8rem">Συμπληρώνεται αυτόματα όταν ανοίγει τη σελίδα μέλος με σύνδεση Crypto.com, και κάθε πρωί από την καθημερινή εργασία.</span>')+'<span class="muted" id="arcMsg" style="font-size:.8rem">'+esc(ARC.bfMsg||'')+'</span></div>';
   el.innerHTML=h}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true)});
 window.__ARC={A:ARC,bf:arcBackfill,load:arcLoad,chart:arcChart,add:arcAdd,deep:function(a,b,c){return deepBars(a,b,c)}};
@@ -6436,10 +6441,15 @@ function deepBars(sym,tf,days){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$
     return arcLoad(base,tf,Date.now()-days*864e5).then(function(A){var f0=r.bars[0].t,pre=A.filter(function(b){return b.t<f0});if(!pre.length)return r;return Object.assign({},r,{bars:pre.concat(r.bars),arc:pre.length,src:(r.src||'')+' + αρχείο ('+pre.length+')'})}).catch(function(){return r})})
   .catch(function(e){if(!S.db||!base)throw e;return arcLoad(base,tf,Date.now()-(days||90)*864e5).then(function(A){if(A.length<50)throw e;return {inst:base+'_USD',bars:A,src:'αρχείο κεριών',arc:A.length}})})}
 function deepBars0(sym,tf){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$/,'');if(!base)return Promise.reject({code:'not_found'});
-  var sh=function(e){return shbDeep(base,tf).then(function(d){if(!CG.mcp||!CC_TFMS[tf])return d;
-      return ccFetchBars(base+'USDT',tf).then(function(r){var j=deepJoin(d.bars,r.bars,tf);if(j.bars.length>d.bars.length&&d.inst===base+'_USD'){try{shbSave(base+'_USD',tf,j.bars,1500)}catch(x){}}return {inst:d.inst,bars:j.bars,src:'κοινό ιστορικό + Crypto.com',gap:j.gap}}).catch(function(){return d})})
-    .catch(function(){if(!CG.mcp||!CC_TFMS[tf])throw e||{code:'no_shared'};return ccFetchBars(base+'USDT',tf).then(function(r){try{if(r.bars.length>=50)shbSave(r.inst.replace(/_USDT$/,'_USD'),tf,r.bars,1500)}catch(x){}return {inst:r.inst,bars:r.bars,src:'Crypto.com (χωρίς κοινό ιστορικό ακόμα)'}}).catch(function(){throw {code:'no_data_any'}})})};
-  if(CG.mcp&&GM.tf[tf]&&!(GM.bad&&Date.now()-GM.bad.at<10*60000))return gmFetch(base,tf).catch(function(e){return sh(e)});return sh({code:CG.mcp?'no_gemini':'no_shared'})}
+  /* κεριά = παλιό κοινό ιστορικό + μόνιμο αρχείο (90 μέρες) + φρέσκα Crypto.com· ό,τι πιο φρέσκο κερδίζει στην ίδια ώρα */
+  var D=shbDeep(base,tf).then(function(d){return d.bars}).catch(function(){return []}),
+      A=S.db&&ARC_CH[tf]?arcLoad(base,tf,Date.now()-90*864e5).catch(function(){return []}):Promise.resolve([]),
+      F=CC_TFMS[tf]?ccFetchBars(base+'USDT',tf).then(function(r){return r.bars}).catch(function(){return []}):Promise.resolve([]);
+  return Promise.all([D,A,F]).then(function(x){var m={},ms=CC_TFMS[tf]||36e5,now=Date.now();x.forEach(function(L){(L||[]).forEach(function(b){if(b&&!b.approx&&isFinite(b.c)&&b.t+ms<=now+60000)m[b.t]=b})});
+    var bars=Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.t-b.t});if(bars.length<10)throw {code:'no_data_any'};
+    var src=[x[0].length?'κοινό ιστορικό':'',x[1].length?'αρχείο':'',x[2].length?'Crypto.com':''].filter(Boolean).join(' + ');
+    if(x[2].length&&bars.length>=50){try{shbSave(base+'_USD',tf,bars,1500)}catch(e){}}
+    return {inst:base+'_USD',bars:bars,src:src}})}
 function gmErrText(e){var c=e&&e.code;if(c==='server_not_connected'||c==='server_not_found')return 'Το Gemini δεν είναι διαθέσιμο σε αυτόν τον λογαριασμό. Δεν χρειάζεσαι λογαριασμό στο Gemini: η σελίδα χρησιμοποιεί το κοινό ιστορικό και το συμπληρώνει με φρέσκα κεριά Crypto.com.';if(c==='no_gemini')return 'Το Gemini δεν έδωσε κεριά.';
   if(c==='not_in_manifest'||c==='approval_required'||c==='consent_required')return 'Η σελίδα χρειάζεται την άδειά σου για το Gemini: πάτα «Σύνδεση Gemini» στην κάρτα και μετά «Allow».';if(c==='parse')return 'Ήρθε απάντηση από το Gemini αλλά δεν μπόρεσα να τη διαβάσω.';
   if(c==='no_shared')return 'Δεν υπάρχουν ακόμα κοινά κεριά για αυτό το νόμισμα.';if(c==='no_data_any')return 'Δεν βρέθηκαν κεριά ούτε στο κοινό ιστορικό ούτε στο Crypto.com για αυτό το νόμισμα.';return 'Δεν ήρθαν κεριά από το Gemini για αυτό το νόμισμα.'}
@@ -7171,7 +7181,7 @@ function apWatchHtml(){var W=AP.watch||[],P=AP.props||[];if(!W.length&&!P.length
     W.map(function(w){return '<tr><td><b>'+esc(w.coin)+'</b></td><td>'+w.tf+'</td><td>'+esc(w.mk)+'</td><td>'+(w.name?esc(w.name)+' · '+(w.dir>0?'Long':'Short')+(w.X?' · '+fmt(w.X,w.X%1?1:0)+'R':'')+(w.weak?' <span class="pill">λίγα δεδομένα</span>':''):'<span class="muted">καμία με πλεονέκτημα</span>')+'</td><td class="r num '+cls(w.testR)+'">'+(w.name?fR(w.testR)+' <span class="muted">('+w.testN+')</span>':'–')+'</td><td class="r num '+cls(w.allR)+'">'+(w.name?fR(w.allR)+' <span class="muted">('+w.n+')</span>':'–')+'</td><td style="white-space:normal;min-width:9rem">'+(w.bestSess?esc(sessInfo(w.bestSess.id).t)+' <span class="muted num">'+fR(w.bestSess.avg)+'</span>':'–')+(w.curSess?'<br><span class="muted" style="font-size:.78rem">τώρα: '+fR(w.curSess.avg)+' ('+w.curSess.n+')</span>':'')+'</td><td style="white-space:normal;min-width:14rem">'+(w.block?'<span class="pill warn">🛡️ '+esc(w.block)+'</span>':w.sig?'<span class="pill gain">σήμα τώρα</span>':esc(w.wait||'–'))+'</td></tr>'}).join('')+'</tbody></table></div></details>';
   return h}
 function apAgo(t){var m=Math.round((Date.now()-t)/60000);return m<1?'τώρα':m<60?'πριν '+m+'′':'πριν '+Math.floor(m/60)+' ώ '+(m%60)+'′'}
-function apGmRender(){var el=$('#apGm');if(!el)return;var h='';
+function apGmRender(){var el=$('#apGm');if(!el)return;el.innerHTML='';el.hidden=true;return;var h='';
   if(!CG.mcp)h='<span class="pill warn">Gemini</span> <span>Σε αυτή την προβολή δεν υπάρχουν συνδέσεις (connectors). Ο καθηγητής θα χρησιμοποιήσει τα κοινά κεριά που αποθηκεύει η σελίδα του διαχειριστή.</span>';
   else if(GM.ok&&!GM.err)h='<span class="pill gain">Gemini ✓</span> <span>Τα κεριά έρχονται κανονικά.</span>';
   else if(AP.via&&AP.via!=='Gemini')h='<span class="pill gain">Κεριά ✓</span> <span>Πηγή: '+esc(AP.via)+'. Δεν χρειάζεται το Gemini.</span>';
@@ -7696,7 +7706,7 @@ function agRealVsBt(agg){var m={};BT.forEach(function(b){m[b.mid]=b.id});var out
     out.push({strategy:s.name,manualId:mid,realTrades:st.n,realAvgR:agN(st.avgR),realWinRate:agN(st.winRate),backtestId:bid||null,backtestBestUnseenR:a.length?Math.max.apply(null,a.map(function(x){return x.avgUnseenR==null?-9:x.avgUnseenR})):null})});return out}
 function agCollect(prog){return agMarket(prog).then(function(mk){var agg=agAgg(mk);
   return {generatedAt:new Date().toISOString(),rules:{riskPct:S.settings.risk,targetR:S.settings.target,dailyLossR:S.settings.dayLoss,maxTradesPerDay:S.settings.maxTrades,minRR:1.5,maxStopPct:9,demoMargin:1000,demoLeverage:10},
-    method:'Backtest on Gemini/Crypto.com 1h candles (~2 months), fee 0.1% per side, entry at signal close, stop wins ties. Target chosen on first 70% of candles, judged on the last 30% (unseen). reliable = 20+ trades total and 5+ on unseen.',
+    method:'Backtest on shared archive + Crypto.com 1h candles, fee 0.1% per side, entry at signal close, stop wins ties. Target chosen on first 70% of candles, judged on the last 30% (unseen). reliable = 20+ trades total and 5+ on unseen.',
     strategyRules:BT.map(function(b){return {id:b.id,name:b.t,rule:b.rule,fits:FIT[b.id],fixedTarget:!BT_NOTGT[b.id]}}),notBacktestable:BT_NO.map(function(x){return x[1]}),
     markets:mk,strategySummary:agg,realVsBacktest:agRealVsBt(agg),members:agMembers(),autopilot:agAuto()}})}
 window.__agentCollect=function(){return agCollect()};window.__agentPrompt=function(d){return agPrompt(d)};
