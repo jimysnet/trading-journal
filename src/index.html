@@ -1634,7 +1634,6 @@ body.station *{animation:none!important;transition:none!important}
       </div>
       <div data-advp="bt" hidden>
         <details class="card" id="e9Card" open style="margin-bottom:.8rem"><summary><b>🧪 Scalping EMA 9/21: δοκιμή σε όλο το αρχείο κεριών</b></summary><div id="e9Out"></div></details>
-        <details class="card" id="mpCard" open style="margin-bottom:.8rem"><summary><b>📊 Market Profile μήνα: τρέχοντα επίπεδα (M/POC · M/VAH · M/VAL)</b></summary><div id="mpOut"><p class="muted">Πάτα για υπολογισμό από το αρχείο κεριών. <button class="btn sm" data-mprun>▶ Υπολόγισε</button></p></div></details>
         <div class="fields advf">
           <label class="f">Στρατηγική<select id="bt-strat"></select></label>
           <label class="f">Κατεύθυνση<select id="bt-dir"><option value="long">Μόνο long</option><option value="short">Μόνο short</option><option value="both">Και τα δύο</option></select></label>
@@ -1717,6 +1716,9 @@ body.station *{animation:none!important;transition:none!important}
     </div>
   </section>
   <section data-panel="markets" hidden>
+    <div class="card" id="stratQuick"><div class="formhead"><h2 style="margin:0">🧪 Νέες στρατηγικές: γρήγορη πρόσβαση</h2></div>
+      <div class="row" style="gap:.5rem;flex-wrap:wrap;margin-top:.5rem"><button class="btn small" type="button" data-manual="mprof">📖 Market Profile: θεωρία</button><button class="btn small" type="button" data-manual="s-mprange">📖 Στρατηγική: επαναφορά στη Value Area</button><button class="btn small" type="button" data-manual="s-mpaccept">📖 Στρατηγική: αποδοχή έξω από τη Value Area</button><button class="btn small" type="button" data-manual="s-ema921">📖 Scalping EMA 9/21</button><button class="btn small primary" type="button" data-sq="bt">🧪 Backtest όλων (Αναλύσεις → Backtest)</button></div></div>
+    <details class="card" id="mpCard" open><summary><b>📊 Market Profile μήνα: τρέχοντα επίπεδα (M/POC · M/VAH · M/VAL)</b></summary><div id="mpOut"><p class="muted">Πάτα για υπολογισμό από το αρχείο κεριών. <button class="btn sm" data-mprun>▶ Υπολόγισε</button></p></div></details>
     <div class="card">
       <div class="formhead"><h2 style="margin:0">Αγορές</h2>
         <div class="row" style="gap:.5rem;flex-wrap:wrap">
@@ -4465,8 +4467,12 @@ function mpRender(){var el=$('#mpOut');if(!el||!MPL.rows)return;var fp=function(
    '<div class="tblwrap"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>Τιμή</th><th>M/VAH</th><th>M/POC</th><th>M/VAL</th><th>Θέση</th><th>Τι να κοιτάξεις</th><th>Τρέχων μήνας POC</th></tr></thead><tbody>'+
    MPL.rows.map(function(r){if(!r.P)return '<tr class="muted"><td>'+esc(r.coin)+'</td><td colspan="7">'+(r.cov!=null?'λίγα κεριά του προηγούμενου μήνα ('+Math.round(r.cov*100)+'%)· συμπλήρωσε το 1 ώρα στο Αρχείο κεριών':'δεν υπάρχουν κεριά στο αρχείο')+'</td></tr>';
      return '<tr><td><b>'+esc(r.coin)+'</b>'+(r.age>3?' <span class="warn" title="παλιά κεριά">⚠️</span>':'')+'</td><td>'+fp(r.px)+'</td><td>'+fp(r.P.vah)+'</td><td><b>'+fp(r.P.poc)+'</b></td><td>'+fp(r.P.val)+'</td><td>'+pos(r)+'</td><td style="font-size:.8rem">'+esc(idea(r))+'</td><td class="muted">'+(r.Q?fp(r.Q.poc):'–')+'</td></tr>'}).join('')+'</tbody></table></div>'+
-   '<p class="muted" style="font-size:.8rem">Θεωρία και κανόνες: Μπούσουλας → Δείκτες → «Market Profile μήνα», και στις Στρατηγικές οι δύο κάρτες «Market Profile: …».</p>'}
+   '<p class="muted" style="font-size:.8rem">Θεωρία: Μπούσουλας → Δείκτες → «Market Profile μήνα». Στρατηγικές: Μπούσουλας → Στρατηγικές. Backtest: Αναλύσεις → Εξελιγμένος αναλυτής → Backtest.</p>'}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-mprun]'))mpRun()});
+document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-sq]');if(!q)return;var v=q.getAttribute('data-sq'),tb=function(t){var b=document.querySelector('[data-tab="'+t+'"]');if(b)b.click()};
+  if(v==='bt'){tb('stats');setTimeout(function(){var a=document.querySelector('[data-adv="bt"]');if(a)a.click();var c=$('#advCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'})},150);return}
+});
+
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-e9run]')){try{store('tj-e9run','')}catch(x){}e9Study()}});
 function btCur(){return BT.find(function(s){return s.id===$('#bt-strat').value})||BT[0]}
 function renderBtInfo(){
@@ -6716,7 +6722,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=189,VERS={sub:null,t:null};
+var APP_VER=190,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
