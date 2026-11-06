@@ -1634,6 +1634,7 @@ body.station *{animation:none!important;transition:none!important}
       </div>
       <div data-advp="bt" hidden>
         <details class="card" id="e9Card" open style="margin-bottom:.8rem"><summary><b>🧪 Scalping EMA 9/21: δοκιμή σε όλο το αρχείο κεριών</b></summary><div id="e9Out"></div></details>
+        <details class="card" id="mpCard" open style="margin-bottom:.8rem"><summary><b>📊 Market Profile μήνα: τρέχοντα επίπεδα (M/POC · M/VAH · M/VAL)</b></summary><div id="mpOut"><p class="muted">Πάτα για υπολογισμό από το αρχείο κεριών. <button class="btn sm" data-mprun>▶ Υπολόγισε</button></p></div></details>
         <div class="fields advf">
           <label class="f">Στρατηγική<select id="bt-strat"></select></label>
           <label class="f">Κατεύθυνση<select id="bt-dir"><option value="long">Μόνο long</option><option value="short">Μόνο short</option><option value="both">Και τα δύο</option></select></label>
@@ -2127,7 +2128,7 @@ var HZ_ID={
  'smc-kz':['scalp','day'],'smc-model':['scalp','day'],'smc-pd':['day','swing'],
  's-pullback':['day','swing'],'s-breakout':['day','swing'],'s-retest':['day','swing'],'s-range':['scalp','day','swing'],'s-squeeze':['day','swing'],'s-donchian':['pos'],'s-macdiv':['swing'],
  's-vwap':['scalp','day'],'s-orb':['day'],'s-gapgo':['day'],'s-pead':['swing','pos'],'s-rs':['pos','inv'],'s-ichimoku':['swing','pos'],'s-fibconf':['swing'],'s-smc':['scalp','day'],
- 's-scalp':['scalp'],'s-ema921':['scalp','day'],'s-dca':['inv'],'s-grid':['swing'],'s-basis':['pos'],'s-pairs':['swing','pos'],
+ 's-scalp':['scalp'],'s-ema921':['scalp','day'],mprof:['day','swing','pos'],'s-mprange':['day','swing'],'s-mpaccept':['day','swing'],'s-dca':['inv'],'s-grid':['swing'],'s-basis':['pos'],'s-pairs':['swing','pos'],
  'c-247':['scalp','day','swing'],'c-perp':['scalp','day','swing'],'c-funding':['day','swing','pos'],'c-oi':['day','swing'],'c-dom':['swing','pos','inv'],'c-halving':['pos','inv'],'c-onchain':['pos','inv'],
  'k-hours':['scalp','day'],'k-earn':['day','swing','pos'],'k-macro':['scalp','day','swing'],'k-short':['day','swing'],'k-adjust':['swing','pos','inv'],'k-ger40':['scalp','day','swing'],
  'tv-replay':['scalp','day','swing','pos'],'tv-pine':['day','swing','pos'],'p-evidence':['scalp','day','swing']
@@ -2275,6 +2276,44 @@ var E=[
  s:'Όγκος ανά επίπεδο τιμής αντί για ανά χρόνο. Το POC είναι η τιμή με τον μεγαλύτερο όγκο και λειτουργεί σαν μαγνήτης και ως στήριξη ή αντίσταση.',
  b:[['Όροι',['POC (Point of Control): επίπεδο με τον μεγαλύτερο όγκο.','Value Area: η περιοχή όπου έγινε περίπου το 70% του όγκου.','HVN / LVN: περιοχές υψηλού και χαμηλού όγκου. Η τιμή περνάει γρήγορα από τις LVN.']],
    ['Χρήση','Stop πίσω από HVN, στόχοι στην επόμενη HVN ή στο POC.']]},
+{id:'mprof',c:'ind',g:'Όγκου',t:'Market Profile μήνα: M/POC · M/VAH · M/VAL',en:'Monthly Market Profile · Point of Control · Value Area',m:'both',lv:3,tv:'Volume Profile Fixed Range (ή Session Volume Profile HD, περίοδος: Μήνας)',ch:{k:'ind',over:['vp']},
+ s:'Ο μηνιαίος Market Profile δείχνει σε ποιες τιμές έγινε ο περισσότερος όγκος τον προηγούμενο μήνα. Τρία επίπεδα συνοψίζουν την εικόνα: M/POC, M/VAH και M/VAL. Είναι οι ζώνες όπου οι μεγάλοι συμμετέχοντες (θεσμικοί, funds, market makers) έκαναν τις περισσότερες συναλλαγές, άρα εκεί όπου πιθανότατα θα ξαναδράσουν.',
+ b:[['1. Τα τρία επίπεδα: ζώνες θεσμικού ενδιαφέροντος',[
+     'M/POC (Monthly Point of Control): η τιμή με τον μεγαλύτερο όγκο ολόκληρου του προηγούμενου μήνα. Εκεί «συμφώνησαν» αγοραστές και πωλητές περισσότερο από οπουδήποτε αλλού.',
+     'M/VAH (Monthly Value Area High): το πάνω όριο της Value Area του μήνα.',
+     'M/VAL (Monthly Value Area Low): το κάτω όριο της Value Area του μήνα.',
+     'Γιατί μηνιαίο: ένας μήνας περιέχει αρκετό όγκο ώστε τα επίπεδα να είναι σταθερά και να τα κοιτάνε πολλοί. Τα επίπεδα μένουν ίδια για όλο τον τρέχοντα μήνα και αλλάζουν την 1η του επόμενου (00:00 UTC).',
+     'Πώς υπολογίζονται: ο όγκος κάθε κεριού μοιράζεται στις τιμές που κάλυψε, φτιάχνεται ιστόγραμμα «όγκος ανά τιμή» και από αυτό βγαίνουν το POC και η Value Area. Το Market Profile με TPO (χρόνος ανά τιμή) δίνει παρόμοια επίπεδα. Όπου λείπει όγκος, η σελίδα χρησιμοποιεί τον χρόνο.']],
+   ['2. Το POC ως «μαγνητικός πόλος» ισορροπίας',[
+     'Το POC είναι το σημείο δίκαιης τιμής με τη μεγαλύτερη αποδοχή. Όταν η τιμή απομακρύνεται χωρίς νέα πληροφορία, τείνει να επιστρέφει προς αυτό (mean reversion).',
+     'Μέσα στην Value Area το POC λειτουργεί ως στόχος: από το VAL ή το VAH η πρώτη λογική έξοδος είναι το POC.',
+     'Πάνω από το POC η αγορά θεωρεί την τιμή «ακριβή» σε σχέση με τον προηγούμενο μήνα, κάτω από αυτό «φθηνή». Μια συνεχής θέση της τιμής στη μία πλευρά δείχνει την κατεύθυνση του μήνα.',
+     'Στις διασπάσεις, το POC είναι το σημείο αναφοράς: μια επιστροφή που ξανακλείνει πέρα από το POC σημαίνει ότι η διάσπαση απέτυχε και η αγορά γυρίζει στην παλιά ισορροπία.',
+     'Ένα «γυμνό» POC (naked POC), που η τιμή δεν το έχει ξαναγγίξει από τότε που σχηματίστηκε, συχνά προσελκύει την τιμή αργότερα. Χρήσιμο ως μακρινός στόχος.']],
+   ['3. Value Area (VAH/VAL): το εύρος της δίκαιης αξίας',[
+     'Η Value Area είναι το συνεχές εύρος τιμών γύρω από το POC όπου έγινε περίπου το 70% του όγκου του μήνα (περίπου μία τυπική απόκλιση). Εκεί η αγορά θεώρησε την τιμή «δίκαιη».',
+     'Μέσα στην Value Area: ισορροπία. Η τιμή κινείται μπρος-πίσω και τα άκρα (VAH/VAL) λειτουργούν ως αντίσταση και στήριξη.',
+     'Έξω από την Value Area: η αγορά δοκιμάζει αν η νέα τιμή γίνεται αποδεκτή. Αν απορριφθεί, η τιμή επιστρέφει γρήγορα μέσα (απόρριψη). Αν γίνει αποδεκτή, χτίζεται νέα ισορροπία και η κίνηση συνεχίζει (αποδοχή).',
+     'Στενή Value Area (μικρό εύρος σε σχέση με τη μεταβλητότητα): συσσώρευση ενέργειας, πιθανή ισχυρή κίνηση τον επόμενο μήνα. Φαρδιά Value Area: ήρεμη, ισορροπημένη αγορά.',
+     'Θέση του νέου μήνα: αν ο μήνας ανοίγει μέσα στην Value Area, περιμένεις εναλλαγές (range). Αν ανοίγει έξω από αυτή, περιμένεις είτε επιστροφή μέσα είτε τάση, και αυτό κρίνεται από την αποδοχή.']],
+   ['4. Πρακτική χρήση: δύο τρόποι',[
+     'Α. Range Bound (μέσα στα όρια): αγοράζεις κοντά στο M/VAL και πουλάς κοντά στο M/VAH, με στόχο το M/POC. Δες τη στρατηγική «Market Profile: επαναφορά μέσα στη Value Area».',
+     'Β. Breakout / Acceptance (υπέρβαση ορίων): όταν η τιμή κλείνει και μένει έξω από τη Value Area (αποδοχή), ακολουθείς την κίνηση. Το σπασμένο όριο γίνεται στήριξη ή αντίσταση. Δες τη στρατηγική «Market Profile: αποδοχή έξω από τη Value Area».',
+     'Πώς διαλέγεις τρόπο: πρώτα κοιτάς πού βρίσκεται η τιμή σε σχέση με τη Value Area και πώς φέρθηκε στο όριο. Απόρριψη σημαίνει τρόπος Α, αποδοχή σημαίνει τρόπος Β. Δεν μαντεύεις από πριν.',
+     'Συνδυασμός timeframes: τα μηνιαία επίπεδα δίνουν το «πού», ένα μικρότερο γράφημα (1h ή 4h) δίνει το «πότε» (κερί απόρριψης ή κλείσιμο αποδοχής).']],
+   ['Παράδειγμα εφαρμογής (ενδεικτικά νούμερα)',[
+     'Τον Οκτώβριο το BTC έκανε τον περισσότερο όγκο γύρω στα 81.500 (M/POC), με Value Area 79.800 (M/VAL) έως 83.200 (M/VAH).',
+     'Σενάριο range: τον Νοέμβριο η τιμή πέφτει στα 79.700, αφήνει μακριά κάτω σκιά και κλείνει το 1h πάνω από το 79.800. Long στο κλείσιμο, stop στα 79.300 (κάτω από το VAL και τη σκιά), πρώτος στόχος 81.500 (POC), δεύτερος 83.200 (VAH).',
+     'Σενάριο αποδοχής: η τιμή κλείνει δύο συνεχόμενα 4ωρα πάνω από το 83.200. Περιμένεις επιστροφή στο 83.200 από πάνω (retest). Long με stop στα 82.600 (ξανά μέσα στη Value Area σημαίνει ότι η ιδέα απέτυχε), στόχος η απόσταση της Value Area προβαλλόμενη προς τα πάνω (83.200 + 3.400 ≈ 86.600).',
+     'Ακύρωση: αν στο σενάριο αποδοχής η τιμή ξανακλείσει κάτω από το M/POC, η διάσπαση ήταν ψεύτικη. Συχνά η τιμή διασχίζει τότε όλη τη Value Area ως το VAL.']],
+   ['Στο TradingView',[
+     'Indicators → «Volume Profile Fixed Range»: τράβα το εργαλείο από την 1η έως την τελευταία μέρα του προηγούμενου μήνα. Value Area Volume: 70%.',
+     'Εναλλακτικά: «Session Volume Profile HD» με περίοδο «Month», ή «Periodic Volume Profile» με περίοδο 1M.',
+     'Σημείωσε με οριζόντιες γραμμές το POC (κόκκινη), το VAH και το VAL (γκρι) και ονόμασέ τες M/POC, M/VAH, M/VAL.']],
+   ['Προσοχή',[
+     'Ο όγκος στο crypto είναι μοιρασμένος σε πολλά ανταλλακτήρια. Τα επίπεδα από ένα ανταλλακτήριο είναι προσέγγιση και διαφέρουν λίγο από πλατφόρμα σε πλατφόρμα. Βλέπε τα ως ζώνες, όχι ως ακριβείς τιμές.',
+     'Ο κανόνας «80%» του Market Profile (αν η τιμή ξαναμπεί στη Value Area και μείνει μέσα, διασχίζει όλη την περιοχή) είναι παράδοση των traders, όχι μετρημένο ποσοστό. Έλεγξέ τον στο backtest πριν τον εμπιστευτείς.',
+     'Στις αρχές του μήνα, τα επίπεδα του προηγούμενου μήνα είναι πιο σημαντικά. Προς το τέλος του, ο τρέχων μήνας έχει χτίσει δική του εικόνα.']]]},
 {id:'mfi',c:'ind',g:'Όγκου',t:'MFI',en:'Money Flow Index (14)',m:'both',lv:2,tv:'Money Flow Index',ch:{k:'ind',panel:'mfi'},
  s:'Σαν το RSI, αλλά λαμβάνει υπόψη και τον όγκο. Πάνω από 80 υπερβολική αγορά, κάτω από 20 υπερβολική πώληση.',
  b:[['Χρήση','Αποκλίσεις μεταξύ MFI και τιμής. Χρήσιμο εκεί που ο όγκος είναι αξιόπιστος, άρα λιγότερο σε μικρά altcoins.']]},
@@ -2642,6 +2681,20 @@ var E=[
     stop:['Λίγο κάτω από το χαμηλότερο των 3 τελευταίων κεριών ή κάτω από τον EMA 21, όποιο είναι πιο χαμηλά.','Αν η τιμή κλείσει καθαρά κάτω από τον EMA 21, η ιδέα ακυρώθηκε.'],
     out:['Στόχος 1,5R (το backtest της σελίδας δοκιμάζει 1,5 έως 3R και κρατά ό,τι δούλεψε καλύτερα).','Εναλλακτικά: έξοδος όταν ο EMA 9 περάσει κάτω από τον EMA 21.'],
     no:['Σε πλάγια αγορά οι δύο μέσοι μπλέκονται συνέχεια και δίνουν πολλά ψεύτικα σήματα: αν διασταυρώνονται ξανά και ξανά, μένεις έξω.','Μην μπαίνεις αν το κερί είναι ήδη πολύ μακριά από τον EMA 9 (κυνήγι).','Πρόσεξε τις προμήθειες: με κοντινό stop τρώνε μεγάλο κομμάτι του R. Δες το backtest με προμήθεια, όχι χωρίς.']}},
+{id:'s-mprange',c:'str',t:'Market Profile: επαναφορά μέσα στη Value Area',en:'Monthly Value Area · Range Bound',m:'both',lv:2,tf:'swing',tags:'M/POC, M/VAH, M/VAL, 1h-4h',ch:{k:'ind',over:['vp']},
+ s:'Όσο η τιμή μένει μέσα στη μηνιαία Value Area, η αγορά είναι σε ισορροπία: αγοράζεις στο κάτω άκρο (M/VAL) και πουλάς στο πάνω (M/VAH), με στόχο το «μαγνητικό» M/POC. Θεωρία: δες την κάρτα «Market Profile μήνα» στους Δείκτες.',
+ r:{f:['Επίπεδα του προηγούμενου μήνα: M/POC, M/VAH, M/VAL (Volume Profile Fixed Range ή Periodic Volume Profile 1M στο TradingView, ή η κάρτα «📊 Market Profile μήνα» στη σελίδα).','Γράφημα 1h ή 4h για τη σκανδάλη.'],
+    in:['Long: η τιμή φτάνει στο M/VAL (ή λίγο κάτω), αφήνει σκιά απόρριψης και το κερί κλείνει πράσινο ξανά πάνω από το M/VAL.','Short: η τιμή φτάνει στο M/VAH (ή λίγο πάνω), αφήνει σκιά απόρριψης και το κερί κλείνει κόκκινο ξανά κάτω από το M/VAH.','Χρειάζεται χώρος: το M/POC πρέπει να απέχει τουλάχιστον 1,5 φορά το ρίσκο.'],
+    stop:['Λίγο πέρα από το άκρο της Value Area και τη σκιά του κεριού απόρριψης (π.χ. 0,3 ATR).'],
+    out:['Πρώτος στόχος: M/POC (κλείσε μέρος της θέσης και μετάφερε το stop στο σημείο εισόδου).','Δεύτερος στόχος: το απέναντι άκρο της Value Area.'],
+    no:['Αν η τιμή κλείνει συνεχόμενα κεριά έξω από τη Value Area, αυτό είναι αποδοχή και όχι απόρριψη: εφαρμόζεται η στρατηγική αποδοχής.','Σε μέρες με μεγάλα νέα (FOMC, CPI), όπου τα όρια σπάνε εύκολα.','Όταν η Value Area είναι πολύ στενή σε σχέση με το ATR, γιατί δεν υπάρχει χώρος για R.']}},
+{id:'s-mpaccept',c:'str',t:'Market Profile: αποδοχή έξω από τη Value Area',en:'Monthly Value Area · Breakout / Acceptance',m:'both',lv:3,tf:'swing',tags:'M/VAH, M/VAL, αποδοχή, retest',ch:{k:'ind',over:['vp']},
+ s:'Όταν η τιμή όχι μόνο περνάει αλλά και μένει έξω από τη μηνιαία Value Area, η αγορά «αποδέχεται» νέα αξία και ξεκινά κατευθυντική κίνηση. Μπαίνεις προς την κατεύθυνση της υπέρβασης και το σπασμένο όριο γίνεται στήριξη ή αντίσταση. Θεωρία: δες την κάρτα «Market Profile μήνα» στους Δείκτες.',
+ r:{f:['Επίπεδα του προηγούμενου μήνα: M/POC, M/VAH, M/VAL.','Γράφημα 1h ή 4h.'],
+    in:['Αποδοχή πάνω: δύο συνεχόμενα κλεισίματα πάνω από το M/VAH (στο 4h είναι πιο αξιόπιστο από το 1h). Long στο δεύτερο κλείσιμο ή, πιο συντηρητικά, στην επιστροφή (retest) στο M/VAH από πάνω.','Αποδοχή κάτω: δύο συνεχόμενα κλεισίματα κάτω από το M/VAL. Short αντίστοιχα.','Επιβεβαίωση: αυξημένος όγκος στα κεριά της υπέρβασης.'],
+    stop:['Ξανά μέσα στη Value Area: λίγο κάτω από το M/VAH για long (λίγο πάνω από το M/VAL για short), τουλάχιστον 0,5 ATR.'],
+    out:['Στόχος: το πλάτος της Value Area προβαλλόμενο από το σπασμένο όριο (π.χ. VAH + (VAH − VAL)).','Ή trailing stop όσο η τιμή χτίζει νέα αξία πιο ψηλά.','Ενδιάμεσος στόχος: γυμνό POC προηγούμενων μηνών, αν υπάρχει στη διαδρομή.'],
+    no:['Μία μόνο σκιά έξω από τη Value Area δεν είναι αποδοχή, γιατί συνήθως είναι παγίδα ρευστότητας.','Αν η τιμή ξανακλείσει μέσα και κάτω από το M/POC, βγαίνεις αμέσως: η διάσπαση απέτυχε.','Μην κυνηγάς κερί που έχει ήδη απομακρυνθεί πάνω από 1 ATR από το όριο. Περίμενε το retest.']}},
 {id:'s-dca',c:'str',t:'DCA',en:'Dollar Cost Averaging',m:'both',lv:1,tf:'pos',tags:'Μακροπρόθεσμα',
  s:'Σταθερό ποσό σε σταθερά διαστήματα (π.χ. κάθε μήνα) σε ETF ή μεγάλα crypto, ανεξάρτητα από την τιμή. Δεν είναι trading, αλλά είναι η βάση με την οποία πρέπει να συγκρίνεις κάθε στρατηγική.',
  r:{in:['Σταθερό ποσό, σταθερή ημερομηνία, αυτόματα αν γίνεται.'],
@@ -4246,6 +4299,8 @@ var BT=[
   {id:'sp',mid:'s-spring',t:'Wyckoff spring',rule:'Range 40 κεριών χωρίς τάση (ADX κάτω από 25). Long: το κερί σπάει κάτω από τη στήριξη του range και κλείνει πράσινο ξανά μέσα. Stop: κάτω από τη σκιά. Short (upthrust): το αντίθετο στο πάνω άκρο.'},
   {id:'tf',mid:'s-trend',t:'Trend following με trailing stop',rule:'Long: κλείσιμο πάνω από το υψηλό 20 κεριών με EMA 50 πάνω από EMA 200. Αρχικό stop 2 ATR. Έξοδος με chandelier: κλείσιμο κάτω από (υψηλότερο κλείσιμο από την είσοδο − 3 ATR). Χωρίς σταθερό στόχο.'},
   {id:'sc',mid:'s-scalp',t:'Scalping EMA 9/21 + VWAP',rule:'Μόνο σε timeframe έως 15 λεπτά. Long: ο EMA 9 περνάει πάνω από τον EMA 21 με τιμή πάνω από το VWAP ημέρας. Stop: 1 ATR.'},
+  {id:'mv',mid:'s-mprange',t:'Market Profile: επαναφορά στη Value Area',rule:'Επίπεδα του προηγούμενου μήνα (M/POC, M/VAH, M/VAL, 70% του όγκου). Long: το κερί αγγίζει το M/VAL, κλείνει πράσινο ξανά πάνω του και κάτω από το M/POC. Stop: 0,3 ATR κάτω από το χαμηλότερο (σκιά ή VAL). Short: το αντίθετο στο M/VAH.'},
+  {id:'mk',mid:'s-mpaccept',t:'Market Profile: αποδοχή έξω από τη Value Area',rule:'Επίπεδα του προηγούμενου μήνα. Long: δύο συνεχόμενα κλεισίματα πάνω από το M/VAH, ενώ το κερί πριν ήταν ακόμα μέσα (πρώτη αποδοχή). Stop: 0,5 ATR κάτω από το M/VAH (ξανά μέσα στη Value Area). Short: δύο κλεισίματα κάτω από το M/VAL.'},
   {id:'e9',mid:'s-ema921',t:'Scalping EMA 9/21 (pullback)',rule:'Τάση: ο EMA 9 είναι πάνω από τον EMA 21 τα τελευταία 3 κεριά και ο EMA 21 ανεβαίνει. Είσοδος long: η τιμή γυρίζει πίσω και αγγίζει τον EMA 9 (χωρίς να βουτήξει πάνω από μισό ATR κάτω από τον EMA 21) και το κερί κλείνει πράσινο πάνω από τον EMA 9. Stop: κάτω από το χαμηλότερο των 3 κεριών ή τον EMA 21 (όποιο είναι πιο κάτω). Short: το αντίθετο.'}
 ];
 var BT_NO=[['s-gapgo','Gap and Go','χρειάζεται δεδομένα pre-market μετοχών'],['s-pead','Momentum μετά από αποτελέσματα','χρειάζεται ημερομηνίες αποτελεσμάτων'],['s-rs','Σχετική δύναμη & rotation','χρειάζεται πολλά σύμβολα ταυτόχρονα'],['s-dca','DCA','δεν έχει είσοδο/έξοδο: είναι τακτικές αγορές'],['s-grid','Grid trading','πολλές εντολές ταυτόχρονα'],['s-basis','Funding & basis trade','χρειάζεται funding και τιμές futures'],['s-pairs','Pairs trading','χρειάζεται δύο σύμβολα'],['s-news','Συναλλαγές γύρω από ειδήσεις','χρειάζεται οικονομικό ημερολόγιο']];
@@ -4272,6 +4327,8 @@ function btInd0(b){
   I.vwap=new Array(N).fill(NaN);I.orH=new Array(N).fill(NaN);I.orL=new Array(N).fill(NaN);I.dayStart=new Array(N).fill(0);var pv=0,vv=0,cd=-1,ds=0,oh=-Infinity,ol=Infinity;
   for(var k2=0;k2<N;k2++){var day=Math.floor(b[k2].t/864e5);if(day!==cd){cd=day;pv=0;vv=0;ds=k2;oh=-Infinity;ol=Infinity}var tp=(H[k2]+L[k2]+C[k2])/3,vol=isFinite(V[k2])&&V[k2]>0?V[k2]:1;pv+=tp*vol;vv+=vol;I.vwap[k2]=pv/vv;I.dayStart[k2]=ds;
     if(b[k2].t-day*864e5<36e5){oh=Math.max(oh,H[k2]);ol=Math.min(ol,L[k2])}else{I.orH[k2]=oh;I.orL[k2]=ol}}
+  /* μηνιαίος Market Profile: επίπεδα του ΠΡΟΗΓΟΥΜΕΝΟΥ μήνα για κάθε κερί */
+  var MP=mprofLevels(b,I.int);I.mpoc=MP.poc;I.mvah=MP.vah;I.mval=MP.val;
   /* ichimoku */
   var mid=function(f,t){return (hhv(b,f,t)+llv(b,f,t))/2};I.tk=new Array(N).fill(NaN);I.kj=new Array(N).fill(NaN);I.sa=new Array(N).fill(NaN);I.sb=new Array(N).fill(NaN);
   for(var k3=0;k3<N;k3++){if(k3>=8)I.tk[k3]=mid(k3-8,k3);if(k3>=25)I.kj[k3]=mid(k3-25,k3);if(k3>=51+26){var j=k3-26;I.sa[k3]=(mid(j-8,j)+mid(j-25,j))/2;I.sb[k3]=mid(j-51,j)}}
@@ -4279,6 +4336,16 @@ function btInd0(b){
   I.pl=[];I.ph=[];for(var k4=2;k4<N-2;k4++){if(L[k4]<L[k4-1]&&L[k4]<L[k4-2]&&L[k4]<=L[k4+1]&&L[k4]<=L[k4+2])I.pl.push(k4);if(H[k4]>H[k4-1]&&H[k4]>H[k4-2]&&H[k4]>=H[k4+1]&&H[k4]>=H[k4+2])I.ph.push(k4)}
   return I;
 }
+function mprofOne(L,bins){var lo=Infinity,hi=-Infinity;L.forEach(function(x){lo=Math.min(lo,x.l);hi=Math.max(hi,x.h)});if(!(hi>lo))return null;bins=bins||120;var w=(hi-lo)/bins,V=new Array(bins).fill(0),useV=L.filter(function(x){return isFinite(x.v)&&x.v>0}).length>L.length*0.8;
+  L.forEach(function(x){var a=Math.max(0,Math.min(bins-1,Math.floor((x.l-lo)/w))),z=Math.max(0,Math.min(bins-1,Math.floor((x.h-lo)/w))),vol=useV?(isFinite(x.v)&&x.v>0?x.v:0):1,per=vol/(z-a+1);for(var k=a;k<=z;k++)V[k]+=per});
+  var tot=V.reduce(function(s,v){return s+v},0),pi=0;for(var k=1;k<bins;k++)if(V[k]>V[pi])pi=k;var lo2=pi,hi2=pi,acc=V[pi];
+  while(acc<tot*0.7&&(lo2>0||hi2<bins-1)){var up=hi2<bins-1?V[hi2+1]:-1,dn=lo2>0?V[lo2-1]:-1;if(up>=dn){hi2++;acc+=V[hi2]}else{lo2--;acc+=V[lo2]}}
+  return {poc:lo+(pi+0.5)*w,vah:lo+(hi2+1)*w,val:lo+lo2*w,hi:hi,lo:lo,vol:useV}}
+function mprofMk(t){var d=new Date(t);return d.getUTCFullYear()*12+d.getUTCMonth()}
+function mprofLevels(b,int){var N=b.length,poc=new Array(N).fill(NaN),vah=new Array(N).fill(NaN),val=new Array(N).fill(NaN);if(!N)return {poc:poc,vah:vah,val:val};int=int||36e5;
+  var G={},order=[];for(var i=0;i<N;i++){var k=mprofMk(b[i].t);if(!G[k]){G[k]=[];order.push(k)}G[k].push(i)}var P={};
+  order.forEach(function(k){var ix=G[k],days=new Date(Date.UTC(Math.floor(k/12),k%12+1,0)).getUTCDate();if(ix.length<0.6*days*864e5/int)return;P[k]=mprofOne(ix.map(function(j){return b[j]}))});
+  order.forEach(function(k){var p=P[k-1];if(!p)return;G[k].forEach(function(j){poc[j]=p.poc;vah[j]=p.vah;val[j]=p.val})});return {poc:poc,vah:vah,val:val}}
 function hhv(a,f,t){var m=-Infinity;for(var i=f;i<=t;i++)m=Math.max(m,a[i].h);return m}
 function llv(a,f,t){var m=Infinity;for(var i=f;i<=t;i++)m=Math.min(m,a[i].l);return m}
 function btSignal(id,b,I,i,d){
@@ -4319,6 +4386,12 @@ function btSignal(id,b,I,i,d){
   if(id==='ib'){var mo=b[i-2],ins=b[i-1];if(!(ins.h<mo.h&&ins.l>mo.l))return null;if(d>0&&c>I.e50[i]&&c>mo.h)return fix(mo.l);if(d<0&&c<I.e50[i]&&c<mo.l)return fix(mo.h);return null}
   if(id==='sp'){if(i<41||!(I.adx[i]<25))return null;var srh=hhv(b,i-40,i-1),srl=llv(b,i-40,i-1);if(!(srh>srl))return null;if(d>0&&x.l<srl&&c>srl&&c>x.o)return fix(x.l-0.2*atr);if(d<0&&x.h>srh&&c<srh&&c<x.o)return fix(x.h+0.2*atr);return null}
   if(id==='tf'){if(!isFinite(I.e200[i]))return null;if(d>0&&I.e50[i]>I.e200[i]&&c>hhv(b,i-20,i-1))return c-2*atr;if(d<0&&I.e50[i]<I.e200[i]&&c<llv(b,i-20,i-1))return c+2*atr;return null}
+  if(id==='mv'){var P0=I.mpoc[i],H0=I.mvah[i],L0=I.mval[i];if(!isFinite(P0)||!(H0-L0>2*atr))return null;
+    if(d>0&&x.l<=L0+0.1*atr&&c>L0&&c>x.o&&c<P0)return fix(Math.min(x.l,L0)-0.3*atr);
+    if(d<0&&x.h>=H0-0.1*atr&&c<H0&&c<x.o&&c>P0)return fix(Math.max(x.h,H0)+0.3*atr);return null}
+  if(id==='mk'){var H1=I.mvah[i],L1=I.mval[i];if(!isFinite(H1)||!isFinite(I.mvah[i-2])||I.mvah[i-2]!==H1)return null;
+    if(d>0&&c>H1&&b[i-1].c>H1&&b[i-2].c<=H1&&c-H1<1.5*atr)return fix(H1-0.5*atr);
+    if(d<0&&c<L1&&b[i-1].c<L1&&b[i-2].c>=L1&&L1-c<1.5*atr)return fix(L1+0.5*atr);return null}
   if(id==='e9'){if(i<25)return null;var a9=I.e9,a21=I.e21;for(var q9=0;q9<3;q9++){if(!((a9[i-q9]-a21[i-q9])*d>0))return null}if(!((a21[i]-a21[i-3])*d>0))return null;
     if(d>0){if(Math.min(x.l,b[i-1].l)>a9[i]||x.l<a21[i]-0.5*atr)return null;if(c>x.o&&c>a9[i])return fix(Math.min(llv(b,i-2,i),a21[i])-0.2*atr);return null}
     if(Math.max(x.h,b[i-1].h)<a9[i]||x.h>a21[i]+0.5*atr)return null;if(c<x.o&&c<a9[i])return fix(Math.max(hhv(b,i-2,i),a21[i])+0.2*atr);return null}
@@ -4355,7 +4428,7 @@ function runBt(bars,id,dirs,target,fee,from,to){
   return out;
 }
 /* ---- 🧪 Δοκιμή της «Scalping EMA 9/21» σε όλο το αρχείο κεριών, για όλα τα νομίσματα ---- */
-var E9={busy:false,res:null,sub:null};window.__E9={E9:function(){return E9},study:function(){return e9Study()},apf:function(){return APF}};
+var E9={busy:false,res:null,sub:null};window.__E9={bt:function(sym,id){return histBars(sym,'1h',365).then(function(r){var b=r.bars,I=btInd(b),k=b.length-1,st=stats(runBt(b,id,[1,-1],2,0.1));return {n:b.length,trades:st.n,avg:st.avgR,poc:I.mpoc[k],vah:I.mvah[k],val:I.mval[k],px:b[k].c,filled:I.mpoc.filter(isFinite).length}})},mp:function(){mpRun()},mpRows:function(){return MPL.rows},E9:function(){return E9},study:function(){return e9Study()},apf:function(){return APF}};
 function e9Study(){if(E9.busy||!S.db)return Promise.resolve();E9.busy=true;e9Render();var coins=TOP10.slice(),jobs=[],rows=[];
   coins.forEach(function(c){['1h','15m'].forEach(function(tf){jobs.push([c,tf])})});
   var chain=Promise.resolve();jobs.forEach(function(j){chain=chain.then(function(){return histBars(j[0]+'USDT',j[1],j[1]==='15m'?90:365).then(function(r){var ms=j[1]==='15m'?9e5:36e5,b=(r.bars||[]).filter(function(x){return !x.approx&&x.t+ms<=Date.now()+60000});
@@ -4368,7 +4441,7 @@ function e9Study(){if(E9.busy||!S.db)return Promise.resolve();E9.busy=true;e9Ren
   return chain.then(function(){var doc={at:Date.now(),by:S.uid||'',v:APP_VER,fee:0.1,rows:rows};E9.res=doc;E9.busy=false;e9Render();return put('btlab','ema921',doc).catch(function(){})}).catch(function(){E9.busy=false;e9Render()})}
 function e9Sub(){if(!S.db||E9.sub)return;try{E9.sub=S.db.collection('btlab').doc('ema921').onSnapshot(function(sn){if(sn.exists){E9.res=JSON.parse(JSON.stringify(sn.data()));e9Render()}},function(){})}catch(e){}}
 function e9Auto(){if(!S.db)return;e9Sub();var tries=0;(function go(){if(!ARC.idx&&tries++<20){setTimeout(go,3000);return}var mine='';try{mine=store('tj-e9run')}catch(e){}
-    var old=!E9.res||E9.res.v!==APP_VER||Date.now()-E9.res.at>24*36e5;if(old&&mine!==String(APP_VER)+lday(new Date())){try{store('tj-e9run',String(APP_VER)+lday(new Date()))}catch(e){}e9Study()}})()}
+    var old=!E9.res||E9.res.v!==APP_VER||Date.now()-E9.res.at>24*36e5;try{mpRun()}catch(e){}if(old&&mine!==String(APP_VER)+lday(new Date())){try{store('tj-e9run',String(APP_VER)+lday(new Date()))}catch(e){}e9Study()}})()}
 function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<p class="muted">⏳ Τρέχει η δοκιμή σε όλο το αρχείο κεριών…</p>';return}var D=E9.res;
   if(!D){el.innerHTML='<p class="muted">Δεν έχει τρέξει ακόμα. <button class="btn sm" data-e9run>▶ Τρέξε τη δοκιμή</button></p>';return}
   var R=D.rows.filter(function(r){return !r.skip}),tot={n:0,t:0,w:0,pb:0,pbn:0,nf:0};R.forEach(function(r){var x=r.x15;tot.n+=x.n;tot.t+=x.tot;tot.w+=x.w*x.n;tot.pb+=r.pb.tot;tot.pbn+=r.pb.n;tot.nf+=r.nofee*x.n});
@@ -4378,6 +4451,22 @@ function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<
    '<div class="tblwrap"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>TF</th><th>Κεριά</th><th>Συναλλ.</th><th>Επιτυχία</th><th>Μέσο R 1,5R</th><th>Μέσο R 2R</th><th>Μέσο R 3R</th><th>Σύνολο 1,5R</th><th>Long / Short</th></tr></thead><tbody>'+
    R.map(function(r){var x=r.x15;
      return '<tr><td>'+esc(r.coin)+'</td><td>'+esc(r.tf)+'</td><td>'+fmt(r.bars,0)+'</td><td>'+x.n+'</td><td>'+fmt(100*x.w,0)+'%</td><td>'+tr(x.avg)+'</td><td>'+tr(r.x20.avg)+'</td><td>'+tr(r.x30.avg)+'</td><td>'+tr(x.tot)+'</td><td>'+tr(x.tl)+' / '+tr(x.ts)+'</td></tr>'}).join('')+'</tbody></table></div>'+(function(){var sk=D.rows.filter(function(r){return r.skip}).map(function(r){return r.coin+' '+r.tf});return sk.length?'<p class="muted" style="font-size:.8rem">Χωρίς αρκετά κεριά ακόμα (θέλει 300+): '+esc(sk.join(', '))+'</p>':''})()}
+var MPL={busy:false,rows:null};
+function mpRun(){if(MPL.busy)return;MPL.busy=true;var el=$('#mpOut');if(el)el.innerHTML='<p class="muted">⏳ Υπολογίζω από τα κεριά 1 ώρας του αρχείου…</p>';var rows=[],chain=Promise.resolve();
+  TOP10.forEach(function(c){chain=chain.then(function(){return histBars(c+'USDT','1h',75).then(function(r){var b=(r.bars||[]).filter(function(x){return !x.approx});if(!b.length){rows.push({coin:c});return}
+      var cur=mprofMk(Date.now()),prev=b.filter(function(x){return mprofMk(x.t)===cur-1}),now=b.filter(function(x){return mprofMk(x.t)===cur}),last=b[b.length-1];
+      var days=new Date(Date.UTC(Math.floor((cur-1)/12),(cur-1)%12+1,0)).getUTCDate(),cov=prev.length/(days*24);if(cov<0.6){rows.push({coin:c,cov:cov});return}
+      var P=mprofOne(prev),Q=now.length>=24?mprofOne(now):null,px=last.c;rows.push({coin:c,P:P,Q:Q,px:px,cov:cov,age:(Date.now()-last.t)/36e5})}).catch(function(){rows.push({coin:c})})})});
+  chain.then(function(){MPL.rows=rows;MPL.at=Date.now();MPL.busy=false;mpRender()})}
+function mpRender(){var el=$('#mpOut');if(!el||!MPL.rows)return;var fp=function(v){return isFinite(v)?fmtPx(v):'–'};
+  var pos=function(r){var P=r.P,x=r.px;if(x>P.vah)return '<span class="pill pos">πάνω από τη Value Area</span>';if(x<P.val)return '<span class="pill neg">κάτω από τη Value Area</span>';return '<span class="pill">μέσα · '+(x>P.poc?'πάνω':'κάτω')+' από POC</span>'};
+  var idea=function(r){var P=r.P,x=r.px,w=P.vah-P.val,near=0.15*w;if(x>P.vah)return 'Έλεγξε για αποδοχή: 2 κλεισίματα 4h πάνω από το M/VAH ή retest του από πάνω.';if(x<P.val)return 'Έλεγξε για αποδοχή προς τα κάτω ή επιστροφή μέσα (κλείσιμο ξανά πάνω από το M/VAL).';if(x-P.val<near)return 'Κοντά στο M/VAL: περίμενε κερί απόρριψης για long με στόχο το M/POC.';if(P.vah-x<near)return 'Κοντά στο M/VAH: περίμενε κερί απόρριψης για short με στόχο το M/POC.';return 'Στη μέση της Value Area: χωρίς πλεονέκτημα, περίμενε τα άκρα.'};
+  el.innerHTML='<p class="muted" style="margin:.2rem 0 .5rem">Επίπεδα του προηγούμενου μήνα (70% του όγκου) από τα κεριά 1 ώρας του αρχείου μας. Είναι ζώνες, όχι ακριβείς τιμές: σε άλλο ανταλλακτήριο διαφέρουν λίγο. <button class="btn sm" data-mprun>↻ Ξανά</button></p>'+
+   '<div class="tblwrap"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>Τιμή</th><th>M/VAH</th><th>M/POC</th><th>M/VAL</th><th>Θέση</th><th>Τι να κοιτάξεις</th><th>Τρέχων μήνας POC</th></tr></thead><tbody>'+
+   MPL.rows.map(function(r){if(!r.P)return '<tr class="muted"><td>'+esc(r.coin)+'</td><td colspan="7">'+(r.cov!=null?'λίγα κεριά του προηγούμενου μήνα ('+Math.round(r.cov*100)+'%)· συμπλήρωσε το 1 ώρα στο Αρχείο κεριών':'δεν υπάρχουν κεριά στο αρχείο')+'</td></tr>';
+     return '<tr><td><b>'+esc(r.coin)+'</b>'+(r.age>3?' <span class="warn" title="παλιά κεριά">⚠️</span>':'')+'</td><td>'+fp(r.px)+'</td><td>'+fp(r.P.vah)+'</td><td><b>'+fp(r.P.poc)+'</b></td><td>'+fp(r.P.val)+'</td><td>'+pos(r)+'</td><td style="font-size:.8rem">'+esc(idea(r))+'</td><td class="muted">'+(r.Q?fp(r.Q.poc):'–')+'</td></tr>'}).join('')+'</tbody></table></div>'+
+   '<p class="muted" style="font-size:.8rem">Θεωρία και κανόνες: Μπούσουλας → Δείκτες → «Market Profile μήνα», και στις Στρατηγικές οι δύο κάρτες «Market Profile: …».</p>'}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-mprun]'))mpRun()});
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-e9run]')){try{store('tj-e9run','')}catch(x){}e9Study()}});
 function btCur(){return BT.find(function(s){return s.id===$('#bt-strat').value})||BT[0]}
 function renderBtInfo(){
@@ -4429,7 +4518,7 @@ function doBt(){
 
 /* ----- 4. suggestion for now ----- */
 var NOW={last:null},nowCtl=null;
-var FIT={pb:'trend',mx:'trend',dc:'trend',bo:'trend',rv:'range',sq:'squeeze',rt:'trend',dv:'range',vw:'trend',or:'trend',ic:'trend',fc:'trend',sw:'range',r2:'trend',ib:'trend',sp:'range',tf:'trend',sc:'trend',e9:'trend'};
+var FIT={pb:'trend',mx:'trend',dc:'trend',bo:'trend',rv:'range',sq:'squeeze',rt:'trend',dv:'range',vw:'trend',or:'trend',ic:'trend',fc:'trend',sw:'range',r2:'trend',ib:'trend',sp:'range',tf:'trend',sc:'trend',e9:'trend',mv:'range',mk:'trend'};
 function regime(b,I){
   var i=b.length-1,c=b[i].c,e20=I.e20[i],e50=I.e50[i],adx=I.adx[i],atr=I.atr[i],rsi=I.rsi[i];
   var sl=isFinite(I.e50[i-10])?(e50-I.e50[i-10])/atr:0;
@@ -6627,7 +6716,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=188,VERS={sub:null,t:null};
+var APP_VER=189,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7569,14 +7658,15 @@ function apfPresets(base){var b=apfSnap(Object.assign({},AP_DEF,base||{}));var m
   {id:'p_trend',name:'🏄 Ακολουθία τάσης',desc:'Μόνο στρατηγικές τάσης, με trailing stop μετά από +1R για να «τρέχουν» τα κέρδη, όπως τα trend bots και το trailing του Freqtrade/3Commas.',cfg:mk({strats:'trend',mgmt:'trail',minEdge:0.1,pMtf:true,pBtc:true})},
   {id:'p_range',name:'↔️ Εύρος (grid-style)',desc:'Μόνο στρατηγικές επαναφοράς σε πλάγια αγορά: η ιδέα των grid bots (Pionex, Bitsgap), αλλά πάντα με stop, που είναι η μεγάλη αδυναμία των grid.',cfg:mk({strats:'range',mgmt:'none',pMtf:false,minEdge:0.1})},
   {id:'p_aggr',name:'⚡ Επιθετικό',desc:'Περισσότερες θέσεις και ρίσκο 2%, όλες οι ώρες, χαμηλότερο όριο πλεονεκτήματος. Για σύγκριση: δείχνει τι κοστίζει η χαλαρή πειθαρχία.',cfg:mk({size:'risk',riskPct:2,maxOpen:5,maxDay:10,minEdge:0.05,sess:'all',mgmt:'trail',pCool:false,pCorr:false})},
+  {id:'p_mprof',name:'📊 Market Profile μήνα',desc:'Παίζει μόνο τις δύο στρατηγικές του μηνιαίου Market Profile: επαναφορά από τα όρια της Value Area προς το M/POC, και αποδοχή έξω από τη Value Area. Stop στο break-even μετά από +1R. Ανοίγει θέση μόνο αν η στρατηγική έχει δείξει πλεονέκτημα στο αρχείο κεριών του νομίσματος.',cfg:mk({strats:'pick',pick:'mv,mk',mgmt:'be',minEdge:0.1})},
   {id:'p_ema921',name:'⚡ Scalping EMA 9/21',desc:'Παίζει μόνο τη στρατηγική «Scalping EMA 9/21»: μπαίνει στις επιστροφές της τιμής στον EMA 9 όταν ο EMA 9 είναι πάνω (ή κάτω) από τον EMA 21. Stop στο break-even μετά από +1R. Ανοίγει θέση μόνο αν η στρατηγική έχει δείξει πλεονέκτημα στο αρχείο κεριών του νομίσματος.',cfg:mk({strats:'pick',pick:'e9',mgmt:'be',minEdge:0.1})}]}
 function apfSub(){if(!S.db||APF.sub)return;try{APF.sub=S.db.collection('approfiles').onSnapshot(function(sn){APF.list=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});APF.loaded=true;apfSeed();apfSeedE9();apfRender()},function(){})}catch(e){}}
 function apfSeed(){if(APF.seeded||!APF.loaded||APF.list.length||!AP.cfg||!qCanSave())return;APF.seeded=true;var now=Date.now(),cur=apfSnap(AP.cfg);
   var L=[{id:'p_start',name:'📌 Αρχικό',desc:'Οι ρυθμίσεις με τις οποίες δούλευε ο Αυτόματος Καθηγητής μέχρι σήμερα. Οι αυτόματες συναλλαγές από πριν τα προφίλ μετράνε εδώ.',cfg:cur}].concat(apfPresets(AP.cfg));
   L.forEach(function(p,ix){var d={name:p.name,desc:p.desc,cfg:p.cfg,start:10000,run:true,by:S.uid,at:now+ix,builtin:p.id!=='p_start',hist:[]};APF.list.push(Object.assign({id:p.id},d));put('approfiles',p.id,d).catch(function(){})});
   if(!(AP.state&&AP.state.profile))apStWrite({profile:'p_start'})}
-function apfSeedE9(){if(APF.e9s||!APF.loaded||!APF.list.length||apfGet('p_ema921')||!AP.cfg||!qCanSave())return;APF.e9s=true;var p=apfPresets(AP.cfg).find(function(x){return x.id==='p_ema921'});if(!p)return;
-  var d={name:p.name,desc:p.desc,cfg:p.cfg,start:10000,run:true,by:S.uid,at:Date.now(),builtin:true,hist:[]};APF.list.push(Object.assign({id:p.id},d));put('approfiles',p.id,d).catch(function(){})}
+function apfSeedE9(){if(!APF.loaded||!APF.list.length||!AP.cfg||!qCanSave())return;APF.e9s=APF.e9s||{};['p_ema921','p_mprof'].forEach(function(id){if(APF.e9s[id]||apfGet(id))return;APF.e9s[id]=1;var p=apfPresets(AP.cfg).find(function(x){return x.id===id});if(!p)return;
+  var d={name:p.name,desc:p.desc,cfg:p.cfg,start:10000,run:true,by:S.uid,at:Date.now(),builtin:true,hist:[]};APF.list.push(Object.assign({id:p.id},d));put('approfiles',p.id,d).catch(function(){})})}
 function apfGet(id){return APF.list.find(function(p){return p.id===id})||null}
 function apfActive(){var id=AP.state&&AP.state.profile;return apfGet(id)||(!id&&APF.list.length?(apfGet('p_start')||APF.list[0]):null)}
 function apfOff(t){if(t.src!=='auto'||typeof APF==='undefined'||!APF||!APF.list.length)return false;var p=apfGet(apfTagId(t));return !!(p&&p.run===false)}
@@ -7627,7 +7717,7 @@ function apCoinChips(sel,attr,ro){var top=apTop10(),extra=sel.filter(function(c)
     return '<label class="apcc'+(on?' on':'')+'"><input type="checkbox" '+attr+'="'+c+'"'+(on?' checked':'')+(ro?' disabled':'')+'>'+symIcon(c,26)+'<span class="apcn"><b>'+c+(AP.noData&&AP.noData[c]?' <span class="apcw" title="Ο Αυτόματος δεν μπορεί ακόμα να το ελέγξει: '+esc(AP.noData[c])+'">⚠️</span>':'')+'</b><small>'+(AP.noData&&AP.noData[c]?esc(AP.noData[c]):(i<top.length?'#'+(i+1)+' · ':'')+esc((m&&m.name)||CNAME[c]||c))+'</small></span>'+(isFinite(px)&&px>0?'<span class="apcp"><span class="num">'+fmtPx(px)+'</span>'+(isFinite(ch)?'<small class="num '+cls(ch)+'">'+(ch>0?'+':'')+fmt(ch,2)+'%</small>':'')+'</span>':'')+'</label>'}).join('')}
 function apCoinPick(){var el=$('#apCoinPick');if(!el||!AP.cfg)return;var sel=apCoins(),ro=!qCanSave();el.innerHTML=apCoinChips(sel,'data-apcoin',ro)+'<div class="apcoinf"><span class="muted">'+sel.length+' επιλεγμένα · κάθε νόμισμα προσθέτει χρόνο στη σάρωση</span>'+(ro?'':'<span class="row" style="gap:.3rem"><button type="button" class="btn small" data-apcall="top">Όλα τα 10</button><button type="button" class="btn small" data-apcall="top5">Τα 5 πρώτα</button></span>')+'</div>'}
 /* 🧬 Δημιουργός προφίλ: όλες οι ρυθμίσεις των επαγγελματικών bots + βοηθός που προτείνει ρυθμίσεις από backtest, αγορά και αποτελέσματα της ομάδας */
-var APB_PRE=[['cur','Τις τρέχουσες ρυθμίσεις'],['def','Προεπιλογές'],['p_cons','🛡️ Συντηρητικό'],['p_trend','🏄 Ακολουθία τάσης'],['p_range','↔️ Εύρος'],['p_aggr','⚡ Επιθετικό'],['p_ema921','⚡ Scalping EMA 9/21']];
+var APB_PRE=[['cur','Τις τρέχουσες ρυθμίσεις'],['def','Προεπιλογές'],['p_cons','🛡️ Συντηρητικό'],['p_trend','🏄 Ακολουθία τάσης'],['p_range','↔️ Εύρος'],['p_aggr','⚡ Επιθετικό'],['p_ema921','⚡ Scalping EMA 9/21'],['p_mprof','📊 Market Profile μήνα']];
 function apbD(){return APF.draft||(APF.draft={name:'',desc:'',start:10000,cfg:apfSnap(AP.cfg)})}
 function apbCoinsOf(c){return String(c.coins||'').toUpperCase().split(/[\s,;]+/).filter(Boolean)}
 function apbHtml(){var D=apbD(),c=Object.assign({},AP_DEF,D.cfg),A=APF.adv||{},coins=apbCoinsOf(c),allC={};apTop10().concat(coins).forEach(function(x){allC[x]=1});
@@ -7960,7 +8050,7 @@ function agMarket(prog){var coins=agCoins(),out=[],i=0;
     deepBars(coin+'USDT','1h',240).then(function(r){var ms=36e5,b=r.bars.filter(function(x){return !x.approx&&x.t+ms<=Date.now()+60000});
       if(b.length<300){out.push({coin:coin,error:'only '+b.length+' candles'});return}
       var ev=nowEval(b,{fee:0.1,sym:coin+'USDT'}),g=ev.g,age=(Date.now()-(b[b.length-1].t+ms))/36e5;
-      out.push({coin:coin,bars:b.length,from:lday(new Date(b[0].t)),lastCandleHoursAgo:agN(age,1),price:g.c,regime:g.kind,trendDir:g.dir,adx:agN(g.adx,0),rsi:agN(g.rsi,0),atrPct:agN(g.atrPct),
+      out.push({coin:coin,bars:b.length,from:lday(new Date(b[0].t)),lastCandleHoursAgo:agN(age,1),price:g.c,regime:g.kind,trendDir:g.dir,adx:agN(g.adx,0),rsi:agN(g.rsi,0),atrPct:agN(g.atrPct),marketProfilePrevMonth:(function(){var I=ev.I,j=b.length-1;return isFinite(I.mpoc[j])?{M_POC:I.mpoc[j],M_VAH:I.mvah[j],M_VAL:I.mval[j],pricePosition:g.c>I.mvah[j]?'above value area':g.c<I.mval[j]?'below value area':g.c>I.mpoc[j]?'inside, above POC':'inside, below POC'}:null})(),
         strategies:ev.cands.slice().sort(function(a,c){return c.score-a.score}).map(agStratRow)})}).catch(function(e){out.push({coin:coin,error:(e&&e.code)||'no data'})}).then(function(){setTimeout(step,60)})};step()})}
 function agAgg(mk){var m={};mk.forEach(function(x){(x.strategies||[]).forEach(function(s){var k=s.id+'|'+s.dir,a=m[k]=m[k]||{id:s.id,name:s.name,dir:s.dir,coins:0,posTest:0,rel:0,sumTest:0,nTest:0,trades:0};a.coins++;a.trades+=s.n;if(s.reliable)a.rel++;if(s.reliable&&s.testAvgR>0)a.posTest++;if(isFinite(s.testAvgR)&&s.testN>=5){a.sumTest+=s.testAvgR;a.nTest++}})});
   return Object.keys(m).map(function(k){var a=m[k];return {id:a.id,name:a.name,dir:a.dir,coinsTested:a.coins,coinsReliable:a.rel,coinsPositiveOnUnseen:a.posTest,avgUnseenR:a.nTest?agN(a.sumTest/a.nTest):null,totalTrades:a.trades}}).sort(function(a,b){return (b.avgUnseenR||-9)-(a.avgUnseenR||-9)})}
