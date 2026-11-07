@@ -1596,7 +1596,7 @@ section[data-panel=today]{gap:1rem}
 .cnst{font-size:.72rem;font-weight:700;border-radius:999px;padding:.1rem .55rem;background:var(--surface);border:1px solid var(--line)}.cnst.pending{color:var(--warn)}.cnst.approved{color:var(--accent)}.cnst.done{color:var(--gain)}.cnst.rejected,.cnst.failed{color:var(--loss)}
 .cnbtn{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.2rem}
 .cnform{margin-top:.7rem;display:flex;flex-direction:column;gap:.45rem}.cnform textarea{width:100%;resize:vertical;min-height:3.2rem}
-.cnact{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.cnact .cnchk{display:flex!important;flex-direction:row!important;gap:.35rem;align-items:center;font-size:.8rem;color:var(--muted);margin-right:auto;white-space:nowrap}.cnact .cnchk input{width:auto!important;margin:0}
+.cnact{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}.cnact .cnchk{display:flex!important;flex-direction:row!important;gap:.35rem;align-items:center;font-size:.8rem;color:var(--muted);white-space:nowrap}.cnask{margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap}.cnask .linkbtn{font-size:.8rem}.cnwait{font-size:.76rem;color:#d97757}.cnact .cnchk input{width:auto!important;margin:0}
 .cnthink{font-size:.82rem;color:var(--muted);font-style:italic}
 </style>
 
@@ -2061,7 +2061,7 @@ section[data-panel=today]{gap:1rem}
 <p class="muted cnintro">Εσύ, ο Καθηγητής και ο Claude σε μία συζήτηση. Ο Καθηγητής φέρνει παρατηρήσεις από τα νούμερα, ο Claude περνάει κάθε βράδυ, τις ελέγχει με backtest και υλοποιεί <b>μόνο ό,τι εγκρίνεις εσύ</b> εδώ.</p>
 <div class="cnfil" role="group" aria-label="Φίλτρο"><button type="button" data-cnf="all" class="on">Όλα</button><button type="button" data-cnf="pend">⏳ Περιμένουν έγκριση <b id="cnPendN"></b></button><button type="button" data-cnf="done">✅ Έγιναν</button></div>
 <div id="cnList" class="cnlist" aria-live="polite"></div>
-<form id="cnForm" class="cnform" autocomplete="off"><textarea id="cnText" rows="2" maxlength="2000" placeholder="Γράψε μια ιδέα, ερώτηση ή οδηγία… π.χ. «Γιατί χάνει η VWAP τα Σαββατοκύριακα;»"></textarea><div class="cnact"><label class="cnchk"><input type="checkbox" id="cnProfOn" checked> να απαντήσει ο Καθηγητής</label><button type="button" class="btn small" id="cnObs">🧑‍🏫 Φέρε παρατηρήσεις</button><button type="submit" class="btn small primary">Στείλε</button></div></form></div>
+<form id="cnForm" class="cnform" autocomplete="off"><textarea id="cnText" rows="2" maxlength="2000" placeholder="Γράψε μια ιδέα, ερώτηση ή οδηγία… π.χ. «Γιατί χάνει η VWAP τα Σαββατοκύριακα;»"></textarea><div class="cnact"><label class="cnchk"><input type="checkbox" id="cnProfOn" checked> να απαντήσει ο Καθηγητής</label><label class="cnchk" style="margin-right:auto"><input type="checkbox" id="cnClOn"> να απαντήσει ο Claude</label><button type="button" class="btn small" id="cnObs">🧑‍🏫 Φέρε παρατηρήσεις</button><button type="submit" class="btn small primary">Στείλε</button></div></form></div>
     
       <details class="card dmman c3d" id="dmManCard"><summary>➕ Νέα χειροκίνητη demo συναλλαγή</summary><p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Μπαίνει στον ίδιο λογαριασμό του Καθηγητή, με το όνομά σου.</p>
       <form id="dmForm" novalidate style="margin-top:.6rem">
