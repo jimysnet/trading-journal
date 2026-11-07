@@ -1471,6 +1471,10 @@ body.station *{animation:none!important;transition:none!important}
 @keyframes prpop{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
 .prof-svg.pph.cut.cheer .prig,.prof-svg.pph.cut.happy .prig{animation:prjump .5s ease-out 1!important}.prof-svg.pph.cut.wow .prig{animation:prpop .45s ease-out!important}
 @media (prefers-reduced-motion:reduce){.prof-svg.pph.cut .prig{animation:none!important}}
+.funagain{position:absolute;right:144px;bottom:92px;z-index:3;pointer-events:auto;width:40px;height:40px;border-radius:50%;border:2px solid var(--accent);background:color-mix(in srgb,var(--surface) 85%,transparent);display:grid;place-items:center;padding:4px;cursor:pointer;box-shadow:0 4px 12px -4px rgba(0,0,0,.5);transition:transform .12s}
+.funagain svg{width:100%;height:100%}.funagain span{font-size:1.3rem;line-height:1}.funagain:hover{transform:scale(1.1)}.funagain:active{transform:scale(.92)}.funagain.pun{border-color:var(--warn)}.funagain:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:640px){.funagain{right:114px;bottom:72px;width:34px;height:34px}}
+.funtip{font-size:.74rem;color:var(--muted);margin:0 0 .4rem;line-height:1.35}#funMenu [data-fun].sel{outline:2px solid var(--accent);outline-offset:-2px;background:var(--accent-soft)}
 </style>
 
 <header class="top pad">
@@ -1516,7 +1520,7 @@ body.station *{animation:none!important;transition:none!important}
   <button type="button" id="profBack" hidden>↩ Πίσω στον Καθηγητή</button>
   <div class="prof" id="prof">
     <div class="prof-bubble" id="profBubble" hidden role="status"><span id="profSay"></span><button type="button" class="x" aria-label="Κλείσιμο">×</button></div>
-    <button type="button" class="funbtn" id="funBtn" aria-label="Κέρασε ή «τιμώρησε» τον Καθηγητή" title="Κέρασε ή «τιμώρησε» τον Καθηγητή"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11.5" rx="1.6"/><path d="M2.8 6.5h18.4v3H2.8zM12 6.5v14M12 6.5c-1.6-3.6-6.2-3.8-5.6-.9.3 1.1 2.6.9 5.6.9zM12 6.5c1.6-3.6 6.2-3.8 5.6-.9-.3 1.1-2.6.9-5.6.9z"/></svg></button>
+    <button type="button" class="funagain" id="funAgain" hidden aria-label="Κέρασε ξανά" title="Κέρασε ξανά"></button><button type="button" class="funbtn" id="funBtn" aria-label="Κέρασε ή «τιμώρησε» τον Καθηγητή" title="Κέρασε ή «τιμώρησε» τον Καθηγητή"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11.5" rx="1.6"/><path d="M2.8 6.5h18.4v3H2.8zM12 6.5v14M12 6.5c-1.6-3.6-6.2-3.8-5.6-.9.3 1.1 2.6.9 5.6.9zM12 6.5c1.6-3.6 6.2-3.8 5.6-.9-.3 1.1-2.6.9-5.6.9z"/></svg></button>
     <button type="button" class="prof-btn" id="profBtn" aria-label="Ο Καθηγητής: τεστ της ημέρας"><span id="profBig"></span><span class="prof-dot" id="profDot" hidden></span><span class="prof-unread" id="profUnread" hidden></span></button>
   </div>
   <div class="funmenu" id="funMenu" hidden role="dialog" aria-label="Κέρασμα ή τιμωρία για τον Καθηγητή"></div>
@@ -6859,7 +6863,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=211,VERS={sub:null,t:null};
+var APP_VER=212,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8590,6 +8594,11 @@ function funFly(emo,from,to,done){var a=from.getBoundingClientRect(),b=to.getBou
 function funBurst(x,y,chars,n,spread,fall){for(var i=0;i<n;i++){(function(){var el=document.createElement('span');el.className='funfly small';el.textContent=chars[Math.floor(Math.random()*chars.length)];document.body.appendChild(el);
   var dx=(Math.random()-.5)*spread,dy=fall?60+Math.random()*90:-(40+Math.random()*70);if(!el.animate){el.remove();return}
   el.animate([{transform:'translate('+x+'px,'+y+'px) scale(.4)',opacity:1},{transform:'translate('+(x+dx)+'px,'+(y+dy)+'px) scale(1)',opacity:0}],{duration:900+Math.random()*500,easing:'ease-out'}).onfinish=function(){el.remove()}})()}}
+function funSelSet(kind,id){FUN.sel={kind:kind,id:id};try{localStorage.setItem('tj-funsel',kind+'|'+id)}catch(e){}funSelRender()}
+function funSelGet(){if(FUN.sel)return FUN.sel;try{var v=localStorage.getItem('tj-funsel');if(v){var q=v.split('|');FUN.sel={kind:q[0],id:q[1]}}}catch(e){}return FUN.sel||null}
+function funSelRender(){var b=$('#funAgain'),s0=funSelGet();var L=s0?(s0.kind==='treat'?FUN_T:FUN_P):null,it=L&&L.find(function(x){return x[0]===s0.id});
+  if(b){b.hidden=!it;if(it){b.innerHTML=(FUN_ART[it[0]]?funArt(FUN_ART[it[0]]):'<span>'+it[1]+'</span>');b.title=(s0.kind==='treat'?'Κέρασε ξανά: ':'Ξανά: ')+it[2]+' (πάτα όσες φορές θες)';b.setAttribute('aria-label',b.title);b.classList.toggle('pun',s0.kind!=='treat')}}
+  $$('#funMenu [data-fun]').forEach(function(x){x.classList.toggle('sel',!!(s0&&x.getAttribute('data-fun')===s0.kind+'|'+s0.id))})}
 function funGive(kind,id,src){var L=kind==='treat'?FUN_T:FUN_P,it=L.find(function(x){return x[0]===id});if(!it)return;var to=funTarget(),from=src||$('#funBtn')||to;funMenu(false);
   var after=function(x,y){var lines=FUN_SAY[id]||['…'],say=lines[Math.floor(Math.random()*lines.length)];
     if(to&&!to.querySelector('.prig')){to.classList.add(kind==='treat'?'funyum':id==='water'?'funwet':'funhit');setTimeout(function(){to.classList.remove('funyum','funhit','funwet')},1600)}
@@ -8603,12 +8612,13 @@ function funMenuStat(){var el=$('#funStat');if(!el)return;var T=funToday(),all=F
   var tr=T.L.filter(function(x){return x.kind==='treat'}).length,pu=T.L.length-tr;el.textContent=T.L.length?'Σήμερα: '+s+' · διάθεση: '+(tr>pu?'😋 χαρούμενος':tr<pu?'🤕 πονεμένος':'😐 μπερδεμένος'):'Σήμερα ακόμα τίποτα. Πεινάει…'}
 function funMenu(on,anchor){var m=$('#funMenu');if(!m)return;FUN.open=on===undefined?!FUN.open:on;m.hidden=!FUN.open;if(FUN.open){funMenuStat();var a=(anchor||$('#funBtn')).getBoundingClientRect(),w=Math.min(320,innerWidth-16);m.style.width=w+'px';m.style.left=Math.max(8,Math.min(innerWidth-w-8,a.right-w))+'px';var h=m.offsetHeight;m.style.top=Math.max(8,a.top-h-8)+'px';FUN.anchor=anchor||$('#funBtn')}}
 function funInit(){var m=$('#funMenu');if(!m||m.dataset.b)return;m.dataset.b='1';
-  m.innerHTML='<div class="funh">🍽️ Κέρασε τον Καθηγητή</div><div class="fung">'+FUN_T.map(function(x){return '<button type="button" data-fun="treat|'+x[0]+'" title="'+esc(x[2])+'"><span>'+x[1]+'</span><small>'+esc(x[2])+'</small></button>'}).join('')+'</div><div class="funh">😤 Έκανε λάθος διάγνωση;</div><div class="fung">'+FUN_P.map(function(x){return '<button type="button" data-fun="punish|'+x[0]+'" title="'+esc(x[2])+'"><span>'+x[1]+'</span><small>'+esc(x[2])+'</small></button>'}).join('')+'</div><div class="funst" id="funStat"></div>';
-  document.addEventListener('click',function(e){var f=e.target.closest&&e.target.closest('[data-fun]');if(f){var p=f.getAttribute('data-fun').split('|');funGive(p[0],p[1],FUN.anchor);return}
+  m.innerHTML='<div class="funtip">Διάλεξε ένα: μένει επιλεγμένο και το ξαναρίχνεις όσες φορές θες από το κουμπάκι δίπλα στον Καθηγητή.</div><div class="funh">🍽️ Κέρασε τον Καθηγητή</div><div class="fung">'+FUN_T.map(function(x){return '<button type="button" data-fun="treat|'+x[0]+'" title="'+esc(x[2])+'"><span>'+x[1]+'</span><small>'+esc(x[2])+'</small></button>'}).join('')+'</div><div class="funh">😤 Έκανε λάθος διάγνωση;</div><div class="fung">'+FUN_P.map(function(x){return '<button type="button" data-fun="punish|'+x[0]+'" title="'+esc(x[2])+'"><span>'+x[1]+'</span><small>'+esc(x[2])+'</small></button>'}).join('')+'</div><div class="funst" id="funStat"></div>';
+  document.addEventListener('click',function(e){var ag=e.target.closest&&e.target.closest('#funAgain');if(ag){e.stopPropagation();var s1=funSelGet();if(s1&&!(FUN.lastT&&Date.now()-FUN.lastT<250)){FUN.lastT=Date.now();funGive(s1.kind,s1.id,ag)}return}
+    var f=e.target.closest&&e.target.closest('[data-fun]');if(f){var p=f.getAttribute('data-fun').split('|');funSelSet(p[0],p[1]);funGive(p[0],p[1],FUN.anchor);return}
     var b=e.target.closest&&e.target.closest('#funBtn,[data-funopen]');if(b){e.stopPropagation();funMenu(undefined,b);return}
     if(FUN.open&&!(e.target.closest&&e.target.closest('#funMenu')))funMenu(false)});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&FUN.open)funMenu(false)});
-  if(S.db&&!FUN.sub){try{FUN.sub=S.db.collection('fun').orderBy('at','desc').limit(200).onSnapshot(function(sn){FUN.list=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});funMenuStat()},function(){})}catch(e){}}}
+  funSelRender();if(S.db&&!FUN.sub){try{FUN.sub=S.db.collection('fun').orderBy('at','desc').limit(200).onSnapshot(function(sn){FUN.list=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});funMenuStat()},function(){})}catch(e){}}}
 /* ================= 📊 Επισκόπηση λογαριασμού (σαν πορτοφόλι ανταλλακτηρίου) ================= */
 var PF={per:{me:'30',prof:'30'},sel:null};var PF_COL=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6','#e34948','#008300'];
 function pfDark(){var t0=document.documentElement.getAttribute('data-theme');return t0==='dark'||t0==='night'||(!document.documentElement.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches)}
