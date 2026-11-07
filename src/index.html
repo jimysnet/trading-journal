@@ -1457,11 +1457,18 @@ body.station *{animation:none!important;transition:none!important}
 :root[data-theme="night"] .apnt.on{background:var(--accent-soft)!important;color:var(--fg)!important}
 :root[data-theme="night"] .sxcard::before,:root[data-theme="night"] .sxcard::after{opacity:.25}
 :root[data-theme="night"] img{filter:brightness(.92)}
+.otab .hhd,.otab .hr{grid-template-columns:4.6rem 6.4rem 8.6rem minmax(0,1fr) minmax(0,13rem) 7.2rem 6.6rem}
+.otrk{position:relative;display:block;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--loss-soft),var(--line) 35%,var(--gain-soft));margin:.15rem 0 .25rem}.ote{position:absolute;top:-3px;width:2px;height:12px;background:var(--muted);margin-left:-1px}.otn{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;margin-left:-6px;background:currentColor;box-shadow:0 0 0 2px var(--surface)}
+.hP small{font-size:.72rem}.hst.run{color:var(--accent);border-color:var(--accent)}.hchip.idle{opacity:.55}.hchip .num{font-size:.75rem;margin-left:.2rem}
+.otx{padding:.6rem .8rem .8rem}.otx .dmtl{margin:0;max-width:44rem}.dmdot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);margin-right:.3rem;box-shadow:0 0 6px var(--accent)}
+@media(max-width:900px){.otab .hhd,.otab .hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}}
+/* επιλογή θέματος: μόνο εικονίδιο, για να μη στριμώχνει τις καρτέλες */
+.thbtn{all:unset;cursor:pointer;font-size:1rem;line-height:1;padding:.3rem .45rem;border-radius:999px;border:1px solid var(--line);margin-left:.4rem}.thbtn:focus-visible{outline:2px solid var(--accent)}
 </style>
 
 <header class="top pad">
   <div class="inner">
-    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button><label class="thsel" title="Θέμα εμφάνισης"><span aria-hidden="true">🌗</span><select id="themeSel" aria-label="Θέμα εμφάνισης"><option value="">Αυτόματο</option><option value="light">Φωτεινό</option><option value="dark">Σκούρο</option><option value="night">Νύχτα · ξεκούραστο</option></select></label></div>
+    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button><button type="button" class="thbtn" id="themeBtn" aria-label="Θέμα εμφάνισης" title="Θέμα: Αυτόματο">🌗</button></div>
     <nav class="tabs" role="tablist" aria-label="Ενότητες">
       <button role="tab" data-tab="today" aria-selected="true">🏠 Σήμερα</button>
       <button role="tab" data-tab="demo" aria-selected="false">🤖 AI Bot</button>
@@ -6845,7 +6852,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=205,VERS={sub:null,t:null};
+var APP_VER=206,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7072,9 +7079,10 @@ try{var mk0=JSON.parse(localStorage.getItem('tj-mk')||'null');if(mk0){MK.g=mk0.g
 function mkSave(){try{localStorage.setItem('tj-mk',JSON.stringify({g:MK.g,v:MK.v,int:MK.int,sel:MK.sel,days:MK.days}))}catch(e){}}
 function mkItem(){var L=MKS[MK.g];return L.find(function(x){return x[0]===MK.sel[MK.g]})||L[0]}
 function mkSym(it){return MK.g==='crypto'?it[0]+'USDT':it[0]}
-(function(){var sel=document.getElementById('themeSel');if(!sel)return;var cur='';try{cur=localStorage.getItem('tj-theme')||''}catch(e){}sel.value=cur;
-  sel.addEventListener('change',function(){var v=sel.value;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme');try{if(v)localStorage.setItem('tj-theme',v);else localStorage.removeItem('tj-theme')}catch(e){}
-    try{render()}catch(e){}try{renderDemo()}catch(e){}try{apSessBar()}catch(e){}})})();
+(function(){var b=document.getElementById('themeBtn');if(!b)return;var TH=[['','🌗','Αυτόματο'],['light','☀️','Φωτεινό'],['dark','🌙','Σκούρο'],['night','🌑','Νύχτα · ξεκούραστο']],cur='';try{cur=localStorage.getItem('tj-theme')||''}catch(e){}
+  var show=function(){var x=TH.find(function(q){return q[0]===cur})||TH[0];b.textContent=x[1];b.title='Θέμα: '+x[2]+' (πάτα για αλλαγή)';b.setAttribute('aria-label','Θέμα: '+x[2])};show();
+  b.addEventListener('click',function(){var i=TH.findIndex(function(q){return q[0]===cur});cur=TH[(i+1)%TH.length][0];if(cur)document.documentElement.setAttribute('data-theme',cur);else document.documentElement.removeAttribute('data-theme');try{if(cur)localStorage.setItem('tj-theme',cur);else localStorage.removeItem('tj-theme')}catch(e){}
+    show();try{toast('Θέμα: '+(TH.find(function(q){return q[0]===cur})||TH[0])[2])}catch(e){}try{render()}catch(e){}try{renderDemo()}catch(e){}try{apSessBar()}catch(e){}})})();
 function mkDark(){var t=document.documentElement.getAttribute('data-theme');return t?t!=='light':!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function mkOpenLinks(it){var sym=mkSym(it),tv='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(it[2]);
   var h='<a class="exl big" href="'+esc(tv)+'" target="_blank" rel="noopener noreferrer"><span class="exi" style="background:#131722;color:#fff">TV</span><span class="exn">TradingView</span></a>';
@@ -7403,22 +7411,36 @@ function dmSaveAcct(reset){if(!qCanSave()){toast('Δεν μπορείς να α�
 function dmPnlCell(pnl,t){if(!isFinite(pnl))return '–';var mg=n(t.margin),ro=mg>0?pnl/mg*100:NaN;return '<b class="num '+cls(pnl)+'">'+(pnl>0?'+':'')+dmMoney(pnl,'')+'</b>'+(isFinite(ro)?'<br><span class="num '+cls(ro)+'" style="font-size:.78rem">'+(ro>0?'+':'')+fmt(ro,2)+'%</span>':'')}
 function dmGrpKey(t){return t.src==='auto'?apfTagId(t):'_man'}
 function dmGrpName(id){if(id==='_man')return '👤 Χειροκίνητες / Καθηγητής';var p=typeof APF!=='undefined'&&apfGet(id);return p?p.name:id==='p_start'?'📌 Αρχικό':id}
-function renderDmOpen(){var el=$('#dmOpen');if(!el)return;var uid='prof',L=dmOf(uid).filter(function(t){return !dmClosed(t)}).sort(function(a,b){return (b.at||0)-(a.at||0)});
-  DM.grp=DM.grp||(function(){try{return JSON.parse(localStorage.getItem('tj-dmgrp')||'{}')}catch(e){return {}}})();
-  var G={},order=[];L.forEach(function(t){var k=dmGrpKey(t);if(!G[k]){G[k]=[];order.push(k)}G[k].push(t)});
+function renderDmOpen(){var el=$('#dmOpen');if(!el)return;var uid='prof',all=dmOf(uid).filter(function(t){return !dmClosed(t)}).sort(function(a,b){return (b.at||0)-(a.at||0)});
+  DM.ox=DM.ox||{};var pf=DM.opf||'all',key=dmGrpKey,G={},order=[];all.forEach(function(t){var k=key(t);if(!G[k]){G[k]=[];order.push(k)}G[k].push(t)});
   var runP=(typeof APF!=='undefined'&&APF.list||[]).filter(function(p){return p.run!==false});runP.forEach(function(p){if(!G[p.id]){G[p.id]=[];order.push(p.id)}});
   if(!order.length){el.innerHTML='<div class="empty">Καμία ανοιχτή AI συναλλαγή.</div>';return}
   order.sort(function(a,b){return (G[b].length-G[a].length)||String(dmGrpName(a)).localeCompare(String(dmGrpName(b)))});
-  var np=L.filter(dmIsPend).length,nr=L.length-np;
-  var h='<div class="dmsum"><span><span class="pill dmrun"><i></i>Τρέχουν</span> <b>'+nr+'</b></span><span><span class="pill dmpend">⏳ Σε αναμονή</span> <b>'+np+'</b></span><span class="muted" style="font-size:.78rem">Πάτα σε ένα προφίλ για να δεις τις εντολές του</span>'+(order.length>1?' <button type="button" class="linkbtn" data-dmgall="1">'+(order.every(function(k){return DM.grp[k]})?'▴ Κλείσε όλα':'▾ Άνοιξε όλα')+'</button>':'')+'</div><div class="dmgrps">';
-  order.forEach(function(k){var T=G[k],op=!!DM.grp[k]&&T.length,run=T.filter(function(t){return !dmIsPend(t)}),pd=T.length-run.length,rs=[],pn=0,hasP=false;
-    run.forEach(function(t){var lv=dmLiveR(t),cr=lv?lv.r:(t.checkedAt&&t.curR!=null?n(t.curR):NaN);if(isFinite(cr)){rs.push(cr);pn+=cr*n(t.riskAmt);hasP=true}});
-    var sr=rs.reduce(function(a,b){return a+b},0),coins=T.map(function(t){return dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')+(t.dir==='short'?'↓':'↑')}).join(' · ');
-    h+='<div class="dmgrp'+(op?' open':'')+(T.length?'':' idle')+'"><button type="button" class="dmgrp-h" data-dmgrp="'+esc(k)+'"'+(T.length?'':' disabled')+' aria-expanded="'+(op?'true':'false')+'"><span class="dmgrp-n">'+esc(dmGrpName(k))+'</span><span class="dmgrp-c">'+(T.length?'<span class="pill dmrun"><i></i>'+run.length+'</span>'+(pd?' <span class="pill dmpend">⏳ '+pd+'</span>':''):'<span class="muted">καμία ανοιχτή</span>')+'</span><span class="dmgrp-coins muted">'+esc(coins)+'</span><span class="dmgrp-r">'+(hasP?'<b class="num '+cls(sr)+'">'+fR(sr)+'</b> <span class="num '+cls(pn)+'" style="font-size:.78rem">'+(pn>0?'+':'')+dmMoney(pn,'')+'</span>':'')+'</span>'+(T.length?'<span class="dmgrp-arr" aria-hidden="true">'+(op?'▴':'▾')+'</span>':'')+'</button>'+
-      (op?'<div class="dmtiles">'+T.map(function(t){return dmTileAny(t,T.length>2)}).join('')+'</div>':'')+'</div>'});
+  if(pf!=='all'&&!G[pf])pf=DM.opf='all';
+  var liveR=function(t){if(dmIsPend(t))return NaN;var lv=dmLiveR(t);return lv?lv.r:(t.checkedAt&&t.curR!=null?n(t.curR):NaN)};
+  var sumR=function(L){var r=0,p=0,h=false;L.forEach(function(t){var c=liveR(t);if(isFinite(c)){r+=c;p+=c*n(t.riskAmt);h=true}});return {r:r,p:p,h:h}};
+  var L=pf==='all'?all:G[pf],np=L.filter(dmIsPend).length,S0=sumR(L);
+  var h='<div class="hbar"><div class="hchips">'+['all'].concat(order).map(function(k){var T=k==='all'?all:G[k],q=sumR(T);return '<button type="button" class="hchip'+(pf===k?' on':'')+(T.length?'':' idle')+'" data-opf="'+esc(k)+'">'+esc(k==='all'?'Όλα':dmGrpName(k))+' <b>'+T.length+'</b>'+(q.h?' <span class="num '+cls(q.r)+'">'+fR(q.r)+'</span>':'')+'</button>'}).join('')+'</div>'+
+    '<div class="hsum"><span><span class="dmdot"></span>τρέχουν <b>'+(L.length-np)+'</b></span><span>⏳ σε αναμονή <b>'+np+'</b></span><span>τώρα <b class="num '+cls(S0.r)+'">'+(S0.h?fR(S0.r):'–')+'</b></span><span>PnL <b class="num '+cls(S0.p)+'">'+(S0.h?(S0.p>0?'+':'')+dmMoney(S0.p,''):'–')+'</b></span></div></div>';
+  if(!L.length){el.innerHTML=h+'<div class="empty">Αυτό το προφίλ δεν έχει ανοιχτή θέση τώρα.</div>';return}
+  h+='<div class="htab otab" role="table"><div class="hhd" role="row"><span>Τώρα</span><span>Άνοιξε</span><span>Νόμισμα</span><span>Στρατηγική · προφίλ</span><span class="hc-px">Stop ··· Στόχος</span><span class="r">PnL</span><span></span></div>';
+  L.forEach(function(t){var pend=dmIsPend(t),cr=liveR(t),has=isFinite(cr),a=t.auto||{},sy=String(t.symbol||''),b=sy.replace(/(USDT|USDC|USD|PERP)$/,''),open=DM.ox[t.id],pn=has?cr*n(t.riskAmt):NaN,mg=n(t.margin),ro=mg>0&&isFinite(pn)?pn/mg*100:NaN;
+    var e=n(t.entry),sl=t.curStop!=null?n(t.curStop):n(t.stop),tg=n(t.target),rk=Math.abs(e-n(t.stop)),X=rk>0&&isFinite(tg)?Math.abs(tg-e)/rk:NaN,pos=has&&isFinite(X)?Math.max(0,Math.min(100,(cr+1)/(X+1)*100)):null,epos=isFinite(X)?1/(X+1)*100:33;
+    var lp=isFinite(livePx(t.symbol))?livePx(t.symbol):n(t.lastPx),dd=pend&&isFinite(lp)?Math.abs(lp-e)/e*100:NaN;
+    var who=t.src==='auto'?dmGrpName(apfTagId(t)):t.src==='prof'?'🎓 Καθηγητής':'👤 '+(t.by===S.uid?'εσύ':name(t.by));
+    h+='<div class="hr'+(open?' open':'')+(pend?' nf':has?(cr>=0?' w':' l'):'')+'" role="row" data-ox="'+esc(t.id)+'" tabindex="0" aria-expanded="'+(open?'true':'false')+'">'+
+      '<span class="hR num">'+(pend?'⏳':has?fR(cr):'–')+'</span>'+
+      '<span class="hD">'+esc(dmHM(t.at||Date.now()))+'</span>'+
+      '<span class="hS">'+symIcon(b,16)+'<b>'+esc(b||sy)+'</b><i class="'+(t.dir==='short'?'neg':'pos')+'">'+(t.dir==='short'?'▼ Short':'▲ Long')+'</i></span>'+
+      '<span class="hT"><b>'+esc(t.title||'–')+'</b><small>'+esc(who)+(a.tf?' · '+esc(a.tf):'')+(t.lev>1?' · x'+t.lev:'')+'</small></span>'+
+      '<span class="hP hc-px"><span class="otrk" title="stop '+dmPx(sl)+' · είσοδος '+dmPx(e)+' · στόχος '+dmPx(tg)+'"><i class="ote" style="left:'+epos.toFixed(1)+'%"></i>'+(pos!=null?'<i class="otn '+(cr>=0?'pos':'neg')+'" style="left:'+pos.toFixed(1)+'%"></i>':'')+'</span><small class="num">'+(pend?'περιμένει '+dmPx(e)+(isFinite(dd)?' · απέχει '+fmt(dd,2)+'%':''):(t.curStop!=null?'🔒 ':'')+dmPx(sl)+' · '+dmPx(tg))+'</small></span>'+
+      '<span class="hM r num '+cls(pn)+'">'+(has?(pn>0?'+':'')+dmMoney(pn,''):'')+(isFinite(ro)?'<small>'+(ro>0?'+':'')+fmt(ro,1)+'%</small>':'')+'</span>'+
+      '<span class="hA"><span class="hst '+(pend?'nf':'run')+'">'+(pend?'αναμονή':'τρέχει')+'</span><span class="harr" aria-hidden="true">'+(open?'▴':'▾')+'</span></span></div>';
+    if(open)h+='<div class="hx otx">'+dmTileAny(t,false)+'</div>'});
   el.innerHTML=h+'</div>'}
-document.addEventListener('click',function(e){if(!e.target.closest)return;var g=e.target.closest('[data-dmgrp]');if(g){DM.grp=DM.grp||{};var k=g.getAttribute('data-dmgrp');DM.grp[k]=!DM.grp[k];try{localStorage.setItem('tj-dmgrp',JSON.stringify(DM.grp))}catch(x){}renderDmOpen();return}
-  if(e.target.closest('[data-dmgall]')){DM.grp=DM.grp||{};var ks=$$('[data-dmgrp]').map(function(b){return b.getAttribute('data-dmgrp')}),all=ks.every(function(k){return DM.grp[k]});ks.forEach(function(k){DM.grp[k]=!all});try{localStorage.setItem('tj-dmgrp',JSON.stringify(DM.grp))}catch(x){}renderDmOpen()}});
+document.addEventListener('click',function(e){if(!e.target.closest)return;var c=e.target.closest('[data-opf]');if(c){DM.opf=c.getAttribute('data-opf');renderDmOpen();return}
+  var r=e.target.closest('[data-ox]');if(r&&!e.target.closest('a,button,input')){DM.ox=DM.ox||{};var id=r.getAttribute('data-ox');DM.ox[id]=!DM.ox[id];renderDmOpen()}});
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-ox]')){e.preventDefault();e.target.click()}});
 function dmTileAny(t,many){var mine=qCanSave();var pend=dmIsPend(t),lv=dmLiveR(t),cr=lv?lv.r:(t.checkedAt&&t.curR!=null?n(t.curR):NaN),has=isFinite(cr)&&!pend,lp=isFinite(livePx(t.symbol))?livePx(t.symbol):n(t.lastPx),dd=pend&&isFinite(lp)?Math.abs(lp-n(t.entry))/n(t.entry)*100:NaN;if(many&&!(DM.exp||{})[t.id])return dmTileMini(t,pend,cr,has,dd);
       return '<div class="dmtl '+(many?'open ':'')+(has?(cr>=0?'up':'dn'):'')+'"><div class="dmtl-h"><span class="dmtl-s">'+dmSymCell(t)+' '+dmDirPill(t)+' '+dmStatusPill(t)+'</span>'+(many?'<button type="button" class="dmtl-col" data-dmexp="'+esc(t.id)+'" aria-label="Σύμπτυξη" title="Σύμπτυξη">▴</button>':'')+'<span class="muted dmtl-t" title="Πότε δόθηκε η εντολή και πότε μπήκε η θέση">'+(t.ord==='limit'?'εντολή ':'άνοιξε ')+esc(dateGr(t.date)+' '+(t.time||''))+(t.ord==='limit'&&t.filledAt?' · μπήκε '+esc(pad2(new Date(t.filledAt).getHours())+':'+pad2(new Date(t.filledAt).getMinutes())):'')+(t.by&&t.by!=='prof'&&t.src!=='auto'?' · '+esc(t.by===S.uid?'εσύ':name(t.by)):'')+'</span></div>'+
         '<div class="dmtl-m"><div class="dmtl-pnl"><div class="dmtl-r">'+(has?'<b class="num '+cls(cr)+'">'+fR(cr)+'</b><span class="dmtl-pc">'+dmPnlCell(cr*n(t.riskAmt),t)+'</span>':'<b class="muted">–</b>')+'</div><span class="muted" style="font-size:.74rem">'+(pend?(isFinite(dd)?'τώρα '+dmPx(lp)+' · απέχει <b class="dd '+(dd<0.3?'near':dd<1?'mid':'far')+'">'+fmt(dd,2)+'%</b>':''):lv?'ζωντανά '+dmPx(lv.px):t.checkedAt?'έλεγχος '+esc(pad2(new Date(t.checkedAt).getHours())+':'+pad2(new Date(t.checkedAt).getMinutes())):'')+'</span></div>'+dmBar(t)+'</div>'+
