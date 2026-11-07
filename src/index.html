@@ -1465,6 +1465,7 @@ body.station *{animation:none!important;transition:none!important}
 /* επιλογή θέματος: μόνο εικονίδιο, για να μη στριμώχνει τις καρτέλες */
 .thbtn{all:unset;cursor:pointer;font-size:1rem;line-height:1;padding:.3rem .45rem;border-radius:999px;border:1px solid var(--line);margin-left:.4rem}.thbtn:focus-visible{outline:2px solid var(--accent)}
 .otrk{height:8px!important;border-radius:4px!important;background:linear-gradient(90deg,rgba(239,83,80,.55),rgba(150,150,150,.25) 50%,rgba(38,166,154,.55))!important}.ote{top:-3px!important;height:14px!important;background:var(--fg)!important;opacity:.8}.otn{top:50%!important;transform:translateY(-50%);box-shadow:0 0 0 2px var(--surface)}.otn.pos{color:#26a69a}.otn.neg{color:#ef5350}
+.otw{display:flex;align-items:center;gap:.35rem}.otw .otrk{flex:1;margin:.15rem 0 .25rem}.otw .sl{color:#ef5350;font-size:.62rem;font-weight:700}.otw .tp{color:#26a69a;font-size:.62rem;font-weight:700}
 </style>
 
 <header class="top pad">
@@ -6853,7 +6854,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=207,VERS={sub:null,t:null};
+var APP_VER=208,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7434,7 +7435,7 @@ function renderDmOpen(){var el=$('#dmOpen');if(!el)return;var uid='prof',all=dmO
       '<span class="hD">'+esc(dmHM(t.at||Date.now()))+'</span>'+
       '<span class="hS">'+symIcon(b,16)+'<b>'+esc(b||sy)+'</b><i class="'+(t.dir==='short'?'neg':'pos')+'">'+(t.dir==='short'?'▼ Short':'▲ Long')+'</i></span>'+
       '<span class="hT"><b>'+esc(t.title||'–')+'</b><small>'+esc(who)+(a.tf?' · '+esc(a.tf):'')+(t.lev>1?' · x'+t.lev:'')+'</small></span>'+
-      '<span class="hP hc-px"><span class="otrk" title="stop '+dmPx(sl)+' · είσοδος '+dmPx(e)+' · στόχος '+dmPx(tg)+'"><i class="ote" style="left:'+epos.toFixed(1)+'%"></i>'+(pos!=null?'<i class="otn '+(cr>=0?'pos':'neg')+'" style="left:'+pos.toFixed(1)+'%"></i>':'')+'</span><small class="num">'+(pend?'περιμένει '+dmPx(e)+(isFinite(dd)?' · απέχει '+fmt(dd,2)+'%':''):(t.curStop!=null?'🔒 ':'')+dmPx(sl)+' · '+dmPx(tg))+'</small></span>'+
+      '<span class="hP hc-px"><span class="otw"><b class="sl">SL</b><span class="otrk" title="stop '+dmPx(sl)+' · είσοδος '+dmPx(e)+' · στόχος '+dmPx(tg)+'"><i class="ote" style="left:'+epos.toFixed(1)+'%"></i>'+(pos!=null?'<i class="otn '+(cr>=0?'pos':'neg')+'" style="left:'+pos.toFixed(1)+'%"></i>':'')+'</span><b class="tp">TP</b></span><small class="num">'+(pend?'περιμένει '+dmPx(e)+(isFinite(dd)?' · απέχει '+fmt(dd,2)+'%':''):(t.curStop!=null?'🔒 ':'')+dmPx(sl)+' · '+dmPx(tg))+'</small></span>'+
       '<span class="hM r num '+cls(pn)+'">'+(has?(pn>0?'+':'')+dmMoney(pn,''):'')+(isFinite(ro)?'<small>'+(ro>0?'+':'')+fmt(ro,1)+'%</small>':'')+'</span>'+
       '<span class="hA"><span class="hst '+(pend?'nf':'run')+'">'+(pend?'αναμονή':'τρέχει')+'</span><span class="harr" aria-hidden="true">'+(open?'▴':'▾')+'</span></span></div>';
     if(open)h+='<div class="hx otx">'+dmTileAny(t,false)+'</div>'});
