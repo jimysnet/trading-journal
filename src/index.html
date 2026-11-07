@@ -6727,7 +6727,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=192,VERS={sub:null,t:null};
+var APP_VER=193,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6737,13 +6737,15 @@ function verReload(v){if(VERS.t)return;var b=document.createElement('div');b.cla
 
 /* 📚 ΕΝΙΑΙΑ ΠΗΓΗ ΚΕΡΙΩΝ για όλη τη σελίδα (Αυτόματος Καθηγητής, backtest, αναλύσεις, Εργαστήριο, Agent, Καθηγητής, προπόνηση, αξιολόγηση συναλλαγών):
    βάση = το μόνιμο αρχείο κεριών · + το παλιό κοινό ιστορικό · + τα φρέσκα του Crypto.com (που γράφονται και αυτά στο αρχείο) */
+function histUp(L,ms){var need=Math.round(ms/9e5),out=[],cur=null,k=0;(L||[]).forEach(function(x){if(!x||x.approx)return;var t=Math.floor(x.t/ms)*ms;if(!cur||cur.t!==t){if(cur&&k===need)out.push(cur);cur={t:t,o:x.o,h:x.h,l:x.l,c:x.c,v:+x.v||0};k=1}else{cur.h=Math.max(cur.h,x.h);cur.l=Math.min(cur.l,x.l);cur.c=x.c;cur.v+=+x.v||0;k++}});if(cur&&k===need)out.push(cur);return out}
 function histBars(sym,tf,days){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$/,'');if(!base)return Promise.reject({code:'not_found'});days=days||120;var ms=CC_TFMS[tf]||ARC.ms[tf]||36e5,since=Date.now()-days*864e5;
   var D=tf==='1h'?shbDeep(base,tf).then(function(d){return d.bars}).catch(function(){return []}):Promise.resolve([]),
       A=S.db&&ARC_CH[tf]?arcChart(base,tf,days).catch(function(){return []}):Promise.resolve([]),
-      F=CC_TFMS[tf]?ccFetchBars(base+'USDT',tf).then(function(r){return r.bars}).catch(function(){return []}):Promise.resolve([]);
-  return Promise.all([D,A,F]).then(function(x){var m={},now=Date.now();x.forEach(function(L){(L||[]).forEach(function(b){if(b&&!b.approx&&isFinite(b.c)&&b.t>=since&&b.t+ms<=now+60000)m[b.t]=b})});
+      F=CC_TFMS[tf]?ccFetchBars(base+'USDT',tf).then(function(r){return r.bars}).catch(function(){return []}):Promise.resolve([]),
+      Q=S.db&&ms>9e5&&ms<=4*36e5?arcChart(base,'15m',days).then(function(L){return histUp(L,ms)}).catch(function(){return []}):Promise.resolve([]);/* όπου λείπουν κεριά του πλαισίου, φτιάχνονται από τα 15λεπτα (μόνο ολόκληρες ώρες) */
+  return Promise.all([D,A,F,Q]).then(function(x){var m={},now=Date.now();[x[3],x[0],x[1],x[2]].forEach(function(L){(L||[]).forEach(function(b){if(b&&!b.approx&&isFinite(b.c)&&b.t>=since&&b.t+ms<=now+60000)m[b.t]=b})});
     var bars=Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.t-b.t});if(bars.length<10)throw {code:'no_data_any'};
-    var src=[x[1].length?'αρχείο κεριών':'',x[0].length?'κοινό ιστορικό':'',x[2].length?'Crypto.com':''].filter(Boolean).join(' + ');
+    var src=[x[1].length?'αρχείο κεριών':'',x[3].length?'15λεπτα του αρχείου':'',x[0].length?'κοινό ιστορικό':'',x[2].length?'Crypto.com':''].filter(Boolean).join(' + ');
     if(tf==='1h'&&x[2].length&&bars.length>=50){try{shbSave(base+'_USD',tf,bars,1500)}catch(e){}}
     return {inst:base+'_USD',bars:bars,src:src,arc:x[1].length,basis:{n:bars.length,from:bars[0].t,to:bars[bars.length-1].t,tf:tf}}})}
 function deepBars(sym,tf,days){return histBars(sym,tf,days||120)}
