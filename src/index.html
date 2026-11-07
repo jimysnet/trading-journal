@@ -1776,7 +1776,6 @@ body.station *{animation:none!important;transition:none!important}
     <select id="dm-who" hidden aria-hidden="true"></select>
     <div class="kpis" id="apKpi" style="margin-bottom:.9rem"></div>
     <div class="card" id="dmEvalCard" hidden style="display:none"></div>
-    <div class="card" id="dmOpenCard" style="margin-bottom:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card" id="apNowCard" style="margin-bottom:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div>
     <div class="grid2">
       <div class="dmleft"><div class="card" id="profAcctCard"><div class="formhead"><h2 style="margin:0">🎓 Λογαριασμός Καθηγητή</h2><span class="muted" style="font-size:.78rem">εικονικός · τον διαχειρίζεται μόνος του</span></div>
         <div id="profStat" style="margin-top:.4rem"></div><div id="profPort" style="margin-top:.6rem"></div>
@@ -1784,7 +1783,8 @@ body.station *{animation:none!important;transition:none!important}
       <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div></div>
       </div>
     </div>
-    <div class="card" id="profExtraCard"><div id="profExtra"></div></div>
+    <div class="card" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div>
+    <div class="card" id="profExtraCard" style="margin-top:1rem"><div id="profExtra"></div></div>
       <details class="card dmman" id="dmManCard"><summary>➕ Νέα χειροκίνητη demo συναλλαγή</summary><p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Μπαίνει στον ίδιο λογαριασμό του Καθηγητή, με το όνομά σου.</p>
       <form id="dmForm" novalidate style="margin-top:.6rem">
         <div class="formhead"><span class="pill acc" id="dm-prof" hidden>Τεχνική Καθηγητή</span></div>
@@ -6733,7 +6733,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=196,VERS={sub:null,t:null};
+var APP_VER=197,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
