@@ -1348,11 +1348,20 @@ body.station *{animation:none!important;transition:none!important}
 .apnc{min-width:0;overflow:hidden}.apnc .pill{white-space:normal;max-width:100%;display:inline-block;line-height:1.35;overflow-wrap:anywhere}.apnc-tf li{min-width:0;overflow-wrap:anywhere}.apnc>summary>*{min-width:0}
 .hchips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.6rem 0}.hchip{all:unset;cursor:pointer;font-size:.8rem;padding:.3rem .65rem;border:1px solid var(--line);border-radius:999px;color:var(--muted)}.hchip b{color:var(--fg);margin-left:.2rem}.hchip.on{background:var(--accent-soft);color:var(--fg);border-color:var(--accent)}.hchip:focus-visible{outline:2px solid var(--accent)}
 .hsum{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-size:.85rem;color:var(--muted);margin:0 0 .6rem}.hsum b{color:var(--fg)}
-.hlist{display:flex;flex-direction:column;gap:.4rem}.hrow{display:grid;grid-template-columns:7.5rem minmax(9rem,1fr) minmax(12rem,2fr) minmax(12rem,1.6fr);gap:.4rem 1rem;align-items:center;padding:.55rem .8rem;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;background:var(--sunk)}
-.hrow.w{border-left-color:var(--gain)}.hrow.l{border-left-color:var(--loss)}.hrow.x{opacity:.7}
-.hres{display:flex;flex-direction:column;gap:.15rem;align-items:flex-start}.hres>b{font-size:1.15rem}.hres>span{font-size:.76rem}
-.hsym,.hstr,.hpx{display:flex;flex-direction:column;gap:.2rem;min-width:0;font-size:.84rem}.hstr>b{overflow-wrap:anywhere}.hstr>.muted,.hpx{font-size:.78rem}.hpx{color:var(--muted)}.hpx>span:first-child{color:var(--fg)}.hdel{color:var(--muted)}
-@media(max-width:760px){.hrow{grid-template-columns:6.5rem minmax(0,1fr)}.hstr,.hpx{grid-column:2}}
+.hbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.4rem 1rem;margin:.7rem 0 .6rem}.hbar .hchips,.hbar .hsum{margin:0}
+.htab{border:1px solid var(--line);border-radius:12px;overflow:hidden}.hhd,.hr{display:grid;grid-template-columns:4.6rem 6.4rem 8.6rem minmax(0,1fr) minmax(0,12rem) 7.2rem 6.6rem;gap:.8rem;align-items:center;padding:.5rem .9rem}
+.hhd{background:var(--sunk);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-family:var(--mono,monospace)}
+.hr{border-top:1px solid var(--line);cursor:pointer;font-size:.86rem;position:relative}.hr:hover{background:rgba(127,127,127,.07)}.hr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.hr.open{background:var(--sunk)}
+.hr::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}.hr.w::before{background:var(--gain)}.hr.l::before{background:var(--loss)}.hr.nf{color:var(--muted)}
+.hR{font-weight:700;font-size:.95rem;padding:.15rem .45rem;border-radius:7px;text-align:center;background:var(--sunk)}.hr.w .hR{color:var(--gain);background:var(--gain-soft)}.hr.l .hR{color:var(--loss);background:var(--loss-soft)}
+.hD{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}.hS{display:flex;align-items:center;gap:.35rem;min-width:0}.hS i{font-style:normal;font-size:.7rem;font-weight:600}
+.hT{display:flex;flex-direction:column;min-width:0}.hT b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hT small{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hP{font-size:.76rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hM{display:flex;flex-direction:column;align-items:flex-end;font-weight:600}.hM small{font-size:.7rem;font-weight:400;opacity:.8}
+.hA{display:flex;align-items:center;justify-content:flex-end;gap:.4rem}.hst{font-size:.7rem;padding:.12rem .45rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}.hst.w{color:var(--gain);border-color:var(--gain)}.hst.l{color:var(--loss);border-color:var(--loss)}.harr{color:var(--muted);font-size:.75rem}
+.hx{padding:.3rem .9rem .8rem 1.4rem;background:var(--sunk);border-top:1px dashed var(--line)}.hxg{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:.5rem 1rem;margin:.4rem 0 .6rem}.hxg span{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.hxg b{font-size:.86rem}.hxa{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.hpgs{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.7rem}.hpg{all:unset;cursor:pointer;min-width:2rem;text-align:center;padding:.3rem .55rem;border:1px solid var(--line);border-radius:8px;font-size:.82rem}.hpg.on{background:var(--accent);color:#fff;border-color:var(--accent)}.hpg:disabled{opacity:.4;cursor:default}.hpg:focus-visible{outline:2px solid var(--accent)}
+@media(max-width:900px){.hhd,.hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}.hhd>span:nth-child(2),.hhd>span:nth-child(3),.hhd>span:nth-child(5),.hhd>span:nth-child(7),.hr .hD,.hr .hP,.hr .hA{display:none}.hr .hS{grid-column:2;grid-row:1}.hr .hT{grid-column:2;grid-row:2}.hr .hM{grid-column:3;grid-row:1/3}.hr .hR{grid-row:1/3}}
+.htab,.hr,.hhd{text-align:left}.hT{align-items:flex-start}.hS i,.hS b{white-space:nowrap}.hM{white-space:nowrap}@media(max-width:900px){.hM{font-size:.78rem}.hr .hS{flex-wrap:nowrap}}
 </style>
 
 <header class="top pad">
@@ -6741,7 +6750,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=199,VERS={sub:null,t:null};
+var APP_VER=200,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7417,22 +7426,41 @@ function renderDmProf(){var el=$('#dmProf');if(!el)return;var P=dmProfStats(),rr
   h+='<h3 class="dmh3">Ιστορικό προτάσεων</h3><div class="tw"><table><thead><tr><th>Ημ/νία</th><th>Ποιος</th><th>Τεχνική</th><th>Σύμβολο</th><th>Θέση</th><th>Αποτέλεσμα</th><th class="r">R</th><th class="r">Ποσό</th></tr></thead><tbody>'+
     P.L.slice().sort(function(a,b){return (b.at||0)-(a.at||0)}).slice(0,60).map(function(t){var ok=dmCounts(t);return '<tr><td>'+esc(dateGr(t.date)+' '+(t.time||''))+(t.by&&t.by!=='prof'&&t.src!=='auto'?'<br><span class="muted" style="font-size:.74rem">'+esc(t.by===S.uid?'εσύ':name(t.by))+'</span>':'')+'</td><td>'+esc(name(t.by))+'</td><td>'+esc(cfTitle(t))+'</td><td>'+dmSymCell(t)+'</td><td>'+dmDirPill(t)+'</td><td>'+(ok?(t.r>0?'<span class="pill gain">✓ Έπεσε μέσα</span>':'<span class="pill loss">✗ Αστόχησε</span>'):dmStatusPill(t))+'</td><td class="r num '+cls(t.r)+'">'+(ok?fR(t.r):'–')+'</td><td class="r num '+cls(t.pnl)+'">'+(ok?dmMoney(n(t.pnl),''):'–')+'</td></tr>'}).join('')+'</tbody></table></div>';
   el.innerHTML=h}
+var HPG=15;
 function renderDmHist(){var el=$('#dmHist');if(!el)return;var uid='prof',src=$('#dm-hsrc').value,mine=qCanSave(),pf=DM.hpf||'all';
   var A=dmOf(uid).filter(function(t){return dmClosed(t)&&(src==='all'||(src==='prof'?t.src==='prof':t.src!=='prof'))}).sort(function(a,b){return (b.exitAt||b.at||0)-(a.exitAt||a.at||0)});
-  var pids=[];A.forEach(function(t){var k=t.src==='auto'?apfTagId(t):'_man';if(pids.indexOf(k)<0)pids.push(k)});
-  var L=pf==='all'?A:A.filter(function(t){return (t.src==='auto'?apfTagId(t):'_man')===pf});
   if(!A.length){el.innerHTML='<div class="empty">Δεν υπάρχουν ακόμα κλειστές demo συναλλαγές.</div>';return}
+  var key=function(t){return t.src==='auto'?apfTagId(t):'_man'},pids=[];A.forEach(function(t){var k=key(t);if(pids.indexOf(k)<0)pids.push(k)});
+  var L=pf==='all'?A:A.filter(function(t){return key(t)===pf}),pages=Math.max(1,Math.ceil(L.length/HPG)),pg=Math.min(Math.max(1,DM.hpg||1),pages);DM.hpg=pg;DM.hx=DM.hx||{};
   var cnt=L.filter(dmCounts),R=cnt.map(function(t){return n(t.r)}),w=R.filter(function(r){return r>0}).length,tot=sum(R),pnl=sum(cnt.map(function(t){return n(t.pnl)}).filter(isFinite));
-  var chips='<div class="hchips">'+['all'].concat(pids).map(function(k){var c=k==='all'?A.length:A.filter(function(t){return (t.src==='auto'?apfTagId(t):'_man')===k}).length;return '<button type="button" class="hchip'+(pf===k?' on':'')+'" data-hpf="'+esc(k)+'">'+esc(k==='all'?'Όλα τα προφίλ':dmGrpName(k))+' <b>'+c+'</b></button>'}).join('')+'</div>';
-  var sumH='<div class="hsum"><span><b>'+L.length+'</b> κλειστές</span><span>επιτυχία <b>'+(cnt.length?Math.round(w/cnt.length*100)+'%':'–')+'</b></span><span>σύνολο <b class="num '+cls(tot)+'">'+fR(tot)+'</b></span><span>PnL <b class="num '+cls(pnl)+'">'+(pnl>0?'+':'')+dmMoney(pnl,'')+'</b></span></div>';
-  el.innerHTML=chips+sumH+'<div class="hlist">'+L.slice(0,DM.hlim).map(function(t){var r=n(t.r),a=t.auto||{},pn=n(t.pnl),mg=n(t.margin),ro=mg>0&&isFinite(pn)?pn/mg*100:NaN,ex=t.exitAt?dmHM(t.exitAt):'';
-    return '<div class="hrow '+(dmCounts(t)?(r>0?'w':r<0?'l':''):'x')+'">'+
-      '<div class="hres"><b class="num '+cls(r)+'">'+(dmCounts(t)?fR(r):'–')+'</b><span class="num '+cls(pn)+'">'+(isFinite(pn)&&dmCounts(t)?(pn>0?'+':'')+dmMoney(pn,'')+(isFinite(ro)?' · '+(ro>0?'+':'')+fmt(ro,1)+'%':''):'')+'</span>'+dmStatusPill(t)+(t.amb?' <span class="pill warn" title="Stop και στόχος στο ίδιο κερί">?</span>':'')+'</div>'+
-      '<div class="hsym">'+dmSymCell(t)+'<span>'+dmDirPill(t)+'</span></div>'+
-      '<div class="hstr"><b>'+esc(t.title||'')+'</b><span class="muted">'+(t.src==='auto'?'🧬 '+esc(dmGrpName(apfTagId(t))):t.src==='prof'?'🎓 Καθηγητής':'👤 '+esc(t.by===S.uid?'εσύ':name(t.by)))+(a.tf?' · '+esc(a.tf):'')+'</span><span>'+(t.src==='auto'?'<button type="button" class="linkbtn" data-dmwhy="'+esc(t.id)+'">🎓 Γιατί;</button> ':'')+'<button type="button" class="linkbtn" data-dmlog="'+esc(t.id)+'">📜 Ιστορικό</button>'+(mine?' <button type="button" class="linkbtn hdel" data-dmdel="'+esc(t.id)+'">Διαγραφή</button>':'')+'</span></div>'+
-      '<div class="hpx"><span>'+esc(dateGr(t.date)+' '+(t.time||''))+(ex?' → '+esc(ex):'')+'</span><span class="num">είσοδος '+dmPx(n(t.entry))+' · έξοδος '+dmPx(n(t.exit))+'</span><span class="num muted">SL '+dmPx(n(t.stop))+' · TP '+dmPx(n(t.target))+'</span></div></div>'}).join('')+'</div>'+
-    (L.length>DM.hlim?'<button type="button" class="linkbtn" id="dmMore">Δείξε περισσότερες ('+(L.length-DM.hlim)+')</button>':'')}
-document.addEventListener('click',function(e){var c=e.target.closest&&e.target.closest('[data-hpf]');if(c){DM.hpf=c.getAttribute('data-hpf');renderDmHist()}});
+  var h='<div class="hbar"><div class="hchips">'+['all'].concat(pids).map(function(k){var c=k==='all'?A.length:A.filter(function(t){return key(t)===k}).length;return '<button type="button" class="hchip'+(pf===k?' on':'')+'" data-hpf="'+esc(k)+'">'+esc(k==='all'?'Όλα':dmGrpName(k))+' <b>'+c+'</b></button>'}).join('')+'</div>'+
+    '<div class="hsum"><span>'+L.length+' κλειστές</span><span>επιτυχία <b>'+(cnt.length?Math.round(w/cnt.length*100)+'%':'–')+'</b></span><span>σύνολο <b class="num '+cls(tot)+'">'+fR(tot)+'</b></span><span>PnL <b class="num '+cls(pnl)+'">'+(pnl>0?'+':'')+dmMoney(pnl,'')+'</b></span></div></div>';
+  h+='<div class="htab" role="table"><div class="hhd" role="row"><span>R</span><span>Έκλεισε</span><span>Νόμισμα</span><span>Στρατηγική · προφίλ</span><span class="hc-px">Είσοδος → Έξοδος</span><span class="r">PnL</span><span></span></div>';
+  L.slice((pg-1)*HPG,pg*HPG).forEach(function(t){var r=n(t.r),ok=dmCounts(t),a=t.auto||{},pn=n(t.pnl),mg=n(t.margin),ro=mg>0&&isFinite(pn)?pn/mg*100:NaN,sy=String(t.symbol||''),b=sy.replace(/(USDT|USDC|USD|PERP)$/,''),xs=t.exitAt||t.at,open=DM.hx[t.id];
+    var st=!ok?'<span class="hst nf">'+(t.nofill?'δεν μπήκε':'έληξε')+'</span>':t.status==='win'?'<span class="hst w">στόχος</span>':t.status==='loss'?'<span class="hst l">stop</span>':'<span class="hst '+(r>0?'w':r<0?'l':'')+'">κλείσιμο</span>';
+    var who=t.src==='auto'?dmGrpName(apfTagId(t)):t.src==='prof'?'🎓 Καθηγητής':'👤 '+(t.by===S.uid?'εσύ':name(t.by));
+    h+='<div class="hr'+(open?' open':'')+(ok?(r>0?' w':r<0?' l':''):' nf')+'" role="row" data-hx="'+esc(t.id)+'" tabindex="0" aria-expanded="'+(open?'true':'false')+'">'+
+      '<span class="hR num">'+(ok?fR(r):'–')+'</span>'+
+      '<span class="hD">'+(xs?esc(dmHM(xs)):'–')+'</span>'+
+      '<span class="hS">'+symIcon(b,16)+'<b>'+esc(b||sy)+'</b><i class="'+(t.dir==='short'?'neg':'pos')+'">'+(t.dir==='short'?'▼ Short':'▲ Long')+'</i></span>'+
+      '<span class="hT"><b>'+esc(t.title||'–')+'</b><small>'+esc(who)+(a.tf?' · '+esc(a.tf):'')+'</small></span>'+
+      '<span class="hP hc-px num">'+dmPx(n(t.entry))+' → '+(isFinite(n(t.exit))?dmPx(n(t.exit)):'–')+'</span>'+
+      '<span class="hM r num '+cls(pn)+'">'+(ok&&isFinite(pn)?(pn>0?'+':'')+dmMoney(pn,''):'')+(ok&&isFinite(ro)?'<small>'+(ro>0?'+':'')+fmt(ro,1)+'%</small>':'')+'</span>'+
+      '<span class="hA">'+st+'<span class="harr" aria-hidden="true">'+(open?'▴':'▾')+'</span></span></div>';
+    if(open)h+='<div class="hx" role="row"><div class="hxg">'+
+      '<div><span>Άνοιξε</span><b>'+esc(dateGr(t.date)+' '+(t.time||''))+'</b></div><div><span>Έκλεισε</span><b>'+(t.exitAt?esc(dmHM(t.exitAt)):'–')+'</b></div>'+
+      '<div><span>Είσοδος</span><b class="num">'+dmPx(n(t.entry))+'</b></div><div><span>Έξοδος</span><b class="num">'+dmPx(n(t.exit))+'</b></div>'+
+      '<div><span>Stop loss</span><b class="num neg">'+dmPx(n(t.stop))+'</b></div><div><span>Take profit</span><b class="num pos">'+dmPx(n(t.target))+'</b></div>'+
+      '<div><span>Κεφάλαιο</span><b class="num">'+dmMoney(n(t.margin)||n(t.notional),'')+' · x'+(t.lev||1)+'</b></div><div><span>Ρίσκο</span><b class="num">'+dmMoney(n(t.riskAmt),'')+'</b></div></div>'+
+      '<div class="hxa">'+dmSymCell(t)+(t.amb?' <span class="pill warn">stop και στόχος στο ίδιο κερί</span>':'')+(t.src==='auto'?' <button type="button" class="btn small" data-dmwhy="'+esc(t.id)+'">🎓 Γιατί;</button>':'')+' <button type="button" class="btn small" data-dmlog="'+esc(t.id)+'">📜 Ιστορικό</button>'+(mine?' <button type="button" class="linkbtn hdel" data-dmdel="'+esc(t.id)+'">Διαγραφή</button>':'')+'</div></div>'});
+  h+='</div>';
+  if(pages>1){var btn=function(p,t,dis,on){return '<button type="button" class="hpg'+(on?' on':'')+'" data-hpg="'+p+'"'+(dis?' disabled':'')+'>'+t+'</button>'},nums=[];for(var q=1;q<=pages;q++){if(q===1||q===pages||Math.abs(q-pg)<=1)nums.push(q);else if(nums[nums.length-1]!=='…')nums.push('…')}
+    h+='<div class="hpgs">'+btn(pg-1,'‹ Προηγούμενη',pg===1)+nums.map(function(q){return q==='…'?'<span class="muted">…</span>':btn(q,q,false,q===pg)}).join('')+btn(pg+1,'Επόμενη ›',pg===pages)+'<span class="muted" style="font-size:.78rem;margin-left:.4rem">'+((pg-1)*HPG+1)+'–'+Math.min(pg*HPG,L.length)+' από '+L.length+'</span></div>'}
+  el.innerHTML=h}
+document.addEventListener('click',function(e){if(!e.target.closest)return;var c=e.target.closest('[data-hpf]');if(c){DM.hpf=c.getAttribute('data-hpf');DM.hpg=1;renderDmHist();return}
+  var g=e.target.closest('[data-hpg]');if(g&&!g.disabled){DM.hpg=+g.getAttribute('data-hpg');renderDmHist();var x=$('#dmHist');if(x)x.scrollIntoView({block:'start',behavior:'smooth'});return}
+  var r=e.target.closest('[data-hx]');if(r&&!e.target.closest('a,button')){DM.hx=DM.hx||{};var id=r.getAttribute('data-hx');DM.hx[id]=!DM.hx[id];renderDmHist()}});
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-hx]')){e.preventDefault();e.target.click()}});
 /* 🤖 Αυτόματος Καθηγητής: όσο η σελίδα είναι ανοιχτή, σαρώνει κρύπτο, διαλέγει τη στρατηγική που ταιριάζει και ανοίγει μόνος του demo */
 window.__AP=null;var AP={cfg:null,log:[],busy:false,next:0,last:0,timer:null,tab:Math.random().toString(36).slice(2),cur:''};
 var AP_DEF={strats:'all',pick:'',mgmt:'none',slip:0.05,pNews:true,sess:'smart',size:'risk',riskPct:1,pMtf:true,pBtc:true,pVol:true,pCool:true,pCorr:true,pBrk:true,minEdge:0.1,on:false,iv:30,tf:'both',coins:'BTC,ETH,XRP,BNB,SOL,DOGE,TRX,ADA,HYPE,LINK',maxOpen:3,maxDay:5,margin:1000,lev:10,fee:0.1};
