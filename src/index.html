@@ -6813,7 +6813,7 @@ function arcAgo(t){var m=Math.round((Date.now()-t)/60000);return m<60?m+'′':m<
 function arcD(t,withTime){var d=new Date(t);return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+String(d.getFullYear()).slice(2)+(withTime?' '+pad2(d.getHours())+':'+pad2(d.getMinutes()):'')}
 function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db){el.innerHTML='<p class="muted">Το αρχείο κεριών είναι κοινό και δουλεύει όταν η σελίδα ανοίγει από το claude.ai.</p>';return}
   if(!idx){el.innerHTML='<p class="muted">Φορτώνω το αρχείο…</p>';return}
-  var tfs=ARC.tfs,keys=Object.keys(idx),coins=[];(typeof TOP10!=='undefined'?TOP10:[]).forEach(function(c){coins.push(c)});keys.forEach(function(k){var c=idx[k].coin;if(c&&coins.indexOf(c)<0)coins.push(c)});
+  var tfs=ARC.tfs,keys=Object.keys(idx),coins=[];(typeof TOP10!=='undefined'?TOP10:[]).forEach(function(c){coins.push(c)});keys.forEach(function(k){var c=idx[k].coin;if(c&&coins.indexOf(c)<0&&!(typeof COIN_SWAP!=='undefined'&&COIN_SWAP[c]))coins.push(c)});keys=keys.filter(function(k){return !(typeof COIN_SWAP!=='undefined'&&COIN_SWAP[idx[k].coin])});
   var tot=0,old=Infinity,newest=0,gaps=0;keys.forEach(function(k){var e=idx[k];tot+=e.n||0;gaps+=e.gaps||0;if(e.from<old)old=e.from;if(e.at>newest)newest=e.at});
   var can=arcCan(),TFN={'15m':'15 λεπτά','1h':'1 ώρα','4h':'4 ώρες','1D':'1 μέρα'};
   var h='<div class="arcsum"><span><b class="num">'+fmt(tot,0)+'</b> κεριά συνολικά</span>'+(isFinite(old)?'<span>παλαιότερο: <b>'+arcD(old)+'</b></span>':'')+(newest?'<span>τελευταία προσθήκη: <b>'+arcAgo(newest)+' πριν</b></span>':'')+(gaps?'<span class="warn">⚠️ '+fmt(gaps,0)+' κεριά λείπουν (κενά)</span>':tot?'<span class="pos">✓ χωρίς κενά</span>':'')+'</div>';
@@ -6891,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=224,VERS={sub:null,t:null};
+var APP_VER=225,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
