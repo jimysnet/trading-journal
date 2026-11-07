@@ -1487,6 +1487,7 @@ body.station *{animation:none!important;transition:none!important}
 @media(max-width:900px){.otab .hhd,.otab .hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}}
 .tvo-v{all:unset;font-family:var(--mono);font-weight:700;font-size:1rem;text-align:right;min-width:0;width:100%;cursor:text;color:var(--fg)}.tvo-v.pos{color:var(--gain)}.tvo-v.neg{color:var(--loss)}.tvo-v:focus{outline:2px solid var(--accent);border-radius:4px}.tvo-r .btn.ok{color:var(--gain);border-color:var(--gain)}
 .tvo-r{grid-template-columns:minmax(0,1fr) minmax(0,9rem) 2.4rem}
+.tvo-info{font-size:.8rem;color:var(--muted);margin:.6rem 0 0}.tvo-info b{color:var(--fg)}.tvo-info b.neg{color:var(--loss)}.tvo-info b.pos{color:var(--gain)}
 </style>
 
 <header class="top pad">
@@ -6875,7 +6876,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=215,VERS={sub:null,t:null};
+var APP_VER=216,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7485,7 +7486,7 @@ function tvoOpen(id){var t=tvoTrade(id);if(!t)return;var a=t.auto||{},sy=dmSym(t
   m.innerHTML='<div class="tvo" role="dialog" aria-modal="true" aria-label="Στείλε στο TradingView"><div class="formhead"><b>📈 '+esc(sy)+' · '+(short?'<span class="neg">▼ Short (Sell)</span>':'<span class="pos">▲ Long (Buy)</span>')+'</b><button type="button" class="linkbtn" data-tvx>✕</button></div>'+
     '<ol class="tvo-steps"><li>Πάτα <b>«Άνοιξε το γράφημα»</b> ('+(a.tf?'νόμισμα και timeframe '+esc(a.tf)+' έτοιμα':'το νόμισμα είναι έτοιμο')+').</li><li>Στο TradingView: κάτω πάνελ <b>Paper Trading</b>, ή δεξί κλικ στο γράφημα → <b>'+(short?'Sell':'Buy')+'</b>.</li><li>Διάλεξε <b>'+(pend||t.ord==='limit'?'Limit':'Market')+'</b>, τσέκαρε <b>Take Profit</b> και <b>Stop Loss</b> και αντίγραψε από εδώ τις τιμές με τα 📋.</li></ol>'+
     '<a class="btn primary tvo-go" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">📈 Άνοιξε το γράφημα στο TradingView</a>'+
-    '<div class="tvo-g">'+row('Κατεύθυνση',short?'Sell':'Buy',short?'neg':'pos')+row(pend||t.ord==='limit'?'Τιμή εισόδου (limit)':'Είσοδος',tvoNum(e))+row('Stop loss',tvoNum(sl),'neg')+row('Take profit',tvoNum(tg),'pos')+row('Ποσότητα ('+sy.replace(/(USDT|USDC|USD)$/,'')+')',tvoNum(qty))+row('Αξία θέσης (USDT)',isFinite(notional)?(+notional.toFixed(2)).toString():'')+row('Μόχλευση','x'+lev)+'</div>'+
+    '<div class="tvo-g">'+row(pend||t.ord==='limit'?'Τιμή εισόδου (limit)':'Είσοδος',tvoNum(e))+row('Stop loss',tvoNum(sl),'neg')+row('Take profit',tvoNum(tg),'pos')+'</div><p class="tvo-info"><b class="'+(short?'neg':'pos')+'">'+(short?'Sell':'Buy')+'</b> · ποσότητα <b>'+esc(tvoNum(qty))+' '+esc(sy.replace(/(USDT|USDC|USD)$/,''))+'</b> · αξία <b>'+(isFinite(notional)?fmt(notional,2):'–')+' USDT</b> · x'+lev+'</p>'+
     '<details class="tvo-pine"><summary>Προαιρετικά: γραμμές στο γράφημα (Pine Script)</summary><p class="muted">Στο TradingView: Pine Editor → επικόλληση → «Add to chart». Ζωγραφίζει είσοδο, stop και στόχο.</p><pre>'+esc(pine.replace(/\\n/g,'\n'))+'</pre><button type="button" class="btn small" data-tvoc="'+esc(pine)+'" data-tvol="Pine Script">📋 Αντιγραφή Pine Script</button></details>'+
     '<p class="muted tvo-note">Η εντολή μένει πάντα δική σου επιβεβαίωση. Στο TradingView δεν πηγαίνει τίποτα αυτόματα.</p></div>';
   m.hidden=false;var go=m.querySelector('.tvo-go');if(go)go.focus()}
