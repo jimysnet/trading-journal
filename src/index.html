@@ -6036,7 +6036,7 @@ function clsCtx(){var d=clsMe();if(!d||!d.level)return {enrolled:false};var l=cl
     week_rules:d.week&&d.week.rules||[],last_week_rules:d.prevWeek&&d.prevWeek.rules||[],recent_mistakes:(d.mistakes||[]).slice(-5).map(function(m){return {type:m.type,symbol:m.sym,date:lday(new Date(m.at))}}),next_lessons:CURR.slice(clsIdx(d)+1,clsIdx(d)+3).map(function(x){return x.t})}}
 
 /* ================= REPLAY: παίξε στο παρελθόν ================= */
-var RPCOINS=['BTC','ETH','SOL','XRP','BNB','DOGE','ADA','AVAX','LINK','SUI','LTC','ZEC','HYPE'],RPTF=['15m','1h','4h','1D'],RPH=15;
+var RPCOINS=['BTC','ETH','SOL','XRP','HBAR','DOGE','ADA','AVAX','LINK','SUI','LTC','ZEC','HYPE'],RPTF=['15m','1h','4h','1D'],RPH=15;
 var RP={bars:null,cut:0,shown:0,dec:null,entry:NaN,stop:NaN,tgt:NaN,pick:'stop',res:null,busy:false,msg:'',sym:'',tf:'',atr:NaN,timer:null};
 function rpStats(){var d=prMe();d.rp=d.rp||{n:0,w:0,l:0,r:0,pts:0,skip:0,best:0,seen:{}};d.rp.seen=d.rp.seen||{};return d.rp}
 function rpSave(){var d=prMe();d.by=S.uid||'me';d.upd=Date.now();PR.dirty=Date.now();put('prac',prId(),JSON.parse(JSON.stringify(d))).then(function(){PR.dirty=0}).catch(function(){})}
@@ -6825,7 +6825,7 @@ function arcPanel(){var el=$('#arcBody');if(!el)return;var idx=ARC.idx;if(!S.db)
   el.innerHTML=h}
 document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#arcFill'))arcBackfill(true);var g=e.target.closest&&e.target.closest('[data-armgo]');if(g){var p=g.getAttribute('data-armgo').split('|');ARM.coin=p[0];ARM.tf=p[1];ARM.msg='';var d=$('#arcManD');if(d)d.open=true;var a=$('#armCoin'),b=$('#armTf');if(a){if(!a.options.length)armRender();a.value=p[0]}if(b)b.value=p[1];armScan();if(d)d.scrollIntoView({behavior:'smooth',block:'start'})}});
 /* ✍️ Χειροκίνητη συμπλήρωση του αρχείου από το Binance: άνοιγμα σελίδας με 1.000 κεριά → αντιγραφή → επικόλληση */
-var ARM={coin:'BTC',tf:'1h',info:null,msg:'',busy:false},ARC_NOCC={BNB:1,TRX:1};
+var ARM={coin:'BTC',tf:'1h',info:null,msg:'',busy:false},ARC_NOCC={};
 var ARM_BI={'15m':'15m','1h':'1h','4h':'4h','1D':'1d'};
 function armUrl(coin,tf,start,end){return 'https://api.binance.com/api/v3/klines?symbol='+coin+'USDT&interval='+ARM_BI[tf]+'&limit=1000'+(start?'&startTime='+Math.floor(start):'')+(end?'&endTime='+Math.floor(end):'')}
 function armScan(){var c=ARM.coin,tf=ARM.tf,ms=ARC.ms[tf];ARM.info={loading:true};armRender();
@@ -6891,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=223,VERS={sub:null,t:null};
+var APP_VER=224,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6972,8 +6972,8 @@ function pcToDemo(d){if(PC.full){PC.full=false;PC.root.classList.remove('full');
 
 /* ================= Αγορές: blue chips & crypto με γραφήματα ================= */
 var MKS={stock:[['AAPL','Apple','NASDAQ:AAPL'],['MSFT','Microsoft','NASDAQ:MSFT'],['NVDA','NVIDIA','NASDAQ:NVDA'],['AMZN','Amazon','NASDAQ:AMZN'],['GOOGL','Alphabet (Google)','NASDAQ:GOOGL'],['META','Meta','NASDAQ:META'],['TSLA','Tesla','NASDAQ:TSLA'],['BRK.B','Berkshire Hathaway','NYSE:BRK.B'],['JPM','JPMorgan Chase','NYSE:JPM'],['TSM','TSMC','NYSE:TSM']],
-  crypto:[['BTC','Bitcoin','BINANCE:BTCUSDT'],['ETH','Ethereum','BINANCE:ETHUSDT'],['BNB','BNB','BINANCE:BNBUSDT'],['XRP','XRP','BINANCE:XRPUSDT'],['SOL','Solana','BINANCE:SOLUSDT'],['TRX','TRON','BINANCE:TRXUSDT'],['HYPE','Hyperliquid','BYBIT:HYPEUSDT'],['ZEC','Zcash','BINANCE:ZECUSDT'],['XMR','Monero','KRAKEN:XMRUSD'],['LINK','Chainlink','BINANCE:LINKUSDT'],['DOGE','Dogecoin','BINANCE:DOGEUSDT'],['ADA','Cardano','BINANCE:ADAUSDT'],['AVAX','Avalanche','BINANCE:AVAXUSDT'],['SUI','Sui','BINANCE:SUIUSDT'],['LTC','Litecoin','BINANCE:LTCUSDT']]};
-var ICONS={BTC:['#f7931a','₿'],ETH:['#627eea','Ξ'],BNB:['#f3ba2f','B','#1e2026'],XRP:['#23292f','X'],SOL:['linear-gradient(135deg,#9945ff,#14f195)','S'],TRX:['#ff060a','T'],HYPE:['#0f3933','H','#97fce4'],ZEC:['#f4b728','Z','#1e2026'],XMR:['#ff6600','M'],LINK:['#2a5ada','L'],DOGE:['#c2a633','Ð'],ADA:['#0033ad','₳'],AVAX:['#e84142','A'],SUI:['#4da2ff','S'],LTC:['#345d9d','Ł'],
+  crypto:[['BTC','Bitcoin','BINANCE:BTCUSDT'],['ETH','Ethereum','BINANCE:ETHUSDT'],['HBAR','Hedera','BINANCE:HBARUSDT'],['XRP','XRP','BINANCE:XRPUSDT'],['SOL','Solana','BINANCE:SOLUSDT'],['HYPE','Hyperliquid','BYBIT:HYPEUSDT'],['ZEC','Zcash','BINANCE:ZECUSDT'],['XMR','Monero','KRAKEN:XMRUSD'],['LINK','Chainlink','BINANCE:LINKUSDT'],['DOGE','Dogecoin','BINANCE:DOGEUSDT'],['ADA','Cardano','BINANCE:ADAUSDT'],['AVAX','Avalanche','BINANCE:AVAXUSDT'],['SUI','Sui','BINANCE:SUIUSDT'],['LTC','Litecoin','BINANCE:LTCUSDT']]};
+var ICONS={BTC:['#f7931a','₿'],ETH:['#627eea','Ξ'],HBAR:['#222222','ℏ'],XRP:['#23292f','X'],SOL:['linear-gradient(135deg,#9945ff,#14f195)','S'],HYPE:['#0f3933','H','#97fce4'],ZEC:['#f4b728','Z','#1e2026'],XMR:['#ff6600','M'],LINK:['#2a5ada','L'],DOGE:['#c2a633','Ð'],ADA:['#0033ad','₳'],AVAX:['#e84142','A'],SUI:['#4da2ff','S'],LTC:['#345d9d','Ł'],
   AAPL:['#1d1d1f',''],MSFT:['ms',''],NVDA:['#76b900','N'],AMZN:['#232f3e','a','#ff9900'],GOOGL:['#ffffff','G','#4285f4'],META:['#0866ff','∞'],TSLA:['#e82127','T'],'BRK.B':['#2b2d6e','B'],JPM:['#5c4033','J'],TSM:['#c4161c','T']};
 function symIcon(code,sz){sz=sz||24;var c=ICONS[code]||['#78909c',String(code||'?').charAt(0)],img='',st='width:'+sz+'px;height:'+sz+'px;';
   if(c[0]==='ms')return '<span class="cic cms" style="'+st+'" aria-hidden="true"><i style="background:#f25022"></i><i style="background:#7fba00"></i><i style="background:#00a4ef"></i><i style="background:#ffb900"></i></span>';
@@ -6981,7 +6981,7 @@ function symIcon(code,sz){sz=sz||24;var c=ICONS[code]||['#78909c',String(code||'
   return '<span class="cic'+(code==='GOOGL'?' cic-w':'')+'" style="'+st+'background:'+c[0]+';color:'+(c[2]||'#fff')+';font-size:'+Math.round(sz*.52)+'px" aria-hidden="true">'+esc(c[1])+img+'</span>'}
 document.addEventListener('error',function(e){var t=e.target;if(t&&t.classList&&t.classList.contains('cimg'))t.parentNode&&t.parentNode.removeChild(t)},true);
 var MK={g:'crypto',v:'one',sel:{stock:'AAPL',crypto:'BTC'},int:'240',bars:null,days:'7'};
-var CGNAME={BTC:'Bitcoin',ETH:'Ethereum',BNB:'BNB',XRP:'XRP',SOL:'Solana',TRX:'TRON',HYPE:'Hyperliquid',ZEC:'Zcash',XMR:'Monero',LINK:'Chainlink',DOGE:'Dogecoin',ADA:'Cardano',AVAX:'Avalanche',SUI:'Sui',LTC:'Litecoin'};
+var CGNAME={BTC:'Bitcoin',ETH:'Ethereum',HBAR:'Hedera',XRP:'XRP',SOL:'Solana',HYPE:'Hyperliquid',ZEC:'Zcash',XMR:'Monero',LINK:'Chainlink',DOGE:'Dogecoin',ADA:'Cardano',AVAX:'Avalanche',SUI:'Sui',LTC:'Litecoin'};
 function symListFill(){var dl=document.getElementById('symList');if(!dl)return;var seen={},h='',add=function(v,l){v=String(v||'').toUpperCase().trim();if(!v||seen[v])return;seen[v]=1;h+='<option value="'+esc(v)+'"'+(l?' label="'+esc(l)+'"':'')+'>'+(l?esc(l):'')+'</option>'};
   Object.keys(CGID).forEach(function(c){add(c+'USDT',(CGNAME[c]||c)+' · USDT')});
   Object.keys(CGID).forEach(function(c){add(c+'USDC',(CGNAME[c]||c)+' · USDC')});
@@ -6989,7 +6989,7 @@ function symListFill(){var dl=document.getElementById('symList');if(!dl)return;v
   try{(MKS.stock||[]).forEach(function(x){add(x[0],x[1]+' · μετοχή')})}catch(e){}
   ['GER40','US100','US500','XAUUSD','EURUSD'].forEach(function(x){add(x,'CFD / forex')});
   if(dl.__h!==h){dl.innerHTML=h;dl.__h=h}}
-var CGID={BTC:'bitcoin',ETH:'ethereum',BNB:'binancecoin',XRP:'ripple',SOL:'solana',TRX:'tron',HYPE:'hyperliquid',ZEC:'zcash',XMR:'monero',LINK:'chainlink',DOGE:'dogecoin',ADA:'cardano',AVAX:'avalanche-2',SUI:'sui',LTC:'litecoin'};
+var CGID={BTC:'bitcoin',ETH:'ethereum',HBAR:'hedera-hashgraph',XRP:'ripple',SOL:'solana',HYPE:'hyperliquid',ZEC:'zcash',XMR:'monero',LINK:'chainlink',DOGE:'dogecoin',ADA:'cardano',AVAX:'avalanche-2',SUI:'sui',LTC:'litecoin'};
 var CG={mcp:null,ready:false,mk:null,mkAt:0,mkErr:null,unw:null,chart:{},retry:{},cur:null};
 function cgInit(){var cl=window.claude&&window.claude.use?window.claude:null;if(!cl){CG.ready=true;renderMarkets();return}
   cl.use('mcp').then(function(m){CG.mcp=m;CG.ready=true;renderMarkets();setTimeout(moodLoad,800);setTimeout(function(){try{nwLoad(true)}catch(e){}},5000)}).catch(function(){CG.ready=true;renderMarkets()})}
@@ -7701,17 +7701,17 @@ document.addEventListener('click',function(e){if(!e.target.closest)return;var c=
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-hx]')){e.preventDefault();e.target.click()}});
 /* 🤖 Αυτόματος Καθηγητής: όσο η σελίδα είναι ανοιχτή, σαρώνει κρύπτο, διαλέγει τη στρατηγική που ταιριάζει και ανοίγει μόνος του demo */
 window.__AP=null;var AP={cfg:null,log:[],busy:false,next:0,last:0,timer:null,tab:Math.random().toString(36).slice(2),cur:''};
-var AP_DEF={strats:'all',pick:'',mgmt:'none',slip:0.05,pNews:true,sess:'smart',size:'risk',riskPct:1,pMtf:true,pBtc:true,pVol:true,pCool:true,pCorr:true,pBrk:true,minEdge:0.1,on:false,iv:30,tf:'both',coins:'BTC,ETH,XRP,BNB,SOL,DOGE,TRX,ADA,HYPE,LINK',maxOpen:3,maxDay:5,margin:1000,lev:10,fee:0.1};
+var AP_DEF={strats:'all',pick:'',mgmt:'none',slip:0.05,pNews:true,sess:'smart',size:'risk',riskPct:1,pMtf:true,pBtc:true,pVol:true,pCool:true,pCorr:true,pBrk:true,minEdge:0.1,on:false,iv:30,tf:'both',coins:'BTC,ETH,XRP,HBAR,SOL,DOGE,AVAX,ADA,HYPE,LINK',maxOpen:3,maxDay:5,margin:1000,lev:10,fee:0.1};
 var PROF='prof';
 function apKey(k){return 'tj-ap'+k+'-'+safeSeg(S.uid||'me')}
 /* κοινή κατάσταση του Αυτόματου Καθηγητή στη βάση: ρυθμίσεις, ποιος τρέχει, τελευταία σάρωση, σήματα που παίχτηκαν, τι παρακολουθεί */
 function apStSub(){if(!S.db||AP.stSub)return;try{AP.stSub=S.db.collection('apstate').doc('main').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},first=!AP.stReady;
     /* τα patches που έγιναν πριν φτάσει η κοινή κατάσταση δεν σβήνουν ό,τι υπάρχει: μπαίνουν από πάνω της */
     var pend=AP.stPend||null;AP.stPend=null;AP.state=pend?Object.assign({},d,pend):d;AP.stReady=true;
-    if(d.cfg){var co=d.coins||d.cfg.coins;AP.cfg=Object.assign({},AP_DEF,d.cfg);if(co)AP.cfg.coins=co;if(AP.chgBase==null)AP.cfgSeen=JSON.stringify(AP.cfg)}else if(AP.cfg&&qCanSave()&&!AP.cfgPushed){AP.cfgPushed=1;AP.state.cfg=AP.cfg;pend=pend||{}}
+    if(d.cfg){var co=d.coins||d.cfg.coins;AP.cfg=Object.assign({},AP_DEF,d.cfg);if(co)AP.cfg.coins=coinFix(co);if(AP.chgBase==null)AP.cfgSeen=JSON.stringify(AP.cfg)}else if(AP.cfg&&qCanSave()&&!AP.cfgPushed){AP.cfgPushed=1;AP.state.cfg=AP.cfg;pend=pend||{}}
     if(pend&&qCanSave())apStWrite({});if(d.last&&d.last>AP.last)AP.last=d.last;apRender();try{renderPf()}catch(e){}},function(){})}catch(e){}}
 function apStWrite(patch){if(S.db&&!AP.stReady){AP.stPend=Object.assign({},AP.stPend||{},patch);return}AP.state=Object.assign({},AP.state||{},patch);if(!S.db||!qCanSave())return;var d=JSON.parse(JSON.stringify(AP.state));clearTimeout(AP.stT);AP.stT=setTimeout(function(){S.db.collection('apstate').doc('main').set(d).catch(function(){})},400)}
-function apLoad(){var c={};try{c=JSON.parse(localStorage.getItem(apKey(''))||'{}')||{}}catch(e){}AP.cfg=Object.assign({},AP_DEF,c);try{AP.log=JSON.parse(localStorage.getItem(apKey('log'))||'[]')||[]}catch(e){AP.log=[]}try{AP.last=+localStorage.getItem(apKey('last'))||0}catch(e){}}
+function apLoad(){var c={};try{c=JSON.parse(localStorage.getItem(apKey(''))||'{}')||{}}catch(e){}AP.cfg=Object.assign({},AP_DEF,c);AP.cfg.coins=coinFix(AP.cfg.coins);try{AP.log=JSON.parse(localStorage.getItem(apKey('log'))||'[]')||[]}catch(e){AP.log=[]}try{AP.last=+localStorage.getItem(apKey('last'))||0}catch(e){}}
 function apSave(){try{apChgCfg()}catch(e){}try{localStorage.setItem(apKey(''),JSON.stringify(AP.cfg))}catch(e){}apStWrite({cfg:AP.cfg,coins:AP.cfg.coins})}
 function apSeen(){var m={};try{m=JSON.parse(localStorage.getItem(apKey('seen'))||'{}')||{}}catch(e){}return Object.assign(m,(AP.state&&AP.state.seen)||{})}
 function apMark(k){var m=apSeen(),now=Date.now();m[k]=now;Object.keys(m).forEach(function(x){if(now-m[x]>14*864e5)delete m[x]});try{localStorage.setItem(apKey('seen'),JSON.stringify(m))}catch(e){}apStWrite({seen:m})}
@@ -7740,7 +7740,8 @@ function apAdd(coin,kind,msg,shared){if(AP.rc&&AP.rc.multi&&kind!=='scan'&&!shar
   if(shared){/* πρόβλημα δεδομένων: ίδιο για όλα τα προφίλ, γράφεται το πολύ μία φορά ανά 6 ώρες */var dk=coin+'|'+kind;AP.dataLog=AP.dataLog||{};if(Date.now()-(AP.dataLog[dk]||0)<6*36e5)return;AP.dataLog[dk]=Date.now()}if(/^(open|prop|block|err|scan|lim)$/.test(kind))try{apDayEv(kind,coin,msg)}catch(e){}AP.log.unshift({t:Date.now(),c:coin,k:kind,m:msg});AP.log=AP.log.slice(0,150);try{localStorage.setItem(apKey('log'),JSON.stringify(AP.log))}catch(e){}}
 function apC(){return AP.rc?AP.rc.cfg:AP.cfg}
 function apMineR(){var m=apMine();if(!AP.rc||!AP.rc.id)return m;var id=AP.rc.id;return m.filter(function(t){return apfTagId(t)===id})}
-function apCoins(){return String(apC().coins||'').toUpperCase().split(/[\s,;]+/).map(function(x){return x.replace(/(USDT|USDC|USD)$/,'').replace(/[^A-Z0-9]/g,'')}).filter(function(x,i,a){return x&&a.indexOf(x)===i}).slice(0,12)}
+var COIN_SWAP={BNB:'HBAR',TRX:'AVAX'};function coinFix(str){return String(str||'').toUpperCase().split(/[\s,;]+/).map(function(x){x=x.replace(/(USDT|USDC|USD)$/,'');return COIN_SWAP[x]||x}).filter(function(x,i,a){return x&&a.indexOf(x)===i}).join(',')}
+function apCoins(){return String(coinFix(apC().coins)||'').toUpperCase().split(/[\s,;]+/).map(function(x){return x.replace(/(USDT|USDC|USD)$/,'').replace(/[^A-Z0-9]/g,'')}).filter(function(x,i,a){return x&&a.indexOf(x)===i}).slice(0,12)}
 function apMine(){return dmOf(PROF).filter(function(t){return t.src==='auto'})}
 function apLock(){/* μία σελίδα σε όλη την ομάδα τρέχει τον λογαριασμό του Καθηγητή */var now=Date.now(),L=AP.state||{};if(S.db&&!AP.stReady)return false;
   if(S.db&&L.tab&&L.tab!==AP.tab&&now-(L.at||0)<180000)return false;
@@ -8057,7 +8058,7 @@ function apfClick(e){var b=e.target.closest('[data-apf]');if(!b)return false;if(
 
 
 /* 🪙 Τα 10 κορυφαία crypto (χωρίς stablecoins) με εικονίδιο, επιλογή ένα-ένα */
-var TOP10=['BTC','ETH','XRP','BNB','SOL','DOGE','TRX','ADA','HYPE','LINK'],CNAME={BTC:'Bitcoin',ETH:'Ethereum',XRP:'XRP',BNB:'BNB',SOL:'Solana',DOGE:'Dogecoin',TRX:'TRON',ADA:'Cardano',HYPE:'Hyperliquid',LINK:'Chainlink',AVAX:'Avalanche',SUI:'Sui',LTC:'Litecoin',XMR:'Monero',ZEC:'Zcash'};
+var TOP10=['BTC','ETH','XRP','HBAR','SOL','DOGE','AVAX','ADA','HYPE','LINK'],CNAME={BTC:'Bitcoin',ETH:'Ethereum',XRP:'XRP',HBAR:'Hedera',SOL:'Solana',DOGE:'Dogecoin',ADA:'Cardano',HYPE:'Hyperliquid',LINK:'Chainlink',AVAX:'Avalanche',SUI:'Sui',LTC:'Litecoin',XMR:'Monero',ZEC:'Zcash'};
 function apTop10(){return TOP10.slice();var L=TOP10.slice();try{if(CG.mk){var r=Object.keys(CGID).map(function(k){var m=CG.mk[CGID[k]];return {k:k,r:m&&(+m.marketCapRank||+m.market_cap_rank)}}).filter(function(x){return x.r>0}).sort(function(a,b){return a.r-b.r}).map(function(x){return x.k});if(r.length>=8)L=r.slice(0,10)}}catch(e){}return L}
 function apCoinChips(sel,attr,ro){var top=apTop10(),extra=sel.filter(function(c){return top.indexOf(c)<0});
   return top.concat(extra).map(function(c,i){var on=sel.indexOf(c)>=0,m=CG&&CG.mk&&CGID[c]&&CG.mk[CGID[c]],ch=m&&+m.priceChangePercentage24h,px=m&&+m.currentPrice;
@@ -8246,7 +8247,7 @@ function genCross(a,b){var ex={},bl=[];a.bl.slice(0,Math.ceil(a.bl.length/2)).co
 function genFitness(r,sp){if(r.n<25)return -9+r.n/100;return r.avg-r.se-0.015*sp.bl.length+(r.coins?0.1*(r.pos/r.coins-0.5):0)}
 function tipSpec(t){return genClean({bl:t.bl,st:t.st,dir:'both',X:2})}
 /* δεδομένα: κεριά 1h για τα νομίσματα */
-function labData(prog){var cs={};['BTC','ETH','SOL','XRP','BNB','DOGE'].concat(AP.cfg?apCoins():[]).forEach(function(c){cs[c]=1});var coins=Object.keys(cs).slice(0,8),D=[],i=0;
+function labData(prog){var cs={};['BTC','ETH','SOL','XRP','HBAR','DOGE'].concat(AP.cfg?apCoins():[]).forEach(function(c){cs[c]=1});var coins=Object.keys(cs).slice(0,8),D=[],i=0;
   return new Promise(function(res){var step=function(){if(i>=coins.length){res(D);return}var c=coins[i++];prog('Κεριά '+c+' ('+i+'/'+coins.length+')…');
     deepBars(c+'USDT','1h',180).then(function(r){var b=r.bars.filter(function(x){return !x.approx&&x.t+36e5<=Date.now()+60000});if(b.length>=600)D.push({coin:c,b:b,I:btInd0(b)})}).catch(function(){}).then(function(){setTimeout(step,30)})};step()})}
 function labLog(m){LAB.log.unshift({t:Date.now(),m:m});LAB.log=LAB.log.slice(0,30);labRender()}
@@ -8343,7 +8344,7 @@ function mat3d(rows,coins,M){/* πίνακας στρατηγική × νόμι�
 /* ---- backtest χάρτης ---- */
 function saLoad(){if(SA.loaded||!S.db)return;SA.loaded=true;S.db.collection('bars').doc('_stratmap').get().then(function(sn){if(sn.exists&&sn.data()&&sn.data().m){SA.map=sn.data();saRender()}saMaybeRun()}).catch(function(){saMaybeRun()})}
 function saMaybeRun(){if(SA.busy||!CG.mcp)return;if(SA.map&&Date.now()-SA.map.at<6*36e5)return;if(!(qCanSave()||!S.db))return;saRun(true)}
-function saRun(auto){if(SA.busy)return;if(!CG.mcp){toast('Χρειάζεται η σύνδεση με τα δεδομένα αγοράς (Crypto.com/CoinGecko).');return}SA.busy=true;var cs={};(AP.cfg?apCoins():[]).concat(['BTC','ETH','SOL','XRP','BNB','DOGE']).forEach(function(c){cs[c]=1});var coins=Object.keys(cs).slice(0,10),i=0,M={},meta=[],ids=BT.map(function(x){return x.id});saProg('Ξεκινά…');
+function saRun(auto){if(SA.busy)return;if(!CG.mcp){toast('Χρειάζεται η σύνδεση με τα δεδομένα αγοράς (Crypto.com/CoinGecko).');return}SA.busy=true;var cs={};(AP.cfg?apCoins():[]).concat(['BTC','ETH','SOL','XRP','HBAR','DOGE']).forEach(function(c){cs[c]=1});var coins=Object.keys(cs).slice(0,10),i=0,M={},meta=[],ids=BT.map(function(x){return x.id});saProg('Ξεκινά…');
   var step=function(){if(i>=coins.length){SA.busy=false;SA.map={at:Date.now(),by:S.uid||'me',coins:meta,m:M};saProg('');saRender();if(S.db&&qCanSave())S.db.collection('bars').doc('_stratmap').set(JSON.parse(JSON.stringify(SA.map))).catch(function(){});if(!auto)toast('📊 Η ανάλυση όλων των στρατηγικών ενημερώθηκε.');return}
     var coin=coins[i++];saProg('Backtest '+coin+' ('+i+'/'+coins.length+') σε '+ids.length+' στρατηγικές…');
     deepBars(coin+'USDT','1h',365).then(function(r){var b=r.bars.filter(function(x){return !x.approx&&x.t+36e5<=Date.now()+60000});if(b.length<300)return;
@@ -8387,7 +8388,7 @@ function saInit(){var el=$('#saBody');if(!el||el.dataset.b)return;el.dataset.b='
   el.addEventListener('change',function(e){if(e.target.id==='saSort'){SA.sort=e.target.value;saRender()}})}
 /* 🧠 Agent στρατηγικών: συλλέγει backtest σε όλες τις στρατηγικές/νομίσματα, πειθαρχία μελών και απόδοση του Αυτόματου Καθηγητή, και ο Claude γράφει αναφορά */
 var AG={list:[],sel:null,busy:false,ctl:null,sub:null,prog:''};
-var AG_COINS=['BTC','ETH','SOL','XRP','DOGE','LINK','AVAX','BNB'];
+var AG_COINS=['BTC','ETH','SOL','XRP','DOGE','LINK','AVAX','HBAR'];
 function agN(x,d){return isFinite(x)?+(+x).toFixed(d==null?2:d):null}
 function agStrip(h){return String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim()}
 function agCoins(){var m={};(AP.cfg?apCoins():[]).concat(AG_COINS).forEach(function(c){m[c]=1});return Object.keys(m).slice(0,8)}
@@ -8550,7 +8551,7 @@ var NW_KW=[[/\b(etf)s?\b/i,3,'ETF'],[/\b(sec|cftc)\b/i,3,'ρυθμιστικές
   [/\b(ban(s|ned)?|lawsuit|sue[sd]?|charged|indict)/i,3,'νομικά'],[/\b(approv(e|es|ed|al)|reject(s|ed)?)\b/i,2,'έγκριση / απόρριψη'],[/\b(liquidat(ion|ed)s?)\b/i,3,'ρευστοποιήσεις'],[/\b(tariff|sanction|war|strike[sd]?)\b/i,3,'γεωπολιτικά'],
   [/\b(all[- ]time high|record high|ath)\b/i,3,'νέο ρεκόρ'],[/\b(crash(es|ed)?|plunge[sd]?|soar(s|ed)?|surge[sd]?|tumble[sd]?|rall(y|ies|ied))\b/i,2,'μεγάλη κίνηση'],[/\b(tether|usdt|stablecoin)\b/i,2,'stablecoins'],
   [/\b(list(s|ing|ed)|delist(s|ing|ed)?)\b/i,1,'listing'],[/\b(unlock|halving)\b/i,2,'προσφορά'],[/\$\s?\d+(\.\d+)?\s?(b|bn|billion)\b|\bbillion\b/i,2,'δισεκατομμύρια'],[/\b(trump|white house|congress|senate)\b/i,2,'πολιτική ΗΠΑ']];
-var NW_COINS=[[/\b(bitcoin|btc)\b/i,'BTC',2],[/\b(ethereum|eth|ether)\b/i,'ETH',2],[/\b(solana|sol)\b/i,'SOL',1],[/\b(xrp|ripple)\b/i,'XRP',1],[/\b(doge(coin)?)\b/i,'DOGE',1],[/\b(bnb|binance)\b/i,'BNB',1],[/\b(chainlink|link)\b/i,'LINK',1],[/\b(avalanche|avax)\b/i,'AVAX',1]];
+var NW_COINS=[[/\b(bitcoin|btc)\b/i,'BTC',2],[/\b(ethereum|eth|ether)\b/i,'ETH',2],[/\b(solana|sol)\b/i,'SOL',1],[/\b(xrp|ripple)\b/i,'XRP',1],[/\b(doge(coin)?)\b/i,'DOGE',1],[/\b(hedera|hbar)\b/i,'HBAR',1],[/\b(chainlink|link)\b/i,'LINK',1],[/\b(avalanche|avax)\b/i,'AVAX',1]];
 function nwScore(a){var t=String(a.title||''),s=0,why=[],coins=[];NW_KW.forEach(function(k){if(k[0].test(t)){s+=k[1];why.push(k[2])}});NW_COINS.forEach(function(k){if(k[0].test(t)){s+=k[2];coins.push(k[1])}});
   if(!coins.length&&s<4)s-=1;return {s:s,why:why,coins:coins}}
 function nwMerge(list){var m={};NW.items.concat(list).forEach(function(a){if(!a||!a.title)return;var k=(a.url||a.title).slice(0,300);if(!m[k])m[k]=a});
