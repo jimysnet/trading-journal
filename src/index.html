@@ -1489,6 +1489,11 @@ body.station *{animation:none!important;transition:none!important}
 .tvo-r{grid-template-columns:minmax(0,1fr) minmax(0,9rem) 2.4rem}
 .tvo-info{font-size:.8rem;color:var(--muted);margin:.6rem 0 0}.tvo-info b{color:var(--fg)}.tvo-info b.neg{color:var(--loss)}.tvo-info b.pos{color:var(--gain)}
 .funobj img,.funic img,.funagain img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}.funic img{filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.funcombo{position:fixed;z-index:140;transform:translate(-100%,-50%) scale(.6);opacity:0;pointer-events:none;display:flex;align-items:center;gap:.3rem;padding:.25rem .6rem .25rem .3rem;border-radius:999px;background:var(--surface);border:2px solid var(--accent);box-shadow:0 6px 18px rgba(0,0,0,.45);transition:opacity .35s ease,transform .35s ease}
+.funcombo.on{opacity:1;transform:translate(-100%,-50%) scale(1)}.funcombo.pu{border-color:var(--warn)}.funcombo b{font:800 1.05rem/1 var(--mono);color:var(--fg)}.funcombo.tr b{color:var(--gain)}.funcombo.pu b{color:var(--warn)}
+.fc-i{width:26px;height:26px;display:block}.fc-i img,.fc-i svg{width:100%;height:100%;object-fit:contain}
+.funcombo.pop b{animation:fcpop .35s ease-out}@keyframes fcpop{0%{transform:scale(1.7)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.funcombo,.funcombo.pop b{transition:none;animation:none}}
 </style>
 
 <header class="top pad">
@@ -6877,7 +6882,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=217,VERS={sub:null,t:null};
+var APP_VER=218,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8639,7 +8644,13 @@ function funSelGet(){if(FUN.sel)return FUN.sel;try{var v=localStorage.getItem('t
 function funSelRender(){var b=$('#funAgain'),s0=funSelGet();var L=s0?(s0.kind==='treat'?FUN_T:FUN_P):null,it=L&&L.find(function(x){return x[0]===s0.id});
   if(b){b.hidden=!it;if(it){b.innerHTML=(FUN_ART[it[0]]?funArt(FUN_ART[it[0]]):'<span>'+it[1]+'</span>');b.title=(s0.kind==='treat'?'Κέρασε ξανά: ':'Ξανά: ')+it[2]+' (πάτα όσες φορές θες)';b.setAttribute('aria-label',b.title);b.classList.toggle('pun',s0.kind!=='treat')}}
   $$('#funMenu [data-fun]').forEach(function(x){x.classList.toggle('sel',!!(s0&&x.getAttribute('data-fun')===s0.kind+'|'+s0.id))})}
-function funGive(kind,id,src){var L=kind==='treat'?FUN_T:FUN_P,it=L.find(function(x){return x[0]===id});if(!it)return;var to=funTarget(),from=src||$('#funBtn')||to;funMenu(false);
+/* μετρητής «×N» πάνω από τον Καθηγητή: μετράει τα συνεχόμενα κεράσματα και σβήνει όταν σταματήσεις */
+function funCombo(kind,id){var now=Date.now(),C=FUN.combo;if(C&&C.id===id&&now-C.at<3000)C.n++;else C=FUN.combo={id:id,kind:kind,n:1};C.at=now;
+  var el=$('#funCombo');if(!el){el=document.createElement('div');el.id='funCombo';el.className='funcombo';el.setAttribute('aria-live','polite');document.body.appendChild(el)}
+  var to=funTarget(),r=to&&to.getBoundingClientRect();if(r){el.style.left=Math.max(70,r.left-6)+'px';el.style.top=(r.top+r.height*.42)+'px'}
+  el.className='funcombo '+(kind==='treat'?'tr':'pu');el.innerHTML='<span class="fc-i">'+(FUN_ART[id]?funArt(FUN_ART[id]):'')+'</span><b>×'+C.n+'</b>';
+  el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop','on');clearTimeout(FUN.comboT);FUN.comboT=setTimeout(function(){el.classList.remove('on')},2200)}
+function funGive(kind,id,src){var L=kind==='treat'?FUN_T:FUN_P,it=L.find(function(x){return x[0]===id});if(!it)return;funCombo(kind,id);var to=funTarget(),from=src||$('#funBtn')||to;funMenu(false);
   var after=function(x,y){var lines=FUN_SAY[id]||['…'],say=lines[Math.floor(Math.random()*lines.length)];
     if(to&&!to.querySelector('.prig')){to.classList.add(kind==='treat'?'funyum':id==='water'?'funwet':'funhit');setTimeout(function(){to.classList.remove('funyum','funhit','funwet')},1600)}
     funSound(kind==='treat'?'treat':id==='water'?'water':'hit');profMood(kind==='treat'?'cheer':'sad');
