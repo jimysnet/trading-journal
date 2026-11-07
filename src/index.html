@@ -1375,6 +1375,25 @@ body.station *{animation:none!important;transition:none!important}
 .px3d .pfdiv i{height:100%!important;top:0!important;border-radius:3px;background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 55%,rgba(0,0,0,.25))!important;box-shadow:0 3px 0 rgba(0,0,0,.35),0 0 10px -2px currentColor}
 .px3d .pxbars{gap:3px}.px3d .pxcmp b.num{text-shadow:0 2px 0 rgba(0,0,0,.35)}
 @media (prefers-reduced-motion:reduce){.px3d .pfk{transform:none;transition:none}}
+/* 3D: Λογαριασμός Καθηγητή, ίδιο ύφος με «Πόσο μέσα πέφτει» */
+.acc3d{perspective:1000px;background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,0) 40%),var(--surface);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 30px rgba(0,0,0,.25)}
+.acc3d .pfeq b{text-shadow:0 3px 0 rgba(0,0,0,.35),0 0 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.acc3d .pfdonut{filter:drop-shadow(0 6px 0 rgba(0,0,0,.35)) drop-shadow(0 12px 14px rgba(0,0,0,.3));transform:rotateX(22deg);transform-origin:50% 60%}
+.acc3d .pfleg i{box-shadow:0 2px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.35)}
+.acc3d .pfks,.acc3d .pfstats{gap:.6rem;transform-style:preserve-3d}
+.acc3d .pfk{position:relative;padding:.6rem .7rem .65rem;border-radius:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 82%,#fff 18%),var(--sunk));border:1px solid var(--line);border-top-color:rgba(255,255,255,.18);
+  box-shadow:0 5px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 12px 18px rgba(0,0,0,.28);transform:rotateX(9deg);transform-origin:50% 100%;transition:transform .25s ease,box-shadow .25s ease}
+.acc3d .pfk:hover{transform:rotateX(0deg) translateY(-3px);box-shadow:0 8px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 18px 26px rgba(0,0,0,.32)}
+.acc3d .pfk b{text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.acc3d .pfmeter{height:9px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(255,255,255,.04));box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}.acc3d .pfmeter i{background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 55%,rgba(0,0,0,.25))!important;box-shadow:0 0 10px -2px currentColor}
+.acc3d .pfline,.acc3d .pfbars{border:1px solid var(--line);border-top-color:rgba(255,255,255,.14);box-shadow:inset 0 3px 8px rgba(0,0,0,.4),0 6px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 12px 18px rgba(0,0,0,.25);transform:rotateX(6deg);transform-origin:50% 100%}
+.acc3d .pfdiv{height:11px;border-radius:4px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(255,255,255,.04));box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}
+.acc3d .pfdiv i{height:100%!important;top:0!important;border-radius:3px;background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 55%,rgba(0,0,0,.25))!important;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.acc3d .pfsym b.num,.acc3d .pfsym .num{text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.acc3d .pfper{box-shadow:0 3px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.08)}.acc3d .pfper button.on{box-shadow:inset 0 -2px 0 rgba(0,0,0,.25),0 0 12px -2px var(--accent)}
+.acc3d .dmset2>summary{text-shadow:0 1px 0 rgba(0,0,0,.3)}
+@media (prefers-reduced-motion:reduce){.acc3d .pfk,.acc3d .pfline,.acc3d .pfbars,.acc3d .pfdonut{transform:none;transition:none}}
+.acc3d .pfk[style*="transparent"]{border:0!important;box-shadow:none!important;transform:none!important;background:transparent!important}
 </style>
 
 <header class="top pad">
@@ -1807,7 +1826,7 @@ body.station *{animation:none!important;transition:none!important}
     <div class="kpis" id="apKpi" style="margin-bottom:.9rem"></div>
     <div class="card" id="dmEvalCard" hidden style="display:none"></div>
     <div class="grid2">
-      <div class="dmleft"><div class="card" id="profAcctCard"><div class="formhead"><h2 style="margin:0">🎓 Λογαριασμός Καθηγητή</h2><span class="muted" style="font-size:.78rem">εικονικός · τον διαχειρίζεται μόνος του</span></div>
+      <div class="dmleft"><div class="card acc3d" id="profAcctCard"><div class="formhead"><h2 style="margin:0">🎓 Λογαριασμός Καθηγητή</h2><span class="muted" style="font-size:.78rem">εικονικός · τον διαχειρίζεται μόνος του</span></div>
         <div id="profStat" style="margin-top:.4rem"></div><div id="profPort" style="margin-top:.6rem"></div>
         <details class="dmset2"><summary>Κεφάλαιο και νέα αρχή</summary><div id="dmAcct"></div></details></div></div>
       <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div><div id="pxAcc" class="px3d"></div></div>
@@ -6763,7 +6782,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=201,VERS={sub:null,t:null};
+var APP_VER=202,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
