@@ -448,7 +448,7 @@ button.mkcell{font:inherit;color:inherit;text-align:left;cursor:pointer}button.m
 .exl.big{border:1px solid var(--line);border-radius:10px;padding:.4rem .75rem .4rem .4rem;background:var(--surface);font-weight:600;font-size:.9rem}
 .exl.big:hover{border-color:var(--accent)}
 .exi{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:8px;font-weight:800;font-size:.7rem;letter-spacing:-.02em;font-family:system-ui,sans-serif;flex:none}
-.exlinks.mini{display:flex;gap:.3rem;margin-top:.35rem}.exlinks.mini .exi{width:26px;height:26px;font-size:.58rem;border-radius:6px}
+.exlinks.mini{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.35rem}.exlinks.mini .exi{width:26px;height:26px;font-size:.58rem;border-radius:6px}
 .excard .dmsel{max-width:11rem}
 .dmsel{width:auto;min-width:0;padding:.3rem .5rem;font-size:.85rem}
 .dmcalc{margin:.7rem 0}.dmcalc .kpis{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
@@ -1541,7 +1541,7 @@ body.station *{animation:none!important;transition:none!important}
     <button type="button" class="grp-btn" id="grpBtn" aria-label="Η παρέα μας: συζήτηση" title="Η παρέα μας"><svg class="grp-ic" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><defs><linearGradient id="gbA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9f3ef"/></linearGradient><linearGradient id="gbB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfece6"/><stop offset="1" stop-color="#8fd6cc"/></linearGradient></defs><path d="M12 8h12a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-1v3.2l-4-3.2h-7a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="url(#gbB)" opacity=".9"/><path d="M7 4h13a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4h-8l-4.6 3.7A.6.6 0 0 1 6.4 22.2V19H7a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="url(#gbA)"/><circle cx="9" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="13.5" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="18" cy="11.5" r="1.5" fill="#1f8f84"/></svg><span class="grp-badge" id="grpBadge" hidden></span></button>
   </div>
   <aside class="prof-panel grp-panel" id="grpPanel" hidden aria-label="Η παρέα μας">
-    <div class="prof-head"><span class="grp-ic"><svg class="grp-ic" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><defs><linearGradient id="gbA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9f3ef"/></linearGradient><linearGradient id="gbB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfece6"/><stop offset="1" stop-color="#8fd6cc"/></linearGradient></defs><path d="M12 8h12a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-1v3.2l-4-3.2h-7a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="url(#gbB)" opacity=".9"/><path d="M7 4h13a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4h-8l-4.6 3.7A.6.6 0 0 1 6.4 22.2V19H7a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="url(#gbA)"/><circle cx="9" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="13.5" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="18" cy="11.5" r="1.5" fill="#1f8f84"/></svg></span><div><b>Η παρέα μας</b><span class="muted" id="grpSub">Κοινή συζήτηση</span></div><button type="button" class="btn small" id="grpWide" aria-label="Μεγαλύτερο παράθυρο" title="Μεγαλύτερο παράθυρο">⤢</button><button type="button" class="btn small" id="grpClose" aria-label="Κλείσιμο">×</button></div>
+    <div class="prof-head"><span class="grp-ic"><svg class="grp-ic" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><defs><linearGradient id="gbA2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9f3ef"/></linearGradient><linearGradient id="gbB2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfece6"/><stop offset="1" stop-color="#8fd6cc"/></linearGradient></defs><path d="M12 8h12a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-1v3.2l-4-3.2h-7a4 4 0 0 1-4-4v-6a4 4 0 0 1 4-4z" fill="url(#gbB2)" opacity=".9"/><path d="M7 4h13a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4h-8l-4.6 3.7A.6.6 0 0 1 6.4 22.2V19H7a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z" fill="url(#gbA2)"/><circle cx="9" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="13.5" cy="11.5" r="1.5" fill="#1f8f84"/><circle cx="18" cy="11.5" r="1.5" fill="#1f8f84"/></svg></span><div><b>Η παρέα μας</b><span class="muted" id="grpSub">Κοινή συζήτηση</span></div><button type="button" class="btn small" id="grpWide" aria-label="Μεγαλύτερο παράθυρο" title="Μεγαλύτερο παράθυρο">⤢</button><button type="button" class="btn small" id="grpClose" aria-label="Κλείσιμο">×</button></div>
     <div class="prof-body" id="grpBody"></div>
     <div class="grp-drop" id="grpDrop" hidden><div><b id="grpDropT">Άφησε εδώ τα αρχεία</b><span id="grpDropS">Στέλνονται στη συζήτηση και μπαίνουν στη βιβλιοθήκη</span></div></div>
   </aside>
@@ -3974,7 +3974,7 @@ function renderInsights(el,items,max){
 }
 
 /* ---------- rendering ---------- */
-function render(){try{rsCounts()}catch(e){}try{var hs=$('section[data-panel=history]');if(hs&&!hs.hidden){clearTimeout(HI.rt);HI.rt=setTimeout(hiRender,150)}}catch(e){}try{renderCiHist()}catch(e){}try{symListFill()}catch(e){}
+function render(){try{var hs=$('section[data-panel=history]');if(hs&&!hs.hidden){clearTimeout(HI.rt);HI.rt=setTimeout(hiRender,150)}}catch(e){}try{renderCiHist()}catch(e){}try{symListFill()}catch(e){}
   estimateR();updatePlaybook(true);syncManual();renderWho();renderFilters();renderStrategySelects();renderToday();renderTrades();renderStrategies();renderStats();updateCalc();explainParams();renderProf();renderConfirms();renderDemo();
 }
 function renderWho(){
@@ -4010,8 +4010,8 @@ function renderToday(){
   if(ds.r<=-set.dayLoss){head='Τέλος για σήμερα';sub='Έφτασες το όριο απώλειας της ημέρας ('+fR(-set.dayLoss)+'). Κλείσε το TradingView. Αύριο ξεκινάς από την αρχή.'}
   else if(ds.count>=set.maxTrades){head='Έκανες τις '+set.maxTrades+' συναλλαγές της ημέρας';sub='Το όριο υπάρχει για να μην κυνηγάς. Γράψε τον απολογισμό και τα λέμε αύριο.'}
   else if(ds.count===0){head='Έτοιμος για την πρώτη συναλλαγή';sub='Γράψε το πλάνο σου στο check-in πριν ανοίξεις το TradingView.'}
-  else if(ds.level==='warn'){head='Πρόσεχε';sub='Απομένουν '+left+(left===1?' συναλλαγή':' συναλλαγές')+' και '+fmt(Math.max(room,0),1)+'R μέχρι το όριο απώλειας.'}
-  else{head='Μέσα στο πλάνο';sub='Απομένουν '+left+(left===1?' συναλλαγή':' συναλλαγές')+' και '+fmt(Math.max(room,0),1)+'R μέχρι το όριο απώλειας.'}
+  else if(ds.level==='warn'){head='Πρόσεχε';sub=(left===1?'Απομένει ':'Απομένουν ')+left+(left===1?' συναλλαγή':' συναλλαγές')+' και '+fmt(Math.max(room,0),1)+'R μέχρι το όριο απώλειας.'}
+  else{head='Μέσα στο πλάνο';sub=(left===1?'Απομένει ':'Απομένουν ')+left+(left===1?' συναλλαγή':' συναλλαγές')+' και '+fmt(Math.max(room,0),1)+'R μέχρι το όριο απώλειας.'}
   var tw=timeWarn(new Date());if(tw&&ds.level!=='stop'){sub+=' '+tw;if(box.className.indexOf('ok')>=0)box.className='status warn'}
   box.innerHTML='<strong></strong><span></span>';box.querySelector('strong').textContent=(ds.level==='stop'?'🔒 ':'')+head;box.querySelector('span').textContent=sub+(ds.level==='stop'?' Η φόρμα συναλλαγών είναι κλειδωμένη μέχρι αύριο.':'');
   $('#dayKpis').innerHTML=kpi('Συναλλαγές',ds.count+' / '+set.maxTrades,'σήμερα')+kpi('Αποτέλεσμα',fR(ds.r),'κλειστές σήμερα',cls(ds.r))+kpi('Σε ευρώ',fE(ds.pnl),'μετά από προμήθειες',cls(ds.pnl));
@@ -4618,7 +4618,7 @@ function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<
   var tr=function(v){return '<span class="'+(v>0?'pos':v<0?'neg':'')+'">'+fR(v)+'</span>'};
   el.innerHTML='<p class="muted" style="margin:.2rem 0 .5rem">Στρατηγική «Scalping EMA 9/21 (pullback)», long και short, προμήθεια 0,1% ανά πλευρά, σε όλα τα κεριά του αρχείου. Ενημέρωση: '+dateGr(lday(new Date(D.at)))+'. <button class="btn sm" data-e9run>↻ Ξανά</button></p>'+
    '<div class="kpis">'+kpi('Συναλλαγές',fmt(tot.n,0),'στόχος 1,5R')+kpi('Επιτυχία',tot.n?fmt(100*tot.w/tot.n,0)+'%':'–','')+kpi('Μέσο R',tot.n?fR(tot.t/tot.n):'–','με προμήθεια')+kpi('Χωρίς προμήθεια',tot.n?fR(tot.nf/tot.n):'–','μέσο R')+kpi('Σύγκριση: Pullback EMA 20',tot.pbn?fR(tot.pb/tot.pbn):'–','μέσο R')+'</div>'+
-   '<div class="tblwrap"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>TF</th><th>Κεριά</th><th>Συναλλ.</th><th>Επιτυχία</th><th>Μέσο R 1,5R</th><th>Μέσο R 2R</th><th>Μέσο R 3R</th><th>Σύνολο 1,5R</th><th>Long / Short</th></tr></thead><tbody>'+
+   '<div class="tw"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>TF</th><th>Κεριά</th><th>Συναλλ.</th><th>Επιτυχία</th><th>Μέσο R 1,5R</th><th>Μέσο R 2R</th><th>Μέσο R 3R</th><th>Σύνολο 1,5R</th><th>Long / Short</th></tr></thead><tbody>'+
    R.map(function(r){var x=r.x15;
      return '<tr><td>'+esc(r.coin)+'</td><td>'+esc(r.tf)+'</td><td>'+fmt(r.bars,0)+'</td><td>'+x.n+'</td><td>'+fmt(100*x.w,0)+'%</td><td>'+tr(x.avg)+'</td><td>'+tr(r.x20.avg)+'</td><td>'+tr(r.x30.avg)+'</td><td>'+tr(x.tot)+'</td><td>'+tr(x.tl)+' / '+tr(x.ts)+'</td></tr>'}).join('')+'</tbody></table></div>'+(function(){var sk=D.rows.filter(function(r){return r.skip}).map(function(r){return r.coin+' '+r.tf});return sk.length?'<p class="muted" style="font-size:.8rem">Χωρίς αρκετά κεριά ακόμα (θέλει 300+): '+esc(sk.join(', '))+'</p>':''})()}
 var MPL={busy:false,rows:null};
@@ -4632,7 +4632,7 @@ function mpRender(){var el=$('#mpOut');if(!el||!MPL.rows)return;var fp=function(
   var pos=function(r){var P=r.P,x=r.px;if(x>P.vah)return '<span class="pill pos">πάνω από τη Value Area</span>';if(x<P.val)return '<span class="pill neg">κάτω από τη Value Area</span>';return '<span class="pill">μέσα · '+(x>P.poc?'πάνω':'κάτω')+' από POC</span>'};
   var idea=function(r){var P=r.P,x=r.px,w=P.vah-P.val,near=0.15*w;if(x>P.vah)return 'Έλεγξε για αποδοχή: 2 κλεισίματα 4h πάνω από το M/VAH ή retest του από πάνω.';if(x<P.val)return 'Έλεγξε για αποδοχή προς τα κάτω ή επιστροφή μέσα (κλείσιμο ξανά πάνω από το M/VAL).';if(x-P.val<near)return 'Κοντά στο M/VAL: περίμενε κερί απόρριψης για long με στόχο το M/POC.';if(P.vah-x<near)return 'Κοντά στο M/VAH: περίμενε κερί απόρριψης για short με στόχο το M/POC.';return 'Στη μέση της Value Area: χωρίς πλεονέκτημα, περίμενε τα άκρα.'};
   el.innerHTML='<p class="muted" style="margin:.2rem 0 .5rem">Επίπεδα του προηγούμενου μήνα (70% του όγκου) από τα κεριά 1 ώρας του αρχείου μας. Είναι ζώνες, όχι ακριβείς τιμές: σε άλλο ανταλλακτήριο διαφέρουν λίγο. <button class="btn sm" data-mprun>↻ Ξανά</button></p>'+
-   '<div class="tblwrap"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>Τιμή</th><th>M/VAH</th><th>M/POC</th><th>M/VAL</th><th>Θέση</th><th>Τι να κοιτάξεις</th><th>Τρέχων μήνας POC</th></tr></thead><tbody>'+
+   '<div class="tw"><table class="tbl"><thead><tr><th>Νόμισμα</th><th>Τιμή</th><th>M/VAH</th><th>M/POC</th><th>M/VAL</th><th>Θέση</th><th>Τι να κοιτάξεις</th><th>Τρέχων μήνας POC</th></tr></thead><tbody>'+
    MPL.rows.map(function(r){if(!r.P)return '<tr class="muted"><td>'+esc(r.coin)+'</td><td colspan="7">'+(r.cov!=null?'λίγα κεριά του προηγούμενου μήνα ('+Math.round(r.cov*100)+'%)· συμπλήρωσε το 1 ώρα στο Αρχείο κεριών':'δεν υπάρχουν κεριά στο αρχείο')+'</td></tr>';
      return '<tr><td><b>'+esc(r.coin)+'</b>'+(r.age>3?' <span class="warn" title="παλιά κεριά">⚠️</span>':'')+'</td><td>'+fp(r.px)+'</td><td>'+fp(r.P.vah)+'</td><td><b>'+fp(r.P.poc)+'</b></td><td>'+fp(r.P.val)+'</td><td>'+pos(r)+'</td><td style="font-size:.8rem">'+esc(idea(r))+'</td><td class="muted">'+(r.Q?fp(r.Q.poc):'–')+'</td></tr>'}).join('')+'</tbody></table></div>'+
    '<p class="muted" style="font-size:.8rem">Θεωρία: Μπούσουλας → Δείκτες → «Market Profile μήνα». Στρατηγικές: Μπούσουλας → Στρατηγικές. Backtest: Αναλύσεις → Εξελιγμένος αναλυτής → Backtest.</p>'}
@@ -5020,7 +5020,7 @@ function renderCal(){
 
 /* ---------- metrics ---------- */
 function sessionOf(tm){if(!tm)return null;var p=tm.split(':'),m=(+p[0])*60+(+p[1]||0);
-  if(m>=120&&m<600)return '1 Ασία (02:00–10:00)';if(m>=600&&m<930)return '2 Ευρώπη (10:00–15:30)';if(m>=930&&m<1110)return '3 Ευρώπη + ΗΠΑ (15:30–18:30)';if(m>=1110&&m<1380)return '4 ΗΠΑ (18:30–23:00)';return '5 Νύχτα (23:00–02:00)'}
+  if(m>=120&&m<600)return '1 Ασία (02:00–10:00)';if(m>=600&&m<990)return '2 Ευρώπη (10:00–16:30)';if(m>=990&&m<1110)return '3 Ευρώπη + ΗΠΑ (16:30–18:30)';if(m>=1110&&m<1380)return '4 ΗΠΑ (18:30–23:00)';return '5 Νύχτα (23:00–02:00)'}
 function metrics(list){
   var all=list,c=closed(list),st=stats(list),rs=c.map(function(t){return t.r}),rk=n(S.settings.risk)||1;
   var ps=c.map(function(t){return n(t.pnl)}).filter(isFinite),wins=c.filter(function(t){return t.r>0}),loss=c.filter(function(t){return t.r<0}),be=c.length-wins.length-loss.length;
@@ -6891,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=222,VERS={sub:null,t:null};
+var APP_VER=223,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7759,7 +7759,13 @@ function apGrade(x){if(!x.sig||x.fit<0||!(x.test.avgR>0)||(x.best.X||0)<1.5)retu
   if(x.reliable&&(x.fit>=2||x.best.st.avgR>0))return 2;if(x.test.n>=5&&x.test.avgR>=0.15&&x.best.st.n>=8&&x.best.st.avgR>0)return 1;return 0}
 /* ---- Ώρες αγορών (συνεδρίες, ώρες UTC) ---- */
 var SESS=[{id:'asia',t:'Ασία (Τόκιο)',a:0,b:7},{id:'lon',t:'Λονδίνο',a:7,b:12},{id:'ovl',t:'Λονδίνο + Νέα Υόρκη',a:12,b:16},{id:'ny',t:'Νέα Υόρκη',a:16,b:21},{id:'late',t:'Βράδυ ΗΠΑ',a:21,b:24},{id:'wkd',t:'Σαββατοκύριακο',a:0,b:24}];
-function sessOf(ts){var d=new Date(ts),wd=d.getUTCDay(),h=d.getUTCHours();if(wd===0||wd===6)return 'wkd';for(var i=0;i<5;i++)if(h>=SESS[i].a&&h<SESS[i].b)return SESS[i].id;return 'late'}
+/* θερινή/χειμερινή ώρα: Λονδίνο και Νέα Υόρκη μετακινούνται +1 ώρα σε UTC τον χειμώνα (οι σταθερές ώρες του SESS είναι θερινές) */
+var SESS_DC={};function sessTzOff(tz,ts){try{var d=new Date(ts),p=new Intl.DateTimeFormat('en-US',{timeZone:tz,hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(d),g=function(k){return +p.find(function(x){return x.type===k}).value};return Math.round((Date.UTC(g('year'),g('month')-1,g('day'),g('hour'),g('minute'))-Math.floor(d.getTime()/6e4)*6e4)/36e5)}catch(e){return null}}
+function sessShift(ts){var k=Math.floor(ts/864e5);if(SESS_DC[k])return SESS_DC[k];var mid=k*864e5+12*36e5,uk=sessTzOff('Europe/London',mid),us=sessTzOff('America/New_York',mid);var r={l:uk===0?1:0,n:us===-5?1:0};SESS_DC[k]=r;return r}
+function sessBounds(ts){var z=sessShift(ts),L=z.l,N=z.n;return [[0,7+L],[7+L,12+N],[12+N,16+L],[16+L,21+N],[21+N,24]]}
+function sessSync(ts){var B=sessBounds(ts||Date.now());for(var i=0;i<5;i++){SESS[i].a=B[i][0];SESS[i].b=B[i][1]}}
+function sessOf(ts){var d=new Date(ts),wd=d.getUTCDay(),h=d.getUTCHours();if(wd===0||wd===6)return 'wkd';var B=sessBounds(ts);for(var i=0;i<5;i++)if(h>=B[i][0]&&h<B[i][1])return SESS[i].id;return 'late'}
+sessSync();
 function sessInfo(id){return SESS.find(function(s){return s.id===id})||SESS[0]}
 function sessLocal(s){if(s.id==='wkd')return 'Σάβ–Κυρ';var off=-new Date().getTimezoneOffset()/60,f=function(h){return pad2(((h+off)%24+24)%24)+':00'};return f(s.a)+'–'+f(s.b)}
 function sessName(id){var s=sessInfo(id);return s.t+' ('+sessLocal(s)+')'}
@@ -7905,7 +7911,7 @@ function sxEnd(now){var d=new Date(now),wd=d.getUTCDay(),cur=sessOf(now);
   if(cur==='wkd'){var mon=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+(wd===6?2:1)));return {at:mon.getTime(),next:'asia'}}
   var s=sessInfo(cur),end=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),s.b),i=SESS.indexOf(s),nx=i<4?SESS[i+1].id:'asia';
   if(cur==='late'&&new Date(end).getUTCDay()===6)nx='wkd';return {at:end,next:nx}}
-function apSessBar(){var el=$('#apSess');if(!el)return;var now=Date.now(),cur=sessOf(now),off=-new Date().getTimezoneOffset()/60,dn=new Date(now),hNow=dn.getHours()+dn.getMinutes()/60;
+function apSessBar(){var el=$('#apSess');if(!el)return;var now=Date.now();sessSync(now);var cur=sessOf(now),off=-new Date().getTimezoneOffset()/60,dn=new Date(now),hNow=dn.getHours()+dn.getMinutes()/60;
   var bot={};try{apMine().filter(dmCounts).forEach(function(t){var k=sessOf(t.at||apTradeTs(t)),a=bot[k]=bot[k]||{n:0,r:0};a.n++;a.r+=n(t.r)})}catch(e){}
   var segs=[];SESS.slice(0,5).forEach(function(x){var a=((x.a+off)%24+24)%24,b=a+(x.b-x.a);if(b<=24)segs.push({x:x,a:a,b:b});else{segs.push({x:x,a:a,b:24});segs.push({x:x,a:0,b:b-24,cont:true})}});
   var en=sxEnd(now),wkd=cur==='wkd';
@@ -8787,7 +8793,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 function pxHtml(){var st=AP.state||{},c=AP.cfg||AP_DEF,L=dmOf(PROF).filter(function(t){return t.src==='auto'}),cl=L.filter(dmCounts),op=L.filter(function(t){return !dmClosed(t)}),now=Date.now();
   var running=c.on&&st.at&&now-st.at<180000,who=st.runner?(st.runner===S.uid?'αυτή τη σελίδα':'τη σελίδα του '+name(st.runner)):'',nx=c.on&&st.last?Math.max(0,Math.round((st.last+c.iv*60000-now)/60000)):null;
   var h='<div class="pxstat">'+(c.on?(running?'<span class="pill gain apdot"><i></i>Δουλεύει</span> <span class="muted">τρέχει από '+esc(who)+'</span>':'<span class="pill warn">Ενεργός, αλλά καμία σελίδα ανοιχτή</span> <span class="muted">Ξεκινά μόλις κάποιος ανοίξει τη σελίδα.</span>'):'<span class="pill">Σβηστός</span> <span class="muted">Άναψέ τον στις ρυθμίσεις παρακάτω.</span>')+
-    '<span class="muted"> · τελευταία σάρωση '+(st.last?apAgo(st.last):'–')+(nx!=null&&running?' · επόμενη σε '+nx+'′':'')+' · τώρα: '+esc(sessName(sessOf(now)))+'</span> <button type="button" class="linkbtn" data-pxcfg>⚙️ Ρυθμίσεις</button></div>';
+    '<span class="muted"> · τελευταία σάρωση '+(st.last?apAgo(st.last):'καμία ακόμα')+(nx!=null&&running?' · επόμενη σε '+nx+'′':'')+' · τώρα: '+esc(sessName(sessOf(now)))+'</span> <button type="button" class="linkbtn" data-pxcfg>⚙️ Ρυθμίσεις</button></div>';
   /* πόσο μέσα πέφτει */
   var act=cl.map(function(t){return n(t.r)}),prom=cl.filter(function(t){return t.auto&&isFinite(t.auto.testR)}),pr=avg(prom.map(function(t){return t.auto.testR})),aR=avg(act),wr=cl.length?cl.filter(function(t){return n(t.r)>0}).length/cl.length:NaN,ew=avg(cl.filter(function(t){return t.auto&&isFinite(t.auto.wr)}).map(function(t){return t.auto.wr}));
   var by={};cl.forEach(function(t){var k=t.title||'?',x=by[k]=by[k]||{k:k,n:0,r:0,p:[],w:0};x.n++;x.r+=n(t.r);if(n(t.r)>0)x.w++;if(t.auto&&isFinite(t.auto.testR))x.p.push(t.auto.testR)});var BL=Object.keys(by).map(function(k){var x=by[k];x.a=x.r/x.n;x.pa=avg(x.p);return x}).sort(function(a,b){return b.n-a.n}).slice(0,6);
