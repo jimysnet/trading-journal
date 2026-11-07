@@ -1913,7 +1913,7 @@ function qStats(uid){
 }
 var PROF_PHOTO=true;/* ο Καθηγητής με πραγματική φωτογραφία (prof.jpg) */
 function profSvg(cls){
-  if(PROF_PHOTO){var tn=/tiny|mini/.test(cls||'');return '<span class="prof-svg pph '+(tn?'':'cut ')+(cls||'')+'" aria-hidden="true">'+(tn?'<img src="prof_face.jpg" alt="" draggable="false">':prRigHtml())+'<i class="pph-eq"><b></b><b></b><b></b></i></span>'}
+  if(PROF_PHOTO){var tn=/tiny|mini/.test(cls||'');return '<span class="prof-svg pph '+(tn?'':'cut ')+(cls||'')+'" aria-hidden="true">'+(tn?'<img src="'+prFace()+'" alt="" draggable="false">':prRigHtml())+'<i class="pph-eq"><b></b><b></b><b></b></i></span>'}
   if(P3D.ok&&P3D.snap&&/tiny/.test(cls||''))return '<img class="prof-svg '+cls+' p3d-img" src="'+P3D.snap+'" alt="">';
   return '<svg class="prof-svg '+(cls||'')+'" viewBox="0 0 120 130" aria-hidden="true">'+
    '<ellipse class="p-shadow" cx="60" cy="124" rx="30" ry="5"/>'+
@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=233,VERS={sub:null,t:null};
+var APP_VER=234,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4940,7 +4940,17 @@ splatP:'<svg viewBox="0 0 100 100"><defs><radialGradient id="§s" cx=".45" cy=".
 var FUN_ARTN=0;function funArt(src){var p='fa'+(++FUN_ARTN)+'_';return src.replace(/§/g,p)}
 /* ===== 🧑‍🏫 Ο Καθηγητής «ζωντανός»: κεφάλι χωριστά από το σώμα, κοιτάει το ποντίκι, ανοιγοκλείνει τα μάτια, αντιδρά ===== */
 var PR={on:false,raf:0,c:{rx:0,ry:0,rz:0,tx:0,ty:0},v:{rx:0,ry:0,rz:0,tx:0,ty:0},t:{rx:0,ry:0,rz:0,tx:0,ty:0},mx:-1,my:-1,moveAt:0,glAt:0,gl:null,blinkT:0,hold:0,mode:'',modeUntil:0,reduce:false};
-function prRigHtml(){return '<span class="prig"><img class="prig-b" src="prof_body2.webp" alt="" draggable="false"><span class="prig-h"><img src="prof_head2.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span></span></span>'}
+/* χαρακτήρες Καθηγητή: ο καθένας διαλέγει στη συσκευή του (localStorage tj-pchar) */
+var PCHARS={classic:{n:'👔 Κλασικός',face:'prof_face.jpg'},cigar:{n:'🚬 Με το πούρο',face:'c2_face.jpg'}};
+function prChar(){var c='classic';try{c=localStorage.getItem('tj-pchar')||'classic'}catch(e){}return PCHARS[c]?c:'classic'}
+function prFace(){return PCHARS[prChar()].face}
+function prRigHtml(){if(prChar()==='cigar')return '<span class="prig c2"><span class="prig-h"><img class="c2b" src="c2_body.webp" alt="" draggable="false"><img class="c2smk" src="c2_smoke.webp" alt="" draggable="false"><span class="c2puff"><i></i><i></i><i></i></span><i class="c2emb"></i><span class="c2ex"><i></i><i></i></span><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span></span></span>';
+  return '<span class="prig"><img class="prig-b" src="prof_body2.webp" alt="" draggable="false"><span class="prig-h"><img src="prof_head2.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span></span></span>'}
+function prSetChar(c){if(!PCHARS[c])return;try{localStorage.setItem('tj-pchar',c)}catch(e){}
+  $$('.prig').forEach(function(r){var t=document.createElement('span');t.innerHTML=prRigHtml();r.replaceWith(t.firstChild)});
+  $$('.prof-svg img[src="prof_face.jpg"],.prof-svg img[src="c2_face.jpg"],img.pface').forEach(function(i){i.src=prFace()})}
+
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='pChar'){prSetChar(e.target.value);try{toast(e.target.value==='cigar'?'🚬 Ο Καθηγητής με το πούρο ήρθε.':'👔 Γύρισε ο κλασικός Καθηγητής.')}catch(_){}}});
 function prHeads(){return Array.prototype.filter.call(document.querySelectorAll('.prig-h'),function(h){return h.offsetParent})}
 function prStart(){if(PR.on)return;try{PR.reduce=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}PR.on=true;
   document.addEventListener('pointermove',function(e){PR.mx=e.clientX;PR.my=e.clientY;PR.moveAt=Date.now()},{passive:true});
@@ -4960,7 +4970,8 @@ function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r
   var c=PR.c,v=PR.v,k2=.055,d=.78;['rx','ry','rz','tx','ty'].forEach(function(q){v[q]=(v[q]+(T[q]-c[q])*k2)*d;c[q]+=v[q]});
   var br=Math.sin(now/760)*.35;
   var tr='perspective(420px) translate('+c.tx.toFixed(2)+'%,'+(c.ty+br*.3).toFixed(2)+'%) rotateX('+c.rx.toFixed(2)+'deg) rotateY('+c.ry.toFixed(2)+'deg) rotateZ('+(c.rz+br*.25).toFixed(2)+'deg)';
-  H.forEach(function(h){h.style.transform=tr})}
+  var tr2='perspective(900px) translate('+(c.tx*.4).toFixed(2)+'%,'+(c.ty*.3).toFixed(2)+'%) rotateX('+(c.rx*.3).toFixed(2)+'deg) rotateY('+(c.ry*.45).toFixed(2)+'deg) rotateZ('+(c.rz*.35+br*.15).toFixed(2)+'deg)';
+  H.forEach(function(h){h.style.transform=h.parentNode&&h.parentNode.classList.contains('c2')?tr2:tr})}
 function prBlink(hold){var L=document.querySelectorAll('.plid');Array.prototype.forEach.call(L,function(x){x.classList.add('on')});setTimeout(function(){Array.prototype.forEach.call(L,function(x){x.classList.remove('on')})},hold||110)}
 function prBlinkLoop(){clearTimeout(PR.blinkT);PR.blinkT=setTimeout(function(){if(!document.hidden){prBlink();if(Math.random()<.18)setTimeout(function(){prBlink()},260)}prBlinkLoop()},2200+Math.random()*4200)}
 /* αντιδράσεις: ώθηση στο κεφάλι (σαν ελατήριο) + ύφος για λίγο */
@@ -5891,7 +5902,7 @@ function renderChat(){
   if(PCH.busy)h+='<div class="pmsg a"><span class="pav">'+profSvg('tiny talk')+'</span><div class="pbub ud" id="pLive"><span class="pdots"><i></i><i></i><i></i></span></div></div>';
   h+='</div>'+(PCH.imgs.length?'<div class="pprev">'+PCH.imgs.map(function(x,i){return '<span class="thumb"><img src="'+x.thumb+'" alt=""><button type="button" class="x" data-unimg="'+i+'" aria-label="Αφαίρεση εικόνας">×</button></span>'}).join('')+'</div>':'')+'<div class="pinput"><textarea id="pq" rows="3" placeholder="'+(PCH.imgs.length?'Τι θες να δω στην εικόνα; (προαιρετικό)':'Ρώτα τον Καθηγητή…')+'" aria-label="Ερώτηση στον Καθηγητή"></textarea>'+
     '<div class="pbtns"><div class="row" style="gap:.3rem;flex-wrap:nowrap">'+(PCH.imgCap?'<label class="pmic pimg" aria-label="Στείλε εικόνα">'+imgIcon()+'<input type="file" id="pFile" accept="'+esc(PCH.imgCap.join(','))+'" multiple hidden></label>':'')+emoBtn('pq')+'<button type="button" class="pmic'+(PCH.listening?' on':'')+'" id="pMic" aria-label="Μίλα στον Καθηγητή">'+micIcon()+'</button></div><button type="button" class="btn primary" id="pSend" aria-label="Στείλε" title="Στείλε (Enter)"'+(PCH.busy?' disabled':'')+'>Στείλε</button></div></div>'+
-    '<button type="button" class="btn small pstop" id="pStop" hidden>⏹ Σταμάτα</button><div class="row pfoot"><label class="check" style="gap:.3rem">Μηνύματα Καθηγητή <select id="pNudge" class="dmsel" style="padding:.15rem .3rem"><option value="few"'+(nudgeMode()==='few'?' selected':'')+'>Λίγα (έως 2 τη μέρα)</option><option value="normal"'+(nudgeMode()==='normal'?' selected':'')+'>Κανονικά</option><option value="off"'+(nudgeMode()==='off'?' selected':'')+'>Καθόλου</option></select></label><label class="check"><input type="checkbox" id="pVoice"'+(PCH.voice?' checked':'')+'> <span>Ο Καθηγητής απαντάει και με φωνή</span></label><button type="button" class="linkbtn" id="pVset">⚙️ Ρυθμίσεις φωνής</button>'+(PCH.msgs.length?'<button type="button" class="linkbtn" id="pNew">Νέα συζήτηση</button>':'')+'</div>'+pVpanel()+
+    '<button type="button" class="btn small pstop" id="pStop" hidden>⏹ Σταμάτα</button><div class="row pfoot"><label class="check" style="gap:.3rem">Μηνύματα Καθηγητή <select id="pNudge" class="dmsel" style="padding:.15rem .3rem"><option value="few"'+(nudgeMode()==='few'?' selected':'')+'>Λίγα (έως 2 τη μέρα)</option><option value="normal"'+(nudgeMode()==='normal'?' selected':'')+'>Κανονικά</option><option value="off"'+(nudgeMode()==='off'?' selected':'')+'>Καθόλου</option></select></label><label class="check"><input type="checkbox" id="pVoice"'+(PCH.voice?' checked':'')+'> <span>Ο Καθηγητής απαντάει και με φωνή</span></label><button type="button" class="linkbtn" id="pVset">⚙️ Ρυθμίσεις φωνής</button><label class="check" style="gap:.3rem">Χαρακτήρας <select id="pChar" class="dmsel" style="padding:.15rem .3rem">'+Object.keys(PCHARS).map(function(k){return '<option value="'+k+'"'+(prChar()===k?' selected':'')+'>'+PCHARS[k].n+'</option>'}).join('')+'</select></label>'+(PCH.msgs.length?'<button type="button" class="linkbtn" id="pNew">Νέα συζήτηση</button>':'')+'</div>'+pVpanel()+
     '<p class="muted pnote" id="pNote"></p>';
   var keep=$('#pq')?$('#pq').value:'',prevTop=body.scrollTop;
   body.innerHTML=h;$('#pq').value=keep;if(keep){var qq=$('#pq');qq.style.height='auto';qq.style.height=Math.min(qq.scrollHeight+2,window.innerHeight*.45)+'px'}if(PCH.dict){var d0=PCH.dict;PCH.dict=null;pDictMode();PCH.dict.base=d0.base;PCH.dict.last=d0.last}pScrollChat(body,prevTop);pStopVis();
