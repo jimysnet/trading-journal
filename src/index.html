@@ -1485,6 +1485,8 @@ body.station *{animation:none!important;transition:none!important}
 .tvo-g{display:flex;flex-direction:column;gap:.35rem}.tvo-r{display:grid;grid-template-columns:minmax(0,1fr) auto 2.4rem;gap:.6rem;align-items:center;padding:.4rem .6rem;border:1px solid var(--line);border-radius:10px;background:var(--sunk)}.tvo-r span{font-size:.8rem;color:var(--muted)}.tvo-r b{font-size:1rem}
 .tvo-pine{margin-top:.8rem;font-size:.82rem}.tvo-pine pre{background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:.5rem;font-size:.72rem;overflow:auto;white-space:pre}.tvo-note{font-size:.74rem;margin:.7rem 0 0}
 @media(max-width:900px){.otab .hhd,.otab .hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}}
+.tvo-v{all:unset;font-family:var(--mono);font-weight:700;font-size:1rem;text-align:right;min-width:0;width:100%;cursor:text;color:var(--fg)}.tvo-v.pos{color:var(--gain)}.tvo-v.neg{color:var(--loss)}.tvo-v:focus{outline:2px solid var(--accent);border-radius:4px}.tvo-r .btn.ok{color:var(--gain);border-color:var(--gain)}
+.tvo-r{grid-template-columns:minmax(0,1fr) minmax(0,9rem) 2.4rem}
 </style>
 
 <header class="top pad">
@@ -6873,7 +6875,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=214,VERS={sub:null,t:null};
+var APP_VER=215,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7466,16 +7468,25 @@ document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' '
 var TVO_INT={'15m':'15','30m':'30','1h':'60','4h':'240','1D':'D'};
 function tvoTrade(id){var t=dmOf('prof').concat(dmOf(S.uid||'me')).find(function(x){return x.id===id});return t||null}
 function tvoNum(x){if(!isFinite(x))return '';var a=Math.abs(x),d=a>=1000?2:a>=10?3:a>=1?4:a>=.01?6:8;return (+x.toFixed(d)).toString()}
+/* αντιγραφή μέσα στο ίδιο κλικ (το πρόχειρο στα artifacts επιτρέπεται μόνο συγχρονισμένα με το πάτημα) */
+function tvoCopy(btn){var text=btn.getAttribute('data-tvoc'),lbl=btn.getAttribute('data-tvol'),ok=false;
+  var ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';(btn.closest('.tvo')||document.body).appendChild(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,text.length)}catch(e){}
+  try{ok=document.execCommand('copy')}catch(e){ok=false}ta.remove();
+  var flash=function(){btn.textContent='✓';btn.classList.add('ok');setTimeout(function(){btn.textContent=btn.getAttribute('data-tvol')==='Pine Script'?'📋 Αντιγραφή Pine Script':'📋';btn.classList.remove('ok')},1200)};
+  if(ok){flash();toast('Αντιγράφηκε: '+lbl);return}
+  var manual=function(){var row=btn.closest('.tvo-r'),inp=row&&row.querySelector('.tvo-v');if(!inp){var pre=btn.closest('.tvo-pine');inp=pre&&pre.querySelector('pre');if(inp){var r=document.createRange();r.selectNodeContents(inp);var sel=getSelection();sel.removeAllRanges();sel.addRange(r)}}else{inp.focus();inp.select()}
+    toast('Ο browser δεν άφησε αυτόματη αντιγραφή: η τιμή είναι επιλεγμένη, πάτα Ctrl+C (στο κινητό: Αντιγραφή).')};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){flash();toast('Αντιγράφηκε: '+lbl)},manual)}else manual()}
 function tvoOpen(id){var t=tvoTrade(id);if(!t)return;var a=t.auto||{},sy=dmSym(t.symbol),e=n(t.entry),sl=t.curStop!=null?n(t.curStop):n(t.stop),tg=n(t.target),lev=n(t.lev)||1,mg=n(t.margin),notional=isFinite(n(t.notional))&&n(t.notional)>0?n(t.notional):mg*lev,qty=e>0&&notional>0?notional/e:NaN,short=t.dir==='short',pend=dmIsPend(t);
   var url=exUrl('tv',sy)+(TVO_INT[a.tf]?'&interval='+TVO_INT[a.tf]:'');
   var pine='//@version=5\nindicator("Καθηγητής · '+sy+' '+(short?'Short':'Long')+'", overlay=true)\nhline('+tvoNum(e)+', "Είσοδος", color=color.gray, linestyle=hline.style_dashed)\nhline('+tvoNum(sl)+', "Stop loss", color=color.red, linewidth=2)\nhline('+tvoNum(tg)+', "Take profit", color=color.green, linewidth=2)';
-  var row=function(lbl,val,cls0,key){return '<div class="tvo-r"><span>'+lbl+'</span><b class="num '+(cls0||'')+'">'+esc(val)+'</b>'+(val?'<button type="button" class="btn small" data-tvc="'+esc(String(val))+'" data-tvl="'+esc(lbl)+'">📋</button>':'')+'</div>'};
-  var m=$('#tvoModal');if(!m){m=document.createElement('div');m.id='tvoModal';m.className='tvo-bg';document.body.appendChild(m);m.addEventListener('click',function(ev){if(ev.target===m||ev.target.closest('[data-tvx]'))m.hidden=true;var c=ev.target.closest('[data-tvc]');if(c)copy(c.getAttribute('data-tvc').replace(/\\n/g,'\n'),'Αντιγράφηκε: '+c.getAttribute('data-tvl'))});document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!m.hidden)m.hidden=true})}
+  var row=function(lbl,val,cls0,key){return '<div class="tvo-r"><span>'+lbl+'</span><input class="num tvo-v '+(cls0||'')+'" readonly value="'+esc(String(val))+'" aria-label="'+esc(lbl)+'" size="'+Math.max(4,String(val).length+1)+'">'+(val?'<button type="button" class="btn small" data-tvoc="'+esc(String(val))+'" data-tvol="'+esc(lbl)+'">📋</button>':'')+'</div>'};
+  var m=$('#tvoModal');if(!m){m=document.createElement('div');m.id='tvoModal';m.className='tvo-bg';document.body.appendChild(m);m.addEventListener('click',function(ev){if(ev.target===m||ev.target.closest('[data-tvx]'))m.hidden=true;var c=ev.target.closest('[data-tvoc]');if(c)tvoCopy(c)});m.addEventListener('focusin',function(ev){if(ev.target.classList&&ev.target.classList.contains('tvo-v'))setTimeout(function(){try{ev.target.select()}catch(x){}},0)});document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!m.hidden)m.hidden=true})}
   m.innerHTML='<div class="tvo" role="dialog" aria-modal="true" aria-label="Στείλε στο TradingView"><div class="formhead"><b>📈 '+esc(sy)+' · '+(short?'<span class="neg">▼ Short (Sell)</span>':'<span class="pos">▲ Long (Buy)</span>')+'</b><button type="button" class="linkbtn" data-tvx>✕</button></div>'+
     '<ol class="tvo-steps"><li>Πάτα <b>«Άνοιξε το γράφημα»</b> ('+(a.tf?'νόμισμα και timeframe '+esc(a.tf)+' έτοιμα':'το νόμισμα είναι έτοιμο')+').</li><li>Στο TradingView: κάτω πάνελ <b>Paper Trading</b>, ή δεξί κλικ στο γράφημα → <b>'+(short?'Sell':'Buy')+'</b>.</li><li>Διάλεξε <b>'+(pend||t.ord==='limit'?'Limit':'Market')+'</b>, τσέκαρε <b>Take Profit</b> και <b>Stop Loss</b> και αντίγραψε από εδώ τις τιμές με τα 📋.</li></ol>'+
     '<a class="btn primary tvo-go" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">📈 Άνοιξε το γράφημα στο TradingView</a>'+
     '<div class="tvo-g">'+row('Κατεύθυνση',short?'Sell':'Buy',short?'neg':'pos')+row(pend||t.ord==='limit'?'Τιμή εισόδου (limit)':'Είσοδος',tvoNum(e))+row('Stop loss',tvoNum(sl),'neg')+row('Take profit',tvoNum(tg),'pos')+row('Ποσότητα ('+sy.replace(/(USDT|USDC|USD)$/,'')+')',tvoNum(qty))+row('Αξία θέσης (USDT)',isFinite(notional)?(+notional.toFixed(2)).toString():'')+row('Μόχλευση','x'+lev)+'</div>'+
-    '<details class="tvo-pine"><summary>Προαιρετικά: γραμμές στο γράφημα (Pine Script)</summary><p class="muted">Στο TradingView: Pine Editor → επικόλληση → «Add to chart». Ζωγραφίζει είσοδο, stop και στόχο.</p><pre>'+esc(pine.replace(/\\n/g,'\n'))+'</pre><button type="button" class="btn small" data-tvc="'+esc(pine)+'" data-tvl="Pine Script">📋 Αντιγραφή Pine Script</button></details>'+
+    '<details class="tvo-pine"><summary>Προαιρετικά: γραμμές στο γράφημα (Pine Script)</summary><p class="muted">Στο TradingView: Pine Editor → επικόλληση → «Add to chart». Ζωγραφίζει είσοδο, stop και στόχο.</p><pre>'+esc(pine.replace(/\\n/g,'\n'))+'</pre><button type="button" class="btn small" data-tvoc="'+esc(pine)+'" data-tvol="Pine Script">📋 Αντιγραφή Pine Script</button></details>'+
     '<p class="muted tvo-note">Η εντολή μένει πάντα δική σου επιβεβαίωση. Στο TradingView δεν πηγαίνει τίποτα αυτόματα.</p></div>';
   m.hidden=false;var go=m.querySelector('.tvo-go');if(go)go.focus()}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tvo]');if(b){e.stopPropagation();e.preventDefault();tvoOpen(b.getAttribute('data-tvo'))}},true);
