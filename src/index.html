@@ -1331,9 +1331,9 @@ body.station *{animation:none!important;transition:none!important}
 .prof-panel.compact.csm .gchat .gact button{font-size:.88rem;padding:.12rem .16rem}
 .gchat .pmsg.gflash .pbub{animation:gnew 1.8s ease-out}
 .gchat .ghit .pbub{outline:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);outline-offset:2px}
-.gbar{display:flex;align-items:center;gap:.5rem;border-left:3px solid var(--accent);background:var(--sunk);border-radius:8px;padding:.32rem .5rem;font-size:.8rem;margin-top:.35rem;animation:pin .2s ease-out}
-.gbar span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gbar .x{border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
-.gbar.edit{border-left-color:var(--warn)}
+.grbar{display:flex;align-items:center;gap:.5rem;border-left:3px solid var(--accent);background:var(--sunk);border-radius:8px;padding:.32rem .5rem;font-size:.8rem;margin-top:.35rem;animation:pin .2s ease-out}
+.grbar span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grbar .x{border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1}
+.grbar.edit{border-left-color:var(--warn)}
 .gtype{font-size:.74rem;color:var(--muted);height:0;overflow:hidden;transition:height .2s;padding:0 .3rem;display:flex;align-items:center;gap:.35rem}
 .gtype.on{height:1.25rem}
 .gdots{display:inline-flex;gap:3px}.gdots i{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:gdot 1.1s infinite}.gdots i:nth-child(2){animation-delay:.15s}.gdots i:nth-child(3){animation-delay:.3s}
@@ -1503,6 +1503,51 @@ body.station *{animation:none!important;transition:none!important}
 .fc-i{width:26px;height:26px;display:block}.fc-i img,.fc-i svg{width:100%;height:100%;object-fit:contain}
 .funcombo.pop b{animation:fcpop .35s ease-out}@keyframes fcpop{0%{transform:scale(1.7)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.funcombo,.funcombo.pop b{transition:none;animation:none}}
+
+/* ── Σήμερα: μινιμαλ διάταξη ── */
+section[data-panel=today]{gap:1rem}
+.tdhero{display:flex;flex-direction:column;gap:1rem;padding:1.3rem 1.4rem 1.1rem;position:relative;overflow:hidden}
+.tdhero::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--accent),transparent 70%);opacity:.8}
+.tdtop{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
+.tdkick{display:block;font-family:var(--display);font-size:1.6rem;font-weight:700;line-height:1.1}
+.tddate{display:block;font-size:.8rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:.25rem}
+.tdgo .btn{padding:.6rem 1.15rem;font-size:.95rem;border-radius:12px}
+.tdhero .status{border-radius:14px;padding:.85rem 1rem .85rem 1.1rem;border-left:4px solid var(--gain);gap:.25rem}
+.tdhero .status.warn{border-left-color:var(--warn)}.tdhero .status.stop,.tdhero .status.bad{border-left-color:var(--loss)}
+.tdhero .status strong{font-size:1.12rem}.tdhero .status span{font-size:.9rem;line-height:1.45}
+.tdgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:1rem;align-items:stretch}
+.tdkpis{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:.6rem!important}
+.tdkpis .kpi{border-radius:12px;padding:.7rem .8rem .75rem;background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 82%,#fff 18%),var(--sunk));border:1px solid var(--line);border-top-color:rgba(255,255,255,.14);box-shadow:0 4px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 10px 16px rgba(0,0,0,.2);gap:.1rem;min-width:0}
+.tdkpis .kpi .lbl{font-size:.68rem}.tdkpis .kpi b{font-family:var(--mono,ui-monospace,monospace);font-size:1.35rem;line-height:1.15}.tdkpis .kpi .s{font-size:.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdlim{display:flex;flex-direction:column;justify-content:center;gap:.45rem;padding:.75rem .9rem;border-radius:12px;border:1px solid var(--line);background:var(--sunk)}
+.tdlim .lbl{font-size:.72rem}.tdlim .num{font-weight:700}
+.tdmeter{height:10px!important;border-radius:6px!important;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(255,255,255,.04))!important;box-shadow:inset 0 2px 3px rgba(0,0,0,.4)}
+.tdmeter i{border-radius:6px;background-image:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%,rgba(0,0,0,.2))!important;box-shadow:0 0 10px -2px var(--warn)}
+.tdhero .mood:empty{display:none}
+.tdex{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;padding-top:.85rem;border-top:1px dashed var(--line)}
+.tdexl{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.tdex .exrow{display:flex;flex-wrap:wrap;gap:.4rem;flex:1 1 auto;margin:0}
+.tdex .dmsel{order:3;max-width:12rem;margin-left:auto}
+.tdmain{align-items:start}
+.tdmain>.card,.tdmain .cicol>.card{margin:0}section[data-panel=today] .c3d h2{text-shadow:none}
+.tdci textarea{min-height:4.2rem}
+.tdmore{display:flex;flex-direction:column;gap:.5rem}
+.tdmh{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:.4rem 0 .1rem .2rem}
+.tdx{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden;transition:box-shadow .2s}
+.tdx[open]{box-shadow:0 10px 24px rgba(0,0,0,.18)}
+.tdx>summary{list-style:none;display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;cursor:pointer;user-select:none}
+.tdx>summary::-webkit-details-marker{display:none}
+.tdx>summary:hover{background:var(--sunk)}
+.tdxi{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:10px;background:var(--sunk);border:1px solid var(--line);font-size:1.1rem;flex:none;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.tdxt{display:flex;flex-direction:column;min-width:0;flex:1}.tdxt b{font-size:.98rem}.tdxt small{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tdxa{color:var(--muted);transition:transform .2s}.tdx[open] .tdxa{transform:rotate(180deg)}
+.tdx>.card{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;margin:0!important;border-top:1px solid var(--line)!important;padding-top:.8rem}
+.tdx>.card>.formhead>h2{display:none}
+.tdx>.card>.formhead{justify-content:flex-end}
+.tdx>.card>.formhead:not(:has(> :not(h2))){display:none}
+@media(max-width:760px){.tdgrid{grid-template-columns:1fr}.tdkick{font-size:1.35rem}.tdhero{padding:1rem}.tdkpis .kpi b{font-size:1.1rem}.tdex .dmsel{max-width:none;flex:1 1 100%;margin:0;order:0}.tdgo{width:100%}.tdgo .btn{width:100%}}
+:root[data-theme="night"] .tdkpis .kpi{box-shadow:none!important;background:var(--sunk)!important}
+:root[data-theme="night"] .tdhero::before{opacity:.4}
 </style>
 
 <header class="top pad">
@@ -1563,21 +1608,21 @@ body.station *{animation:none!important;transition:none!important}
   <section data-panel="today">
     <form class="card askbar" id="askBar" hidden style="display:none"><div class="askrow"><span class="askav" aria-hidden="true">🎓</span><input id="askQ" placeholder="Ρώτα τον Καθηγητή ό,τι θες… (π.χ. γιατί μπήκε ο αυτόματος στο XRP;)" autocomplete="off" aria-label="Ερώτηση στον Καθηγητή"><button class="btn primary" type="submit">Ρώτα</button></div>
       <div class="askchips"><button type="button" data-askq="Τι έκανε σήμερα ο Αυτόματος Καθηγητής και γιατί;">🤖 Τι έκανε σήμερα ο αυτόματος;</button><button type="button" data-askq="Ποια στρατηγική ταιριάζει στην αγορά τώρα και σε ποιο νόμισμα;">📈 Τι ταιριάζει τώρα;</button><button type="button" data-askq="Υπάρχουν σημαντικές ειδήσεις ή γεγονότα που πρέπει να προσέξουμε σήμερα;">📰 Ειδήσεις και γεγονότα</button><button type="button" data-askq="Τι λέει η τελευταία αναφορά του Agent και τι κάνουμε αυτή την εβδομάδα;">🧠 Τι λέει ο Agent;</button></div></form>
-    <div class="card excard"><div class="formhead"><h2 style="margin:0">Άνοιξε ανταλλακτήριο</h2><input id="ex-sym" list="symList" class="dmsel" placeholder="Σύμβολο, π.χ. BTCUSDT" autocomplete="off" autocapitalize="characters" aria-label="Σύμβολο"></div><div class="exrow" id="exToday" data-exsym="ex-sym" data-big="1"></div><p class="muted" style="font-size:.8rem;margin:.55rem 0 0">Στο κινητό ανοίγει η εφαρμογή αν είναι εγκατεστημένη, αλλιώς η σελίδα. Αν γράψεις σύμβολο, ανοίγει κατευθείαν το ζευγάρι.</p></div>
-    <div class="grid2">
-      <div class="card" style="display:flex;flex-direction:column;gap:.85rem">
-        <div class="formhead"><h2 style="margin:0">Η μέρα σου</h2><span class="lbl" id="todayDate"></span></div>
+    <div class="card c3d tdhero">
+      <div class="tdtop"><div><span class="tdkick">Η μέρα σου</span><span class="tddate" id="todayDate"></span></div><div class="tdgo"><button class="btn primary" type="button" id="goNewTrade">Νέα συναλλαγή</button></div></div>
         <div id="dayStatus" class="status ok"><strong>Έτοιμος για την πρώτη συναλλαγή</strong><span class="muted">Γράψε το πλάνο σου πριν ανοίξεις το TradingView.</span></div>
-        <div class="mood" id="mktMood"></div>
-        <div class="kpis" id="dayKpis"></div>
-        <div>
+      <div class="tdgrid">
+        <div class="kpis tdkpis" id="dayKpis"></div>
+        <div class="tdlim">
           <div class="row" style="justify-content:space-between"><span class="lbl">Απόσταση από το όριο απώλειας</span><span class="num" id="limitTxt"></span></div>
-          <div class="meter" style="margin-top:.35rem"><i id="limitBar" style="width:0%"></i></div>
+          <div class="meter tdmeter" style="margin-top:.35rem"><i id="limitBar" style="width:0%"></i></div>
         </div>
-        <div class="row"><button class="btn primary" type="button" id="goNewTrade">Νέα συναλλαγή</button></div>
       </div>
-      <div class="cicol">
-      <form class="card" id="checkinForm">
+        <div class="mood" id="mktMood"></div>
+    <div class="tdex excard"><span class="tdexl">Άνοιξε</span><input id="ex-sym" list="symList" class="dmsel" placeholder="Σύμβολο, π.χ. BTCUSDT" autocomplete="off" autocapitalize="characters" aria-label="Σύμβολο"><div class="exrow" id="exToday" data-exsym="ex-sym" data-big="1"></div></div>
+    </div>
+    <div class="grid2 tdmain">
+      <form class="card c3d tdci" id="checkinForm">
         <div class="formhead"><h2 style="margin:0">Ημερήσιο check-in</h2><span class="lbl">Πριν και μετά</span></div>
         <label class="f">Πώς νιώθω σήμερα
           <select id="c-mood"><option value="">Διάλεξε</option><option>Ήρεμος, συγκεντρωμένος</option><option>Κουρασμένος</option><option>Αγχωμένος</option><option>Βιαστικός να βγάλω λεφτά</option><option>Θέλω να πάρω πίσω χθεσινή απώλεια</option><option>Χαρούμενος, με αυτοπεποίθηση</option><option>Υπερβολικά σίγουρος μετά από κέρδη</option><option>Αφηρημένος, με άλλα στο μυαλό</option><option>Άυπνος ή αδιάθετος</option><option>Θυμωμένος ή απογοητευμένος</option><option value="__other">Άλλο (γράφω μόνος μου)…</option></select></label>
@@ -1588,25 +1633,38 @@ body.station *{animation:none!important;transition:none!important}
           <textarea aria-label="Απολογισμός" id="c-review" placeholder="Τι έκανα καλά, τι θα άλλαζα, τήρησα το πλάνο;"></textarea></div>
         <div class="row"><button class="btn primary" type="submit" id="c-save">Αποθήκευση check-in</button><span class="muted" id="c-state"></span></div>
       </form>
-  <div class="card" id="ciHistCard"><div class="formhead"><h2 style="margin:0">📒 Ιστορικό check-in</h2><div class="row cifl" style="gap:.4rem;flex-wrap:wrap"><select id="ci-who" aria-label="Ποιος"><option value="all">Όλα τα μέλη</option><option value="me">Μόνο εγώ</option></select><input id="ci-q" type="search" placeholder="Αναζήτηση σε πλάνο, απολογισμό, διάθεση…" autocomplete="off" ></div></div>
-      <div id="ciHist" style="margin-top:.7rem"></div><div class="pager" id="ciPager" hidden></div></div>
+      <div class="cicol">
+      <div class="card c3d" id="riskCard"><div class="formhead"><h2 style="margin:0">Έλεγχος ρίσκου</h2><button class="btn small" type="button" data-goparams>Όρια</button></div><div id="riskBody" style="margin-top:.6rem"></div></div>
+      <div class="card c3d" id="goalCard"><div class="formhead"><h2 style="margin:0">Στόχοι</h2><div class="advtabs" id="goalTabs" role="tablist" aria-label="Στόχοι"><button type="button" data-g="week" aria-selected="true">Εβδομάδα</button><button type="button" data-g="month" aria-selected="false">Μήνας</button><button type="button" data-g="quarter" aria-selected="false">Τρίμηνο</button></div></div><div id="goalBody" style="margin-top:.6rem"></div></div>
       </div>
     </div>
-    <div class="grid2">
-      <div class="card" id="riskCard"><div class="formhead"><h2 style="margin:0">Έλεγχος ρίσκου</h2><button class="btn small" type="button" data-goparams>Όρια</button></div><div id="riskBody" style="margin-top:.6rem"></div></div>
-      <div class="card" id="goalCard"><div class="formhead"><h2 style="margin:0">Στόχοι</h2><div class="advtabs" id="goalTabs" role="tablist" aria-label="Στόχοι"><button type="button" data-g="week" aria-selected="true">Εβδομάδα</button><button type="button" data-g="month" aria-selected="false">Μήνας</button><button type="button" data-g="quarter" aria-selected="false">Τρίμηνο</button></div></div><div id="goalBody" style="margin-top:.6rem"></div></div>
+    <div class="grid2 tdmain">
+    <div class="card c3d"><div class="formhead"><h2 style="margin:0">Ανοιχτές θέσεις</h2></div><div id="openList"></div></div>
+    <div class="card c3d"><div class="formhead"><h2 style="margin:0">Πριν πατήσεις Buy ή Sell</h2><span class="muted" id="preCount"></span></div><ul class="checks" id="preList" style="margin-top:.8rem"></ul><div class="row"><button class="btn small" type="button" id="preReset">Καθαρισμός</button><button class="btn small" type="button" data-ref="p-checklist">Γιατί αυτές οι ερωτήσεις</button></div></div>
     </div>
     <div class="card" id="propCard" hidden><div class="formhead"><h2 style="margin:0">Prop challenge</h2><button class="btn small" type="button" data-goparams>Ρυθμίσεις</button></div><div id="propBody" style="margin-top:.6rem"></div></div>
+    <div class="tdmore"><span class="tdmh">Περισσότερα</span>
+    <details class="tdx" data-tdx="nw"><summary><span class="tdxi" aria-hidden="true">📰</span><span class="tdxt"><b>Ειδήσεις και γεγονότα</b><small>τίτλοι crypto και οικονομικό ημερολόγιο</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
     <div class="card" id="nwCard"><div class="formhead"><h2 style="margin:0">📰 Ειδήσεις και σημαντικά γεγονότα</h2><div class="row" style="gap:.4rem"><div class="nwseg" role="group" aria-label="Ποιες ειδήσεις"><button type="button" data-nws="imp">Σημαντικές</button><button type="button" data-nws="all">Όλες</button></div><button class="btn small" type="button" id="nwRef" aria-label="Ανανέωση">↻</button></div></div>
       <p class="muted" id="nwStat" style="font-size:.8rem;margin:.3rem 0 .5rem"></p>
       <div class="nwg"><div><span class="lbl">Ειδήσεις crypto</span><div id="nwList"></div></div><div><span class="lbl">📅 Οικονομικό ημερολόγιο (ώρα σου)</span><div id="nwCal"></div></div></div>
       <p class="muted" style="font-size:.76rem;margin:.6rem 0 0">Οι τίτλοι εμφανίζονται αυτούσιοι από το CoinGecko. Η σελίδα δείχνει πόσο σημαντική είναι μια είδηση (θέμα, νομίσματα, πόσες πηγές τη γράφουν), όχι αν είναι καλή ή κακή για την τιμή. Για τις πολύ σημαντικές και πριν από μεγάλες ανακοινώσεις βγαίνει ειδοποίηση.</p></div>
+    </details>
+    <details class="tdx" data-tdx="ins"><summary><span class="tdxi" aria-hidden="true">💡</span><span class="tdxt"><b>Ο αναλυτής</b><small>τι βλέπει στις συναλλαγές σου</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
+    <div class="card" id="insCard"><div class="formhead"><h2 style="margin:0">Ο αναλυτής</h2><button class="btn small xbtn" type="button" id="insMore" hidden></button></div><ul class="insights" id="insightsToday" style="margin-top:.6rem"></ul></div>
+    </details>
+    <details class="tdx" data-tdx="cf"><summary><span class="tdxi" aria-hidden="true">🎓</span><span class="tdxt"><b>Επιβεβαιώσεις Καθηγητή</b><small>οι προτάσεις του και πώς βγήκαν</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
+    <div class="card" id="cfCard"><div class="formhead"><h2 style="margin:0">Επιβεβαιώσεις Καθηγητή</h2><div class="row" style="gap:.4rem"><select id="cf-who" aria-label="Ποιος"><option value="all">Όλοι</option><option value="me">Μόνο εγώ</option></select><button class="btn small primary" type="button" id="cfAsk">Ζήτα 3-4 τεχνικές</button></div></div><div id="cfBody" style="margin-top:.6rem"></div></div>
+    </details>
+    <details class="tdx" data-tdx="ag"><summary><span class="tdxi" aria-hidden="true">🧠</span><span class="tdxt"><b>Agent στρατηγικών</b><small>εβδομαδιαία αναφορά και ιδέες</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
     <div class="card" id="agCard"><div class="formhead"><h2 style="margin:0">🧠 Agent στρατηγικών</h2><div class="row" style="gap:.4rem;flex-wrap:wrap"><select id="agSel" class="dmsel" aria-label="Αναφορά" hidden></select><button class="btn small primary" type="button" id="agRun">🧠 Τρέξε τον Agent</button><button class="btn small" type="button" id="agStop" hidden>Σταμάτα</button></div></div>
       <div id="agStat" class="apstat" style="margin-top:.4rem"></div><div id="agBody" style="margin-top:.3rem"></div></div>
-    <div class="card" id="insCard"><div class="formhead"><h2 style="margin:0">Ο αναλυτής</h2><button class="btn small xbtn" type="button" id="insMore" hidden></button></div><ul class="insights" id="insightsToday" style="margin-top:.6rem"></ul></div>
-    <div class="card" id="cfCard"><div class="formhead"><h2 style="margin:0">Επιβεβαιώσεις Καθηγητή</h2><div class="row" style="gap:.4rem"><select id="cf-who" aria-label="Ποιος"><option value="all">Όλοι</option><option value="me">Μόνο εγώ</option></select><button class="btn small primary" type="button" id="cfAsk">Ζήτα 3-4 τεχνικές</button></div></div><div id="cfBody" style="margin-top:.6rem"></div></div>
-    <div class="card"><div class="formhead"><h2 style="margin:0">Πριν πατήσεις Buy ή Sell</h2><span class="muted" id="preCount"></span></div><ul class="checks" id="preList" style="margin-top:.8rem"></ul><div class="row"><button class="btn small" type="button" id="preReset">Καθαρισμός</button><button class="btn small" type="button" data-ref="p-checklist">Γιατί αυτές οι ερωτήσεις</button></div></div>
-    <div class="card"><h2>Ανοιχτές θέσεις</h2><div id="openList"></div></div>
+    </details>
+    <details class="tdx" data-tdx="cih"><summary><span class="tdxi" aria-hidden="true">📒</span><span class="tdxt"><b>Ιστορικό check-in</b><small>πλάνα και απολογισμοί της ομάδας</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
+  <div class="card" id="ciHistCard"><div class="formhead"><h2 style="margin:0">📒 Ιστορικό check-in</h2><div class="row cifl" style="gap:.4rem;flex-wrap:wrap"><select id="ci-who" aria-label="Ποιος"><option value="all">Όλα τα μέλη</option><option value="me">Μόνο εγώ</option></select><input id="ci-q" type="search" placeholder="Αναζήτηση σε πλάνο, απολογισμό, διάθεση…" autocomplete="off" ></div></div>
+      <div id="ciHist" style="margin-top:.7rem"></div><div class="pager" id="ciPager" hidden></div></div>
+    </details>
+    </div>
   </section>
 
   <!-- ΣΥΝΑΛΛΑΓΕΣ -->
@@ -4001,6 +4059,12 @@ function renderStrategySelects(){impStrategies();
   s.innerHTML='<option value="">— Διάλεξε στρατηγική —</option>'+so+'<option value="_off">Εκτός πλάνου (χωρίς setup)</option>';
   s.value=v;var bs=$('#bulkStrat');if(bs){var bv=bs.value;bs.innerHTML='<option value="">Στρατηγική: –</option>'+so+'<option value="_off">Εκτός πλάνου</option>';bs.value=bv}
 }
+
+/* Σήμερα: οι αναδιπλούμενες ενότητες θυμούνται αν τις άφησες ανοιχτές · ό,τι ζητάει να εμφανιστεί μέσα τους, τις ανοίγει */
+(function(){var K='tj-tdx',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){}
+  function init(){document.querySelectorAll('details.tdx[data-tdx]').forEach(function(d){var k=d.getAttribute('data-tdx');if(st[k])d.open=true;d.addEventListener('toggle',function(){st[k]=d.open?1:0;try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}})})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+  var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&!d.open)d.open=true;return si.apply(this,arguments)}})();
 function renderToday(){
   var d=today();$('#todayDate').textContent=dateGr(d);
   var ds=dayState(S.uid),set=S.settings,box=$('#dayStatus');
@@ -6891,7 +6955,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=225,VERS={sub:null,t:null};
+var APP_VER=226,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -9295,8 +9359,8 @@ function gQkOn(){try{return localStorage.getItem('tj-gqk')!=='0'}catch(e){return
 function grpQuickHtml(){if(!qCanSave()||GRP.edit)return '';var on=gQkOn();
   return '<div class="gqk'+(on?'':' off')+'"><button type="button" class="gqt" data-gqt="1" title="'+(on?'Κρύψε':'Δείξε')+' τα γρήγορα trade emoji" aria-pressed="'+on+'">📈</button>'+(on?'<div class="gqs">'+GQK.map(function(q,i){return '<button type="button" data-gqk="'+i+'" title="Στείλε: '+esc(q[0]+' '+q[1])+'"><span>'+q[0]+'</span>'+esc(q[1])+'</button>'}).join('')+'</div>':'<span class="muted">Γρήγορα trade emoji</span>')+'</div>'}
 function grpQuickSend(i){var q=GQK[i];if(!q||GRP.busy)return;var ta=$('#gq'),keep=ta?ta.value:'';if(ta)ta.value=q[0]+' '+q[1];var img=GRP.img;GRP.img=null;gSend();GRP.img=img;GRP.qkKeep=keep}
-function grpBarHtml(){var b='';if(GRP.edit){b='<div class="gbar edit"><span>✏️ <b>Επεξεργασία μηνύματος</b></span><button type="button" class="x" data-gbarx="1" aria-label="Άκυρο">×</button></div>'}
-  else if(GRP.re){b='<div class="gbar"><span>↩ Απάντηση σε <b>'+esc(GRP.re.by===S.uid?'εσένα':name(GRP.re.by))+'</b>: '+esc(GRP.re.t||'')+'</span><button type="button" class="x" data-gbarx="1" aria-label="Άκυρο">×</button></div>'}
+function grpBarHtml(){var b='';if(GRP.edit){b='<div class="grbar edit"><span>✏️ <b>Επεξεργασία μηνύματος</b></span><button type="button" class="x" data-gbarx="1" aria-label="Άκυρο">×</button></div>'}
+  else if(GRP.re){b='<div class="grbar"><span>↩ Απάντηση σε <b>'+esc(GRP.re.by===S.uid?'εσένα':name(GRP.re.by))+'</b>: '+esc(GRP.re.t||'')+'</span><button type="button" class="x" data-gbarx="1" aria-label="Άκυρο">×</button></div>'}
   return b}
 function grpFind(id){return (S.chat||[]).find(function(x){return x.id===id})}
 function grpJump(id){var el=document.querySelector('#gchat [data-mid="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]');if(!el){gNote('Το μήνυμα δεν υπάρχει πια.');return}
