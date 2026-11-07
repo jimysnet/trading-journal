@@ -6891,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=219,VERS={sub:null,t:null};
+var APP_VER=220,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7481,16 +7481,26 @@ document.addEventListener('click',function(e){if(!e.target.closest)return;var c=
   var r=e.target.closest('[data-ox]');if(r&&!e.target.closest('a,button,input')){DM.ox=DM.ox||{};var id=r.getAttribute('data-ox');DM.ox[id]=!DM.ox[id];renderDmOpen()}});
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-ox]')){e.preventDefault();e.target.click()}});
 /* Διάγραμμα δίπλα στην ανοιχτή συναλλαγή: κεριά του νομίσματος με είσοδο, SL, TP (και κλειδωμένο stop) */
-var OTC=window.__OTC={},OT_TFS=['15m','1h','4h'],OT_DAYS={'15m':2,'1h':6,'4h':24};
+var OTC=window.__OTC={},OT_TFS=['15m','1h','4h'],OT_DAYS={'15m':10,'1h':30,'4h':120},OT_CG={'15m':'1','1h':'7','4h':'30'};
 function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];return u||(OT_TFS.indexOf(a.tf)>=0?a.tf:'1h')}
-function otLoad(k,sym,tf){var o=OTC[k]||{};o.busy=true;OTC[k]=o;
-  histBars(sym,tf,OT_DAYS[tf]||6).then(function(L){o.bars=(L||[]).filter(function(b){return isFinite(b.o)&&isFinite(b.h)&&isFinite(b.l)&&isFinite(b.c)}).slice(-96);o.err=!o.bars.length}).catch(function(){o.err=true}).then(function(){o.busy=false;o.at=Date.now();if(Object.keys(DM.ox||{}).some(function(i){return DM.ox[i]}))renderDmOpen()})}
+/* εφεδρικό: κεριά φτιαγμένα από τις τιμές του CoinGecko (ανά 5λεπτο/ώρα) ομαδοποιημένες στο πλαίσιο */
+function otCg(base,tf){var id=CGID[base],ms=CC_TFMS[tf];if(!id||!CG.mcp)return Promise.resolve([]);
+  return CG.mcp.callTool('CoinGecko','get-coin-market-chart',{id:id,days:OT_CG[tf]},{cache:{staleTime:120000,gcTime:1800000}}).then(function(r){var P=(r&&r.payload&&r.payload.prices)||[],out=[],cur=null;
+    P.forEach(function(q){var t=+q[0],v=+q[1];if(!isFinite(t)||!isFinite(v))return;var k=Math.floor(t/ms)*ms;if(!cur||cur.t!==k){if(cur)out.push(cur);cur={t:k,o:v,h:v,l:v,c:v}}else{cur.h=Math.max(cur.h,v);cur.l=Math.min(cur.l,v);cur.c=v}});if(cur)out.push(cur);
+    for(var i=1;i<out.length;i++){out[i].o=out[i-1].c;out[i].h=Math.max(out[i].h,out[i].o);out[i].l=Math.min(out[i].l,out[i].o)}return out}).catch(function(){return []})}
+function otLoad(k,sym,tf){var o=OTC[k]||{};o.busy=true;OTC[k]=o;var base=dmSym(sym).replace(/(USDT|USDC|USD|PERP)$/,'');
+  var ok=function(L){return (L||[]).filter(function(b){return b&&isFinite(b.o)&&isFinite(b.h)&&isFinite(b.l)&&isFinite(b.c)})};
+  histBars(sym,tf,OT_DAYS[tf]||30).then(function(L){return ok(L)}).catch(function(){return []}).then(function(L){
+    var fresh=L.length&&Date.now()-L[L.length-1].t<(CC_TFMS[tf]||36e5)*6;
+    if(L.length>=10&&fresh){o.src='';return L}
+    return otCg(base,tf).then(function(G){G=ok(G);if(G.length>=10){o.src='CoinGecko';return G}o.src=L.length>=10?'παλιά κεριά':'';return L})
+  }).then(function(L){o.bars=L.slice(-96);o.err=o.bars.length<10}).catch(function(){o.err=true}).then(function(){o.busy=false;o.at=Date.now();if(Object.keys(DM.ox||{}).some(function(i){return DM.ox[i]}))renderDmOpen()})}
 function otChartHtml(t){var tf=otTf(t),k=dmSym(t.symbol)+'|'+tf,C=OTC[k];
   if(!C||(!C.busy&&Date.now()-(C.at||0)>(tf==='15m'?12e4:3e5)))otLoad(k,t.symbol,tf);C=OTC[k];
   var tabs='<div class="otcf" role="group" aria-label="Χρονικό πλαίσιο">'+OT_TFS.map(function(x){return '<button type="button" data-otf="'+esc(t.id)+'" data-tf="'+x+'" aria-pressed="'+(x===tf)+'">'+x+'</button>'}).join('')+'</div>';
   var b=String(t.symbol||'').replace(/(USDT|USDC|USD|PERP)$/,'');
-  var body=C.bars&&C.bars.length?otSvg(t,C.bars,tf):'<div class="otce">'+(C.err?'Δεν βρέθηκαν κεριά για '+esc(b)+' '+tf+'. Δοκίμασε άλλο πλαίσιο ή γέμισε το αρχείο κεριών.':'Φορτώνει κεριά…')+'</div>';
-  return '<div class="otc"><div class="otch"><b>'+symIcon(b,16)+' '+esc(b)+'/USDT · '+tf+'</b>'+tabs+'</div>'+body+'</div>'}
+  var body=C.bars&&C.bars.length?otSvg(t,C.bars,tf):'<div class="otce">'+(C.err&&!C.busy?'<div>Δεν βρέθηκαν κεριά για '+esc(b)+' '+tf+' (ούτε στο αρχείο, ούτε στο Crypto.com, ούτε στο CoinGecko).<br><button type="button" class="btn small" data-otre="'+esc(k)+'" style="margin-top:.5rem">↻ Ξαναδοκίμασε</button></div>':'Φορτώνει κεριά…')+'</div>';
+  return '<div class="otc"><div class="otch"><b>'+symIcon(b,16)+' '+esc(b)+'/USDT · '+tf+(C.src&&C.bars&&C.bars.length?' <small class="mu" style="font-weight:400;color:var(--muted)">· '+esc(C.src)+'</small>':'')+'</b>'+tabs+'</div>'+body+'</div>'}
 function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l,c:b.c}}),lp=livePx(t.symbol),ms=CC_TFMS[tf]||36e5,last=B[B.length-1];
   if(isFinite(lp)&&last){if(Date.now()-last.t<ms){last.c=lp;last.h=Math.max(last.h,lp);last.l=Math.min(last.l,lp)}else B.push({t:last.t+ms,o:last.c,h:Math.max(last.c,lp),l:Math.min(last.c,lp),c:lp})}
   B=B.slice(-90);var W=640,H=300,R=74,T=10,Bm=22,pw=W-R,ph=H-T-Bm,N=B.length,bw=pw/(N+6);
@@ -7520,6 +7530,7 @@ function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l
   s+='</svg>';
   var leg='<div class="otlg"><span class="tp">━ TP '+dmPx(tg)+'</span><span class="en">━ Είσοδος '+dmPx(e)+'</span><span class="sl">━ SL '+dmPx(isFinite(cs)?cs:st)+'</span>'+(isFinite(lp)?'<span class="nw">┅ Τώρα '+dmPx(lp)+'</span>':'')+(ei>=0?'<span class="mu">┆ ώρα εισόδου</span>':'')+'</div>';
   return s+leg}
+document.addEventListener('click',function(e){var r=e.target.closest&&e.target.closest('[data-otre]');if(r){e.stopPropagation();var K=r.getAttribute('data-otre'),o=OTC[K];if(o&&!o.busy){o.err=false;otLoad(K,K.split('|')[0],K.split('|')[1]);renderDmOpen()}return}},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-otf]');if(!b)return;e.stopPropagation();DM.otf=DM.otf||{};DM.otf[b.getAttribute('data-otf')]=b.getAttribute('data-tf');renderDmOpen()},true);
 
 /* 📈 Στο TradingView: γράφημα στο σωστό timeframe + τιμές έτοιμες για αντιγραφή στο Paper Trading */
