@@ -6727,7 +6727,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=193,VERS={sub:null,t:null};
+var APP_VER=194,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6757,7 +6757,7 @@ function arcBasisHtml(tf,days){var B=arcBasis(tf);if(!B)return '<span class="arc
   return '<span class="arcbasis" title="Όλες οι κρίσεις (σήματα, backtest, αναλύσεις, Καθηγητής) γίνονται πάνω στο μόνιμο αρχείο κεριών + τα φρέσκα του Crypto.com">📚 Βάση: κεριά '+esc(tf)+' από <b>'+arcD(lim)+'</b> · '+B.coins+' νομίσματα · '+fmt(B.n,0)+' κεριά'+(B.gaps?' · '+fmt(B.gaps,0)+' κενά':'')+'</span>'}
 function gmErrText(e){var c=e&&e.code;if(c==='server_not_connected'||c==='server_not_found')return 'Το Gemini δεν είναι διαθέσιμο σε αυτόν τον λογαριασμό. Δεν χρειάζεσαι λογαριασμό στο Gemini: η σελίδα χρησιμοποιεί το κοινό ιστορικό και το συμπληρώνει με φρέσκα κεριά Crypto.com.';if(c==='no_gemini')return 'Το Gemini δεν έδωσε κεριά.';
   if(c==='not_in_manifest'||c==='approval_required'||c==='consent_required')return 'Η σελίδα χρειάζεται την άδειά σου για το Gemini: πάτα «Σύνδεση Gemini» στην κάρτα και μετά «Allow».';if(c==='parse')return 'Ήρθε απάντηση από το Gemini αλλά δεν μπόρεσα να τη διαβάσω.';
-  if(c==='no_shared')return 'Δεν υπάρχουν ακόμα κοινά κεριά για αυτό το νόμισμα.';if(c==='no_data_any')return 'Δεν βρέθηκαν κεριά ούτε στο κοινό ιστορικό ούτε στο Crypto.com για αυτό το νόμισμα.';return 'Δεν ήρθαν κεριά από το Gemini για αυτό το νόμισμα.'}
+  if(c==='no_shared')return 'Δεν υπάρχουν ακόμα κοινά κεριά για αυτό το νόμισμα.';if(c==='no_data_any')return 'Δεν βρέθηκαν κεριά ούτε στο κοινό ιστορικό ούτε στο Crypto.com για αυτό το νόμισμα.';if(e&&e.message){try{console.error('scan',e)}catch(x){}return 'Εσωτερικό σφάλμα της σελίδας στη σάρωση ('+String(e.message).slice(0,80)+'). Θα ξαναδοκιμάσει στην επόμενη σάρωση.'}return 'Δεν ήρθαν κεριά για αυτό το νόμισμα.'}
 function ccFetchBars(sym,tf){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$/,'');if(!base)return Promise.reject({code:'not_found'});if(!CG.mcp)return shbGet(base,tf);
   var cands=CC.inst[base]?[CC.inst[base]]:[base+'_USDT',base+'_USD'];
   var tryI=function(i){if(i>=cands.length)return Promise.reject({code:'not_found'});return ccCall(cands[i],tf).then(function(r){var bars=ccParse(r&&r.payload);if(!bars||!bars.length)throw {code:'tool_error'};CC.inst[base]=cands[i];try{localStorage.setItem('tj-ccinst',JSON.stringify(CC.inst))}catch(e){}var mb=ccMerge(cands[i],tf,bars);try{shbSave(cands[i],tf,mb)}catch(x){}return {inst:cands[i],bars:mb}}).catch(function(e){if(e&&e.code==='tool_error')return tryI(i+1);throw e})};
@@ -7522,7 +7522,7 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
       var b1=r.bars.filter(function(x){return !x.approx&&x.t+36e5<=Date.now()+60000});
       AP.noData=AP.noData||{};var lb1=b1[b1.length-1];if(lb1&&Date.now()-lb1.t>3*36e5){AP.noData[coin]='παλιά κεριά';SH.fail[coin]=1;apAdd(coin,'err','Τα κεριά του '+coin+' είναι παλιά (τελευταίο '+arcD(lb1.t,true)+', '+(r.src||'')+'). Δεν σαρώνω με παλιά δεδομένα.',true);return}if(b1.length<300){AP.noData[coin]='μόνο '+b1.length+' κεριά';SH.fail[coin]=1;apAdd(coin,'need','Μόνο '+b1.length+' κεριά ('+(r.src||'')+'). Δεν υπάρχει ακόμα βαθύ ιστορικό για '+coin+'.',true);return}
       if(AP.noData&&b1.length>=300)delete AP.noData[coin];if(Date.now()-(b1[b1.length-1].t+36e5)>3*36e5){apAdd(coin,'skip','Τα κεριά σταματούν '+apAgo(b1[b1.length-1].t+36e5)+' ('+(r.src||'')+'). Δεν ανοίγω τίποτα.');return}
-      var rid=RC.id||'p_start',onC=apMine().filter(function(t){return !dmClosed(t)&&dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')===coin}),onT=onC.find(function(t){return apfTagId(t)===rid}),cyc=(AP.cycOpen||{})[coin+'|'+rid],openOn=!!onT||!!(cyc&&Date.now()-cyc.at<30*60000),blk=[];/* μία θέση ανά νόμισμα ΑΝΑ προφίλ· κάθε προφίλ δουλεύει παράλληλα */
+      var best=null,rid=RC.id||'p_start',onC=apMine().filter(function(t){return !dmClosed(t)&&dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'')===coin}),onT=onC.find(function(t){return apfTagId(t)===rid}),cyc=(AP.cycOpen||{})[coin+'|'+rid],openOn=!!onT||!!(cyc&&Date.now()-cyc.at<30*60000),blk=[];/* μία θέση ανά νόμισμα ΑΝΑ προφίλ· κάθε προφίλ δουλεύει παράλληλα */
       tfs.forEach(function(tf){var E=evalTf(coin,b1,tf,r);if(!E)return;var g=E.g,ev=E.ev;if(coin==='BTC'&&tf==='1h'){ctx.btc=g;SH.btc=g}
         ev.cands.forEach(function(x){x.grade=apGrade(x)});
         var good=ev.cands.filter(function(x){return x.reliable&&x.test.avgR>0&&x.fit>=0}).sort(function(a,z){return (z.grade-a.grade)||((z.test.avgR+Math.min(0,z.best.st.avgR))-(a.test.avgR+Math.min(0,a.best.st.avgR)))});
