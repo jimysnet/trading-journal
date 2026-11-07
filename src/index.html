@@ -1548,6 +1548,34 @@ section[data-panel=today]{gap:1rem}
 @media(max-width:760px){.tdgrid{grid-template-columns:1fr}.tdkick{font-size:1.35rem}.tdhero{padding:1rem}.tdkpis .kpi b{font-size:1.1rem}.tdex .dmsel{max-width:none;flex:1 1 100%;margin:0;order:0}.tdgo{width:100%}.tdgo .btn{width:100%}}
 :root[data-theme="night"] .tdkpis .kpi{box-shadow:none!important;background:var(--sunk)!important}
 :root[data-theme="night"] .tdhero::before{opacity:.4}
+
+/* ── Αναλύσεις: καρτέλες + 3D ── */
+.antabs{position:sticky;top:var(--hdrh,4.6rem);z-index:5;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem;padding:.35rem;border-radius:16px;border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(8px);box-shadow:0 8px 20px rgba(0,0,0,.18)}
+.antabs button{display:flex;align-items:center;justify-content:center;gap:.45rem;border:0;border-radius:12px;background:transparent;color:var(--muted);font:inherit;font-weight:600;font-size:.92rem;padding:.6rem .5rem;cursor:pointer;transition:background .15s,color .15s,box-shadow .15s;white-space:nowrap}
+.antabs button span{font-size:1.05rem}
+.antabs button:hover{color:var(--fg);background:var(--sunk)}
+.antabs button.on{color:var(--fg);background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 80%,#fff 20%),var(--sunk));box-shadow:0 3px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 0 var(--accent)}
+.angrp{display:flex;flex-direction:column;gap:1rem;min-width:0}.angrp[hidden]{display:none}
+.angrp>.anh{margin-top:.2rem}.angrp>.anh h2{font-size:1.15rem}
+.angrp #kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
+.angrp #kpis .kpi,.sa3 .sak .kpi{border-radius:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 82%,#fff 18%),var(--sunk));border:1px solid var(--line);border-top-color:rgba(255,255,255,.14);box-shadow:0 4px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 10px 16px rgba(0,0,0,.18)}
+.angrp #kpis .kpi b{font-size:1.3rem}
+.angrp>.card,.angrp details.card{margin:0}
+.sa3{background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,0) 40%),var(--surface);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 30px rgba(0,0,0,.22)}
+.sacards:not(.all)>.sac:nth-child(n+9){display:none}
+.samore{display:flex;justify-content:center;margin-top:.8rem}.samore .btn{border-radius:999px;padding:.45rem 1.1rem}
+#insAllCard .insights{max-height:none}
+#metCard>summary{cursor:pointer;padding:.2rem 0}
+@media(max-width:760px){.antabs{grid-template-columns:repeat(4,auto);overflow-x:auto;justify-content:start;top:var(--hdrh,6.2rem)}.antabs button{font-size:.82rem;padding:.5rem .7rem}}
+:root[data-theme="night"] .antabs button.on,:root[data-theme="night"] .angrp #kpis .kpi,:root[data-theme="night"] .sa3 .sak .kpi{box-shadow:inset 0 -2px 0 var(--accent);background:var(--sunk)}
+:root[data-theme="night"] .angrp #kpis .kpi,:root[data-theme="night"] .sa3 .sak .kpi{box-shadow:none}
+:root[data-theme="night"] .sa3{background:var(--surface);box-shadow:none}
+.savsw{display:flex;gap:.3rem;padding:.3rem;border:1px solid var(--line);border-radius:12px;background:var(--surface);width:max-content;max-width:100%;overflow-x:auto;margin:0 auto}
+.savsw button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:.86rem;font-weight:600;padding:.45rem .9rem;border-radius:9px;cursor:pointer;white-space:nowrap}
+.savsw button.on{color:var(--fg);background:var(--sunk);box-shadow:0 2px 0 rgba(0,0,0,.3),inset 0 -2px 0 var(--accent)}
+#saBody[data-v] [data-savp]{display:none}#saBody[data-v=map] [data-savp=map],#saBody[data-v=rank] [data-savp=rank],#saBody[data-v=cards] [data-savp=cards]{display:block}
+.sabody{display:flex;flex-direction:column;gap:1rem}
+@media(max-width:760px){.sa3 .sak{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:.5rem!important}.sa3 .sak .kpi:last-child{grid-column:1/-1}.angrp #kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.sa3 .sak .kpi b,.angrp #kpis .kpi b{font-size:1.1rem}}
 </style>
 
 <header class="top pad">
@@ -1756,11 +1784,14 @@ section[data-panel=today]{gap:1rem}
 
   <!-- ΑΝΑΛΥΣΕΙΣ -->
   <section data-panel="stats" hidden>
-    <nav class="annav" aria-label="Ενότητες αναλύσεων"><a href="#anPerf" data-anj="anPerf">📊 Η απόδοσή μας</a><a href="#anSA" data-anj="anSA">🤖 Στρατηγικές &amp; Αυτόματος</a><a href="#advCard" data-anj="advCard">🔬 Εξελιγμένος αναλυτής</a></nav>
+    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
+    <div class="angrp" data-angrp="perf">
     <div id="anPerf" class="anh"><h2>📊 Η απόδοσή μας</h2><span class="muted">πραγματικές συναλλαγές της ομάδας (με τα φίλτρα πάνω)</span></div>
     <div class="kpis" id="kpis"></div>
-    <div class="card chart"><div class="formhead"><h2 style="margin:0">Καμπύλη αποτελεσμάτων σε R</h2><span class="muted" id="eqNote"></span></div><div id="equity" style="margin-top:.6rem"></div></div>
-    <div class="card" id="calCard"><div class="formhead"><h2 style="margin:0">Ημερολόγιο αποτελεσμάτων</h2><div class="row" style="gap:.4rem"><button class="btn small" type="button" id="exCsv">Εξαγωγή CSV (Excel)</button><button class="btn small" type="button" id="exRep">Αναφορά για PDF</button></div></div><div id="calendar" style="margin-top:.6rem"></div></div>
+    <div class="card c3d chart"><div class="formhead"><h2 style="margin:0">Καμπύλη αποτελεσμάτων σε R</h2><span class="muted" id="eqNote"></span></div><div id="equity" style="margin-top:.6rem"></div></div>
+    <div class="card c3d" id="calCard"><div class="formhead"><h2 style="margin:0">Ημερολόγιο αποτελεσμάτων</h2><div class="row" style="gap:.4rem"><button class="btn small" type="button" id="exCsv">Εξαγωγή CSV (Excel)</button><button class="btn small" type="button" id="exRep">Αναφορά για PDF</button></div></div><div id="calendar" style="margin-top:.6rem"></div></div>
+    </div>
+    <div class="angrp" data-angrp="strat" hidden>
     <div id="anSA" class="anh"><h2>🤖 Στρατηγικές &amp; Αυτόματος Καθηγητής</h2><span class="muted">όλες οι στρατηγικές που ξέρει ο Καθηγητής: backtest σε πολλά νομίσματα, τι έπαιξε ο Αυτόματος και τι η ομάδα</span></div>
     <div id="saBody" class="sabody"></div>
     <div id="stratAnchor" hidden></div>
@@ -1790,10 +1821,14 @@ section[data-panel=today]{gap:1rem}
         <div class="stiles" id="stratList"></div>
       </div>
     </div>
+    </div>
+    <div class="angrp" data-angrp="ins" hidden>
+    <div class="card c3d" id="insAllCard"><h2>💡 Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
+    <div class="card c3d" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>
+    <div class="card c3d"><h2>Κανόνες playbook: ποιοι αποδίδουν</h2><div class="tw" id="ruleStats"></div></div>
     <details class="card" id="metCard"><summary><h2 style="margin:0;display:inline">Όλες οι μετρικές</h2> <span class="pill acc" id="metCount"></span></summary><div id="metrics" style="margin-top:.8rem"></div></details>
-    <div class="card"><h2>Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
-    <div class="card" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>
-    <div class="card"><h2>Κανόνες playbook: ποιοι αποδίδουν</h2><div class="tw" id="ruleStats"></div></div>
+    </div>
+    <div class="angrp" data-angrp="tools" hidden>
     <div class="card adv" id="advCard">
       <div class="formhead advhead"><h2 style="margin:0">Εξελιγμένος αναλυτής</h2>
         <div class="advtabs" role="tablist" aria-label="Εξελιγμένος αναλυτής"><button type="button" role="tab" data-adv="evo" aria-selected="true">Εξέλιξη</button><button type="button" role="tab" data-adv="mkt" aria-selected="false">Τιμές αγοράς</button><button type="button" role="tab" data-adv="bt" aria-selected="false">Backtest</button><button type="button" role="tab" data-adv="now" aria-selected="false">Πρόταση τώρα</button><button type="button" role="tab" data-adv="mc" aria-selected="false">Stress test</button></div></div>
@@ -1903,6 +1938,7 @@ section[data-panel=today]{gap:1rem}
       <div class="formhead"><h2 style="margin:0">Ρώτα τον Claude</h2><button class="btn primary small" type="button" id="aiBtn">Ανάλυση με τα τρέχοντα φίλτρα</button></div>
       <p class="muted" style="margin:.4rem 0 .8rem;font-size:.85rem;max-width:70ch">Στέλνει στον Claude τα στατιστικά και τις τελευταίες 40 συναλλαγές (χωρίς σημειώσεις) και ζητά παρατηρήσεις και ένα πείραμα για τις επόμενες εβδομάδες. Δεν δίνει σήματα αγοράς ή πώλησης.</p>
       <p class="ai" id="aiOut"></p>
+    </div>
     </div>
     <div class="grid2 angrid" hidden style="display:none">
       <div class="card"><h2>Ανά στρατηγική</h2><div class="tw" id="byStrategy"></div></div>
@@ -4064,7 +4100,7 @@ function renderStrategySelects(){impStrategies();
 (function(){var K='tj-tdx',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){}
   function init(){document.querySelectorAll('details.tdx[data-tdx]').forEach(function(d){var k=d.getAttribute('data-tdx');if(st[k])d.open=true;d.addEventListener('toggle',function(){st[k]=d.open?1:0;try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}})})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-  var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&!d.open)d.open=true;return si.apply(this,arguments)}})();
+  var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&!d.open)d.open=true;var g=this.closest&&this.closest('[data-angrp]');if(g&&g.hidden&&typeof anGo==='function')anGo(g.getAttribute('data-angrp'));return si.apply(this,arguments)}})();
 function renderToday(){
   var d=today();$('#todayDate').textContent=dateGr(d);
   var ds=dayState(S.uid),set=S.settings,box=$('#dayStatus');
@@ -6955,7 +6991,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=226,VERS={sub:null,t:null};
+var APP_VER=227,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8428,23 +8464,32 @@ function saRender(){var el=$('#saBody');if(!el)return;try{var bz=$('#saBasis');i
     '<div class="sag"><div class="sagc"><span class="lbl">Αποτελέσματα (3D)</span>'+pie3d([{v:w,c:'#26a69a',d:'#145c55'},{v:cl.length-w,c:'#ef5350',d:'#7a2a28'},{v:op.length,c:'#5b8def',d:'#2c4a8f'},{v:nf,c:'#8b96a1',d:'#4b545d'}])+'<div class="salg"><span><i style="background:#26a69a"></i>κέρδος '+w+'</span><span><i style="background:#ef5350"></i>ζημιά '+(cl.length-w)+'</span><span><i style="background:#5b8def"></i>ανοιχτές '+op.length+'</span><span><i style="background:#8b96a1"></i>δεν γέμισαν '+nf+'</span></div></div>'+
     '<div class="sagc"><span class="lbl">Καμπύλη σε R (3D)</span>'+(eq.length>2?spark3d(eq,sR>=0).replace('class="spk3"','class="spk3 big"'):'<div class="empty">Θέλει 2+ κλειστές.</div>')+'<span class="lbl" style="margin-top:.5rem">Ανά νόμισμα</span>'+hbars3d(Object.keys(byC).map(function(c){return {l:symIcon(c,14)+' '+c,v:byC[c].r,n:byC[c].n+' συν.',tip:c}}))+'</div></div></div>';
   /* 2. 3D χάρτης */
-  h+='<div class="card sa3"><div class="formhead"><h2 style="margin:0">🧊 Χάρτης 3D: στρατηγικές × νομίσματα</h2><div class="row" style="gap:.4rem;align-items:center"><span id="saProg"></span><button type="button" class="btn small primary" id="saRun">📊 Backtest όλων τώρα</button></div></div>'+
+  h+='<div class="savsw" role="tablist" aria-label="Προβολή στρατηγικών"><button type="button" data-sav="cards">📚 Κάρτες</button><button type="button" data-sav="rank">📊 Κατάταξη</button><button type="button" data-sav="map">🧊 Χάρτης 3D</button></div>'+'<div class="card sa3" data-savp="map"><div class="formhead"><h2 style="margin:0">🧊 Χάρτης 3D: στρατηγικές × νομίσματα</h2><div class="row" style="gap:.4rem;align-items:center"><span id="saProg"></span><button type="button" class="btn small primary" id="saRun">📊 Backtest όλων τώρα</button></div></div>'+
     '<p class="muted" style="font-size:.8rem;margin:.3rem 0 .5rem">Κάθε πρίσμα = μέσο R της στρατηγικής σε <b>κεριά που δεν «είδε»</b> (το τελευταίο 30%), κεριά 1 ώρας με fees. Πράσινο κερδίζει, κόκκινο χάνει, ψηλότερο = πιο δυνατό. Κενό = λιγότερες από 3 συναλλαγές.'+(SA.map?' Ενημέρωση πριν '+(age<1?'λίγο':age+' ώρ.')+(SA.map.coins?' · αγορά: '+SA.map.coins.map(function(x){return x.c+(x.k==='trend'?(x.d>0?' ↗':' ↘'):x.k==='range'?' ↔':' ~')}).join(' · '):''):'')+'</p>'+
     (coins.length?mat3d(R.filter(function(r){return M[r.id]&&Object.keys(M[r.id]).some(function(c){return M[r.id][c][1]>=3})}).sort(function(a,b){return (isFinite(b.bt)?b.bt:-9)-(isFinite(a.bt)?a.bt:-9)}),coins,M):'<div class="empty">'+(SA.busy?'Υπολογίζω…':'Πάτα «📊 Backtest όλων τώρα» για να γεμίσει ο χάρτης.')+'</div>')+'</div>';
   /* 3. R ανά στρατηγική */
   var src=SA.src,items=R.map(function(r){var v=src==='bt'?r.bt:src==='au'?(r.au.n?r.au.r:NaN):(r.tm&&r.tm.n?r.tm.r:NaN);return {l:esc(r.b.t),v:v,n:src==='bt'?(r.btN?r.btN+' συν. · '+r.pos+'/'+r.coins+' νομ.':''):src==='au'?(r.au.n+' κλειστ.'):(r.tm?r.tm.n+' συν.':''),tip:r.b.t}}).filter(function(x){return isFinite(x.v)}).sort(function(a,b){return b.v-a.v});
-  h+='<div class="card sa3"><div class="formhead"><h2 style="margin:0">🧊 Αποτέλεσμα ανά στρατηγική (3D)</h2><span class="mvtg"><button type="button" data-sasrc="bt"'+(src==='bt'?' class="on"':'')+'>Backtest (μέσο R)</button><button type="button" data-sasrc="au"'+(src==='au'?' class="on"':'')+'>Αυτόματος (Σ R)</button><button type="button" data-sasrc="tm"'+(src==='tm'?' class="on"':'')+'>Ομάδα (Σ R)</button></span></div>'+hbars3d(items)+'</div>';
+  h+='<div class="card sa3" data-savp="rank"><div class="formhead"><h2 style="margin:0">🧊 Αποτέλεσμα ανά στρατηγική (3D)</h2><span class="mvtg"><button type="button" data-sasrc="bt"'+(src==='bt'?' class="on"':'')+'>Backtest (μέσο R)</button><button type="button" data-sasrc="au"'+(src==='au'?' class="on"':'')+'>Αυτόματος (Σ R)</button><button type="button" data-sasrc="tm"'+(src==='tm'?' class="on"':'')+'>Ομάδα (Σ R)</button></span></div>'+hbars3d(items)+'</div>';
   /* 4. κάρτες στρατηγικών */
   var srt=SA.sort,L=R.slice().sort(function(a,b){return srt==='bt'?((isFinite(b.bt)?b.bt:-9)-(isFinite(a.bt)?a.bt:-9)):srt==='au'?(b.au.r-a.au.r):srt==='name'?a.b.t.localeCompare(b.b.t):(b.sc-a.sc)});
-  h+='<div class="card sa3"><div class="formhead"><h2 style="margin:0">📚 Όλες οι στρατηγικές · ανάλυση μία-μία</h2><label class="f" style="margin:0;max-width:14rem">Ταξινόμηση<select id="saSort"><option value="score"'+(srt==='score'?' selected':'')+'>Συνολική εικόνα</option><option value="bt"'+(srt==='bt'?' selected':'')+'>Backtest</option><option value="au"'+(srt==='au'?' selected':'')+'>Αυτόματος</option><option value="name"'+(srt==='name'?' selected':'')+'>Όνομα</option></select></label></div>'+
-    '<div class="sacards">'+L.map(function(r){var mid=saMid(r.id),mk=mid&&window.Manual&&Manual.known(mid),vals=[['Backtest',r.bt],['Αυτόματος',r.auAvg],['Ομάδα',r.tmAvg]],mx=Math.max.apply(null,vals.map(function(v){return isFinite(v[1])?Math.abs(v[1]):0}).concat([0.3]));
+  h+='<div class="card sa3" data-savp="cards"><div class="formhead"><h2 style="margin:0">📚 Όλες οι στρατηγικές · ανάλυση μία-μία</h2><label class="f" style="margin:0;max-width:14rem">Ταξινόμηση<select id="saSort"><option value="score"'+(srt==='score'?' selected':'')+'>Συνολική εικόνα</option><option value="bt"'+(srt==='bt'?' selected':'')+'>Backtest</option><option value="au"'+(srt==='au'?' selected':'')+'>Αυτόματος</option><option value="name"'+(srt==='name'?' selected':'')+'>Όνομα</option></select></label></div>'+
+    '<div class="sacards'+(SA.allc?' all':'')+'">'+L.map(function(r){var mid=saMid(r.id),mk=mid&&window.Manual&&Manual.known(mid),vals=[['Backtest',r.bt],['Αυτόματος',r.auAvg],['Ομάδα',r.tmAvg]],mx=Math.max.apply(null,vals.map(function(v){return isFinite(v[1])?Math.abs(v[1]):0}).concat([0.3]));
       var verdict=isFinite(r.bt)&&r.btN>=10?(r.bt>0.15&&r.pos>=Math.ceil(r.coins/2)?['gain','Δυνατή']:r.bt>0?['acc','Θετική, με επιφύλαξη']:['loss','Αδύναμη τώρα']):['','Λίγα δεδομένα'];
       return '<div class="sac"><div class="sach"><b>'+esc(r.b.t)+'</b><span class="pill '+verdict[0]+'">'+verdict[1]+'</span></div><div class="sacm muted">'+(r.gen?'🧪 δική του (Εργαστήριο) · ':'')+(r.fit==='range'?'↔ για πλάγια αγορά':r.fit==='squeeze'?'◎ για συμπίεση':'↗ για τάση')+(BT_NOTGT[r.id]?' · έξοδος με κανόνα, όχι σταθερός στόχος':'')+'</div>'+
         '<div class="sacb">'+vals.map(function(v){var ok=isFinite(v[1]),hh=ok?Math.max(3,Math.abs(v[1])/mx*46):0,p=ok&&v[1]>=0;return '<div class="sacc"><span class="sacv num '+(ok?(p?'pos':'neg'):'muted')+'">'+(ok?fR(v[1]):'–')+'</span><div class="sacs">'+(ok?'<i class="b3b '+(p?'up':'dn')+'" style="--h:'+hh.toFixed(1)+'px"></i>':'')+'</div><span class="sacl">'+v[0]+'</span></div>'}).join('')+'</div>'+
         '<div class="sacd"><span>Backtest: '+(r.btN?r.btN+' νέες συν. · θετική σε '+r.pos+'/'+r.coins+' νομίσματα':'δεν έχει τρέξει')+(r.best.length?' · κερδίζει σε <b>'+r.best.join(', ')+'</b>':r.btN?' · δεν κερδίζει σε κανένα τώρα':'')+'</span><span>Αυτόματος: '+(r.au.n||r.au.open?r.au.n+' κλειστές'+(r.au.n?' · '+pct(r.au.w/r.au.n)+' επιτυχία · Σ '+fR(r.au.r):'')+(r.au.open?' · '+r.au.open+' ανοιχτή/ές':''):'δεν την έχει παίξει ακόμα')+'</span><span>Ομάδα: '+(r.tm&&r.tm.n?r.tm.n+' συν. · '+pct(r.tm.w/r.tm.n)+' επιτυχία · μέσο '+fR(r.tmAvg):'καμία καταγεγραμμένη')+'</span></div>'+
         '<div class="sacf">'+(mk?'<button type="button" class="linkbtn" data-manual="'+esc(mid)+'">📖 Μελέτη στον Μπούσουλα</button>':r.gen?'<button type="button" class="linkbtn" data-golab="1">🧪 Στο Εργαστήριο</button>':'<span class="muted" style="font-size:.74rem">'+esc(String(r.b.rule||'').slice(0,90))+'…</span>')+'</div></div>'}).join('')+'</div></div>';
-  el.innerHTML=h;saProg(SA.prog)}
+  if(L.length>8)h=h.replace(/<\/div><\/div>$/,'</div><div class="samore"><button type="button" class="btn small" data-saall="1">'+(SA.allc?'Λιγότερες ▴':'Δείξε όλες τις στρατηγικές ('+L.length+') ▾')+'</button></div></div>');
+  el.innerHTML=h;saProg(SA.prog);var sv=SA.view||(function(){try{return localStorage.getItem('tj-sav')}catch(e){return null}})()||'cards';SA.view=sv;el.setAttribute('data-v',sv);$$('#saBody .savsw [data-sav]').forEach(function(x){x.classList.toggle('on',x.getAttribute('data-sav')===sv)});
+  if(!el.dataset.sab){el.dataset.sab='1';el.addEventListener('click',function(e){if(e.target.closest('[data-saall]')){SA.allc=!SA.allc;saRender();return}var v=e.target.closest('.savsw [data-sav]');if(v){SA.view=v.getAttribute('data-sav');try{localStorage.setItem('tj-sav',SA.view)}catch(_){}el.setAttribute('data-v',SA.view);$$('#saBody .savsw [data-sav]').forEach(function(x){x.classList.toggle('on',x===v)})}})}}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-anj]');if(!a)return;e.preventDefault();var t=$('#'+a.getAttribute('data-anj'));if(t){if(t.tagName==='DETAILS')t.open=true;t.scrollIntoView({block:'start',behavior:'smooth'})}});
+/* Αναλύσεις: 4 καρτέλες αντί για μία μακριά σελίδα */
+var ANG={k:'perf'};try{ANG.k=localStorage.getItem('tj-ang')||'perf'}catch(e){}
+function anGo(k,noSave){var ok=false;$$('[data-angrp]').forEach(function(g){var on=g.getAttribute('data-angrp')===k;g.hidden=!on;if(on)ok=true});if(!ok)return;ANG.k=k;$$('.antabs [data-ang]').forEach(function(b){var on=b.getAttribute('data-ang')===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});if(!noSave){try{localStorage.setItem('tj-ang',k)}catch(e){}}
+  try{window.dispatchEvent(new Event('resize'))}catch(e){}}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.antabs [data-ang]');if(!b)return;anGo(b.getAttribute('data-ang'));var t=document.querySelector('.antabs');if(t&&t.getBoundingClientRect().top<0)t.scrollIntoView({block:'start'})});
+setTimeout(function(){anGo(ANG.k,true)},0);
+function hdrH(){var t=document.querySelector('header.top');if(t)document.documentElement.style.setProperty('--hdrh',(t.offsetHeight+6)+'px')}window.addEventListener('resize',hdrH);setTimeout(hdrH,50);setTimeout(hdrH,1500);
 function saInit(){var el=$('#saBody');if(!el||el.dataset.b)return;el.dataset.b='1';saLoad();saRender();
   el.addEventListener('click',function(e){var t=e.target;if(t.closest('#saRun')){saRun(false);return}var s=t.closest('[data-sasrc]');if(s){SA.src=s.getAttribute('data-sasrc');saRender();return}
     if(t.closest('[data-goap]')){showTab('demo');setTimeout(function(){var c=$('#apCard');if(c)c.scrollIntoView({block:'start',behavior:'smooth'})},120);return}
