@@ -6891,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=220,VERS={sub:null,t:null};
+var APP_VER=221,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7490,7 +7490,7 @@ function otCg(base,tf){var id=CGID[base],ms=CC_TFMS[tf];if(!id||!CG.mcp)return P
     for(var i=1;i<out.length;i++){out[i].o=out[i-1].c;out[i].h=Math.max(out[i].h,out[i].o);out[i].l=Math.min(out[i].l,out[i].o)}return out}).catch(function(){return []})}
 function otLoad(k,sym,tf){var o=OTC[k]||{};o.busy=true;OTC[k]=o;var base=dmSym(sym).replace(/(USDT|USDC|USD|PERP)$/,'');
   var ok=function(L){return (L||[]).filter(function(b){return b&&isFinite(b.o)&&isFinite(b.h)&&isFinite(b.l)&&isFinite(b.c)})};
-  histBars(sym,tf,OT_DAYS[tf]||30).then(function(L){return ok(L)}).catch(function(){return []}).then(function(L){
+  histBars(sym,tf,OT_DAYS[tf]||30).then(function(r){return ok(r&&r.bars?r.bars:r)}).catch(function(){return []}).then(function(L){
     var fresh=L.length&&Date.now()-L[L.length-1].t<(CC_TFMS[tf]||36e5)*6;
     if(L.length>=10&&fresh){o.src='';return L}
     return otCg(base,tf).then(function(G){G=ok(G);if(G.length>=10){o.src='CoinGecko';return G}o.src=L.length>=10?'παλιά κεριά':'';return L})
