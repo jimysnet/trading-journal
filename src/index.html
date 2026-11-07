@@ -1409,6 +1409,36 @@ body.station *{animation:none!important;transition:none!important}
 .sxliq{height:8px;border-radius:4px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(255,255,255,.04));box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}.sxliq i{border-radius:3px;background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 55%,rgba(0,0,0,.25))}
 .sxlive{text-shadow:0 0 10px var(--accent)}
 @media (prefers-reduced-motion:reduce){.sxplate,.sxplate.on,.sxplate:hover{transform:none;transition:none}}
+/* 3D: όλες οι κάρτες του AI Bot */
+.c3d{background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,0) 40%),var(--surface);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 14px 30px rgba(0,0,0,.25)}
+.c3d h2{text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.c3d .btn{box-shadow:0 3px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.12);transition:transform .12s,box-shadow .12s}.c3d .btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.c3d .btn.primary{box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 45%,#000 55%),0 0 14px -4px var(--accent),inset 0 1px 0 rgba(255,255,255,.25)}
+/* ανοιχτές συναλλαγές */
+.c3d .dmsum>span{border-radius:10px;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+.c3d .dmgrp{background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 85%,#fff 15%),var(--sunk));border-top-color:rgba(255,255,255,.16);box-shadow:0 4px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 10px 16px rgba(0,0,0,.22);transition:transform .2s,box-shadow .2s}
+.c3d .dmgrp:not(.idle):hover{transform:translateY(-2px);box-shadow:0 6px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 14px 22px rgba(0,0,0,.28)}
+.c3d .dmgrp.open{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,0 5px 0 color-mix(in srgb,var(--accent) 35%,#000 65%),0 0 20px -6px var(--accent),0 14px 22px rgba(0,0,0,.28)}
+.c3d .dmgrp.idle{box-shadow:0 2px 0 rgba(0,0,0,.25)}.c3d .dmgrp-r b{text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.c3d .dmtl{border-top-color:rgba(255,255,255,.16);box-shadow:0 4px 0 color-mix(in srgb,var(--surface) 55%,#000 45%),0 10px 16px rgba(0,0,0,.25);background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 88%,#fff 12%),var(--surface))}
+.c3d .dmtl.mini:hover{transform:translateY(-2px)}
+/* τι κάνει τώρα */
+.c3d .apntabs{border-bottom:0;background:var(--sunk);padding:.3rem;border-radius:999px;box-shadow:inset 0 2px 4px rgba(0,0,0,.4);width:max-content;max-width:100%}
+.c3d .apnt.on{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 40%,var(--surface)),color-mix(in srgb,var(--accent) 22%,var(--surface)));box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 30%,#000 70%),0 0 12px -3px var(--accent);color:#fff}
+.c3d .apnc{background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 85%,#fff 15%),var(--sunk));border-top-color:rgba(255,255,255,.16);box-shadow:0 4px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 10px 16px rgba(0,0,0,.22);overflow:visible}
+.c3d .apnc.r0{box-shadow:0 0 0 1px var(--gain) inset,0 4px 0 color-mix(in srgb,var(--gain) 35%,#000 65%),0 0 18px -6px var(--gain)}
+.c3d .apnc[open]{transform:translateY(-1px)}.c3d .apnc-c{text-shadow:0 0 10px color-mix(in srgb,var(--accent) 40%,transparent)}
+.c3d .aplog li{border-radius:10px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+/* ιστορικό */
+.c3d .htab{box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),0 14px 22px rgba(0,0,0,.25)}
+.c3d .hhd{background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 80%,#fff 20%),var(--sunk));text-shadow:0 1px 0 rgba(0,0,0,.4)}
+.c3d .hR{box-shadow:0 3px 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.15)}.c3d .hr.w .hR{box-shadow:0 3px 0 color-mix(in srgb,var(--gain) 40%,#000 60%),0 0 10px -3px var(--gain)}.c3d .hr.l .hR{box-shadow:0 3px 0 color-mix(in srgb,var(--loss) 40%,#000 60%),0 0 10px -3px var(--loss)}
+.c3d .hr:hover{background:linear-gradient(90deg,rgba(255,255,255,.05),transparent)}.c3d .hchip,.c3d .hpg{box-shadow:0 3px 0 rgba(0,0,0,.3)}.c3d .hchip.on,.c3d .hpg.on{box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 35%,#000 65%),0 0 12px -3px var(--accent)}
+/* ρυθμίσεις / εργαστήριο / χειροκίνητη */
+.c3d input,.c3d select,.c3d textarea{box-shadow:inset 0 2px 4px rgba(0,0,0,.35)}
+.c3d details:not(.apnc):not(.card)>summary{text-shadow:0 1px 0 rgba(0,0,0,.3)}
+.c3d .apstat,.c3d .pill{box-shadow:0 2px 0 rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){.c3d .dmgrp,.c3d .btn{transition:none}.c3d .dmgrp:hover,.c3d .apnc[open]{transform:none}}
 </style>
 
 <header class="top pad">
@@ -1847,9 +1877,9 @@ body.station *{animation:none!important;transition:none!important}
       <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div><div id="pxAcc" class="px3d"></div></div>
       </div>
     </div>
-    <div class="card" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div>
+    <div class="card c3d" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card c3d" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div>
     
-      <details class="card dmman" id="dmManCard"><summary>➕ Νέα χειροκίνητη demo συναλλαγή</summary><p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Μπαίνει στον ίδιο λογαριασμό του Καθηγητή, με το όνομά σου.</p>
+      <details class="card dmman c3d" id="dmManCard"><summary>➕ Νέα χειροκίνητη demo συναλλαγή</summary><p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Μπαίνει στον ίδιο λογαριασμό του Καθηγητή, με το όνομά σου.</p>
       <form id="dmForm" novalidate style="margin-top:.6rem">
         <div class="formhead"><span class="pill acc" id="dm-prof" hidden>Τεχνική Καθηγητή</span></div>
         <div class="fields" style="margin-top:.6rem">
@@ -1873,7 +1903,7 @@ body.station *{animation:none!important;transition:none!important}
         <div class="row"><button class="btn primary" type="submit" id="dm-save">Άνοιξε demo συναλλαγή</button><button class="btn" type="button" id="dm-clear">Καθαρισμός</button><span class="muted" id="dm-msg"></span></div>
       </form>
       </details>
-    <div class="card" id="apCard">
+    <div class="card c3d" id="apCard">
       <div class="formhead"><h2 style="margin:0">⚙️ Αυτόματος Καθηγητής · ρυθμίσεις</h2><label class="apsw"><input type="checkbox" id="ap-on"><i></i><span>Ενεργός</span></label></div>
       <p class="muted" style="font-size:.86rem;margin:.4rem 0 .6rem">Διαχειρίζεται μόνος του τον <b>Λογαριασμό Καθηγητή</b> (συνολικά = το άθροισμα των εικονικών κεφαλαίων όλων των προφίλ). Τρέχει όσο η σελίδα είναι ανοιχτή σε οποιοδήποτε μέλος (μία σελίδα κάθε φορά) και οι ρυθμίσεις είναι κοινές για όλη την ομάδα. Σαρώνει τα νομίσματα σε κεριά 1 ώρας και 4 ωρών και δοκιμάζει όλες τις στρατηγικές με backtest. <b>Ανοίγει μόνος του demo</b> μόνο όταν υπάρχει σήμα τώρα και η στρατηγική έχει αποδεδειγμένο πλεονέκτημα (θετική σε κεριά που δεν «είδε», 20+ συναλλαγές, και είτε ταιριάζει στην αγορά είτε είναι θετική σε όλο το ιστορικό). Όταν το σήμα είναι υποσχόμενο αλλά με λίγα δεδομένα, σου το βάζει στις <b>προτάσεις για έγκριση</b>. Κοιτάζει και <b>τις ώρες των αγορών</b>: ανοίγει μόνο στις συνεδρίες όπου η στρατηγική έχει κερδίσει στο backtest, και περνά κάθε σήμα από τις <b>προστασίες</b> παρακάτω. Ό,τι αποφασίζει γράφεται στο 📜 Ιστορικό για όλη την ομάδα. Χωρίς πραγματικά χρήματα, χωρίς κόστος.</p>
       <div class="approf" id="apProf"></div>
@@ -1908,12 +1938,12 @@ body.station *{animation:none!important;transition:none!important}
       <div class="row" style="margin-top:.6rem;align-items:center"><button type="button" class="btn small primary" id="ap-now">🔎 Σάρωση τώρα</button><button type="button" class="btn small" data-stn="1" title="Ελαφριά οθόνη για ένα παλιό κινητό/tablet που μένει ανοιχτό στην πρίζα και τρέχει τον Καθηγητή">📱 Λειτουργία σταθμού</button><span id="apStat" class="apstat"></span></div><div id="apGm" class="apgm"></div>
       <div id="apBody"><p class="muted" style="font-size:.8rem;margin:.6rem 0 0">Τι παρακολουθεί, τι προτείνει και τι αποφάσισε: στην κάρτα «🧭 Τι κάνει τώρα ο Καθηγητής», κάτω από τις ανοιχτές συναλλαγές.</p><span class="lbl" style="display:block;margin-top:.9rem">📝 Ποιος άλλαξε τι</span><div id="apChg"></div></div>
     </div>
-    <div class="card" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
+    <div class="card c3d" id="labCard"><div class="formhead"><h2 style="margin:0">🧪 Εργαστήριο στρατηγικών · ο Καθηγητής εφευρίσκει</h2><div class="row" style="gap:.4rem"><button type="button" class="btn small primary" id="labGA">🧬 Εφεύρε νέες</button><button type="button" class="btn small" id="labAI">🎓 Ιδέες από αναλυτές &amp; ειδήσεις</button><button type="button" class="btn small" id="labStop" hidden>⏹ Σταμάτα</button></div></div>
       <p class="muted" style="font-size:.84rem;margin:.4rem 0 .5rem">Ο Αυτόματος Καθηγητής δεν περιορίζεται στις κλασικές τεχνικές: φτιάχνει δικές του από «τουβλάκια» κανόνων (τάση, EMA, RSI, ADX, Bollinger, όγκος, κεριά, δομή, ώρες αγορών). Ο <b>🧬 γενετικός αλγόριθμος</b> ξεκινά από tips μεγάλων αναλυτών (Raschke, Connors, Minervini, Wyckoff, Livermore, Brooks, Elder, Seykota…) και τα «διασταυρώνει» και «μεταλλάσσει» για εκατοντάδες συνδυασμούς. Με το <b>🎓</b> ο Claude σχεδιάζει νέες ιδέες διαβάζοντας την αγορά τώρα, τις ειδήσεις και το ημερολόγιο. Η κρίση είναι αυστηρή: μαθαίνει στο πρώτο 60% των κεριών, διαλέγει στο επόμενο 20% και <b>η τελική κρίση γίνεται μία φορά στο τελευταίο 20% που δεν είδε ποτέ</b>, σε πολλά νομίσματα. Όσες περάσουν μπαίνουν μόνες τους στις στρατηγικές του Αυτόματου (με τα ίδια φίλτρα και προστασίες) και φαίνεται πώς τα πάνε ζωντανά. Όταν ο Αυτόματος είναι ενεργός, ψάχνει μόνος του νέες μία φορά τη μέρα.</p>
       <div id="labStat"></div><div id="labBody"></div>
     </div>
     <div class="card" id="dmProfCard" hidden style="display:none"><div class="formhead"><h2 style="margin:0">Πόσο μέσα έπεσε ο Καθηγητής</h2><button class="btn small" type="button" id="cfAsk2">Ζήτα 3-4 τεχνικές</button></div><div id="dmProf" style="margin-top:.6rem"></div></div>
-    <div class="card"><div class="formhead"><h2 style="margin:0">Ιστορικό AI συναλλαγών</h2><button type="button" class="btn small" id="dmRecheck" title="Ξαναελέγχει με πραγματικά κεριά τις demo των τελευταίων 14 ημερών">↻ Επανέλεγχος</button><select id="dm-hsrc" class="dmsel" aria-label="Πηγή"><option value="all">Όλες</option><option value="prof">Τεχνικές Καθηγητή</option><option value="own">Δικές μας</option></select></div><div id="dmHist" style="margin-top:.6rem"></div></div>
+    <div class="card c3d" id="dmHistCard"><div class="formhead"><h2 style="margin:0">Ιστορικό AI συναλλαγών</h2><button type="button" class="btn small" id="dmRecheck" title="Ξαναελέγχει με πραγματικά κεριά τις demo των τελευταίων 14 ημερών">↻ Επανέλεγχος</button><select id="dm-hsrc" class="dmsel" aria-label="Πηγή"><option value="all">Όλες</option><option value="prof">Τεχνικές Καθηγητή</option><option value="own">Δικές μας</option></select></div><div id="dmHist" style="margin-top:.6rem"></div></div>
   </section>
 
   <!-- ΜΠΟΥΣΟΥΛΑΣ -->
@@ -6797,7 +6827,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=203,VERS={sub:null,t:null};
+var APP_VER=204,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
