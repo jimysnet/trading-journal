@@ -4435,7 +4435,7 @@ function runBt(bars,id,dirs,target,fee,from,to){
 }
 /* ---- 🧪 Δοκιμή της «Scalping EMA 9/21» σε όλο το αρχείο κεριών, για όλα τα νομίσματα ---- */
 var E9={busy:false,res:null,sub:null};window.__E9={bt:function(sym,id){return histBars(sym,'1h',365).then(function(r){var b=r.bars,I=btInd(b),k=b.length-1,st=stats(runBt(b,id,[1,-1],2,0.1));return {n:b.length,trades:st.n,avg:st.avgR,poc:I.mpoc[k],vah:I.mvah[k],val:I.mval[k],px:b[k].c,filled:I.mpoc.filter(isFinite).length}})},mp:function(){mpRun()},mpRows:function(){return MPL.rows},E9:function(){return E9},study:function(){return e9Study()},apf:function(){return APF}};
-function e9Study(){if(E9.busy||!S.db)return Promise.resolve();E9.busy=true;e9Render();var coins=TOP10.slice(),jobs=[],rows=[];
+function e9Study(){if(E9.busy||!S.db)return Promise.resolve();E9.busy=true;e9Render();var coins=arcCoins(),jobs=[],rows=[];
   coins.forEach(function(c){['1h','15m'].forEach(function(tf){jobs.push([c,tf])})});
   var chain=Promise.resolve();jobs.forEach(function(j){chain=chain.then(function(){return histBars(j[0]+'USDT',j[1],j[1]==='15m'?90:365).then(function(r){var ms=j[1]==='15m'?9e5:36e5,b=(r.bars||[]).filter(function(x){return !x.approx&&x.t+ms<=Date.now()+60000});
       if(b.length<300){rows.push({coin:j[0],tf:j[1],bars:b.length,skip:1});return}
@@ -4459,7 +4459,7 @@ function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<
      return '<tr><td>'+esc(r.coin)+'</td><td>'+esc(r.tf)+'</td><td>'+fmt(r.bars,0)+'</td><td>'+x.n+'</td><td>'+fmt(100*x.w,0)+'%</td><td>'+tr(x.avg)+'</td><td>'+tr(r.x20.avg)+'</td><td>'+tr(r.x30.avg)+'</td><td>'+tr(x.tot)+'</td><td>'+tr(x.tl)+' / '+tr(x.ts)+'</td></tr>'}).join('')+'</tbody></table></div>'+(function(){var sk=D.rows.filter(function(r){return r.skip}).map(function(r){return r.coin+' '+r.tf});return sk.length?'<p class="muted" style="font-size:.8rem">Χωρίς αρκετά κεριά ακόμα (θέλει 300+): '+esc(sk.join(', '))+'</p>':''})()}
 var MPL={busy:false,rows:null};
 function mpRun(){if(MPL.busy)return;MPL.busy=true;var el=$('#mpOut');if(el)el.innerHTML='<p class="muted">⏳ Υπολογίζω από τα κεριά 1 ώρας του αρχείου…</p>';var rows=[],chain=Promise.resolve();
-  TOP10.forEach(function(c){chain=chain.then(function(){return histBars(c+'USDT','1h',75).then(function(r){var b=(r.bars||[]).filter(function(x){return !x.approx});if(!b.length){rows.push({coin:c});return}
+  arcCoins().forEach(function(c){chain=chain.then(function(){return histBars(c+'USDT','1h',75).then(function(r){var b=(r.bars||[]).filter(function(x){return !x.approx});if(!b.length){rows.push({coin:c});return}
       var cur=mprofMk(Date.now()),prev=b.filter(function(x){return mprofMk(x.t)===cur-1}),now=b.filter(function(x){return mprofMk(x.t)===cur}),last=b[b.length-1];
       var days=new Date(Date.UTC(Math.floor((cur-1)/12),(cur-1)%12+1,0)).getUTCDate(),cov=prev.length/(days*24);if(cov<0.6){rows.push({coin:c,cov:cov});return}
       var P=mprofOne(prev),Q=now.length>=24?mprofOne(now):null,px=last.c;rows.push({coin:c,P:P,Q:Q,px:px,cov:cov,age:(Date.now()-last.t)/36e5})}).catch(function(){rows.push({coin:c})})})});
@@ -6667,8 +6667,9 @@ function armUrl(coin,tf,start,end){return 'https://api.binance.com/api/v3/klines
 function armScan(){var c=ARM.coin,tf=ARM.tf,ms=ARC.ms[tf];ARM.info={loading:true};armRender();
   arcLoad(c,tf,0).then(function(B){var gaps=[];for(var i=1;i<B.length;i++){var d=B[i].t-B[i-1].t;if(d>ms*1.5)gaps.push({a:B[i-1].t+ms,b:B[i].t-ms,n:Math.round(d/ms)-1})}
     ARM.info={n:B.length,from:B.length?B[0].t:0,to:B.length?B[B.length-1].t:0,gaps:gaps.reverse().slice(0,4)};armRender()}).catch(function(){ARM.info={n:0,gaps:[]};armRender()})}
+function arcCoins(){return (typeof TOP10!=='undefined'?TOP10:RPCOINS).concat(['ZEC','AVAX','SUI','LTC']).filter(function(x,i,a){return a.indexOf(x)===i})}
 function armRender(){var el=$('#arcMan');if(!el)return;var I=ARM.info,c=ARM.coin,tf=ARM.tf,ms=ARC.ms[tf],coins=(typeof TOP10!=='undefined'?TOP10:RPCOINS);
-  var sel=$('#armCoin');if(sel&&!sel.options.length){sel.innerHTML=coins.map(function(x){return '<option'+(x===c?' selected':'')+'>'+x+'</option>'}).join('')}
+  coins=arcCoins();var sel=$('#armCoin');if(sel&&!sel.options.length){sel.innerHTML=coins.map(function(x){return '<option'+(x===c?' selected':'')+'>'+x+'</option>'}).join('')}
   var box=$('#armInfo');if(!box)return;var h='';
   if(!I||I.loading)h='<span class="muted">Κοιτάζω τι έχουμε…</span>';
   else{var old=I.n?I.from-ms:Date.now();h='<div>Έχουμε <b>'+fmt(I.n,0)+'</b> κεριά'+(I.n?' από <b>'+arcD(I.from,true)+'</b> έως <b>'+arcD(I.to,true)+'</b>':'')+'.</div><div class="armbtns">'+
@@ -6726,7 +6727,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=191,VERS={sub:null,t:null};
+var APP_VER=192,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
