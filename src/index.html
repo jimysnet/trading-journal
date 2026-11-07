@@ -1362,6 +1362,19 @@ body.station *{animation:none!important;transition:none!important}
 .hpgs{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem;margin-top:.7rem}.hpg{all:unset;cursor:pointer;min-width:2rem;text-align:center;padding:.3rem .55rem;border:1px solid var(--line);border-radius:8px;font-size:.82rem}.hpg.on{background:var(--accent);color:#fff;border-color:var(--accent)}.hpg:disabled{opacity:.4;cursor:default}.hpg:focus-visible{outline:2px solid var(--accent)}
 @media(max-width:900px){.hhd,.hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}.hhd>span:nth-child(2),.hhd>span:nth-child(3),.hhd>span:nth-child(5),.hhd>span:nth-child(7),.hr .hD,.hr .hP,.hr .hA{display:none}.hr .hS{grid-column:2;grid-row:1}.hr .hT{grid-column:2;grid-row:2}.hr .hM{grid-column:3;grid-row:1/3}.hr .hR{grid-row:1/3}}
 .htab,.hr,.hhd{text-align:left}.hT{align-items:flex-start}.hS i,.hS b{white-space:nowrap}.hM{white-space:nowrap}@media(max-width:900px){.hM{font-size:.78rem}.hr .hS{flex-wrap:nowrap}}
+.px3d{perspective:900px;margin-top:.9rem}
+.px3d .pxbox{position:relative;margin:0;padding:.9rem .9rem 1rem;border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,0) 45%),var(--sunk);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.28)}
+.px3d .formhead b{font-size:1rem;letter-spacing:.01em}.px3d .formhead .pill{box-shadow:0 0 0 1px currentColor,0 0 14px -2px currentColor}
+.px3d .pfks{grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin-top:.7rem!important;transform-style:preserve-3d}
+.px3d .pfk{position:relative;padding:.6rem .7rem .65rem;border-radius:12px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 85%,#fff 15%),var(--surface));border:1px solid var(--line);border-top-color:rgba(255,255,255,.18);
+  box-shadow:0 5px 0 color-mix(in srgb,var(--surface) 55%,#000 45%),0 12px 18px rgba(0,0,0,.3);transform:rotateX(9deg) translateZ(0);transform-origin:50% 100%;transition:transform .25s ease,box-shadow .25s ease}
+.px3d .pfk:hover{transform:rotateX(0deg) translateY(-3px);box-shadow:0 8px 0 color-mix(in srgb,var(--surface) 55%,#000 45%),0 18px 26px rgba(0,0,0,.35)}
+.px3d .pfk b{font-size:1.25rem;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.px3d .pxcmp{gap:.55rem;margin-top:.9rem}.px3d .pxcmp li{grid-template-columns:minmax(0,7.5rem) 1fr auto}
+.px3d .pfdiv{height:11px;border-radius:4px;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(255,255,255,.04));box-shadow:inset 0 2px 3px rgba(0,0,0,.45)}
+.px3d .pfdiv i{height:100%!important;top:0!important;border-radius:3px;background-image:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0) 55%,rgba(0,0,0,.25))!important;box-shadow:0 3px 0 rgba(0,0,0,.35),0 0 10px -2px currentColor}
+.px3d .pxbars{gap:3px}.px3d .pxcmp b.num{text-shadow:0 2px 0 rgba(0,0,0,.35)}
+@media (prefers-reduced-motion:reduce){.px3d .pfk{transform:none;transition:none}}
 </style>
 
 <header class="top pad">
@@ -1797,11 +1810,11 @@ body.station *{animation:none!important;transition:none!important}
       <div class="dmleft"><div class="card" id="profAcctCard"><div class="formhead"><h2 style="margin:0">🎓 Λογαριασμός Καθηγητή</h2><span class="muted" style="font-size:.78rem">εικονικός · τον διαχειρίζεται μόνος του</span></div>
         <div id="profStat" style="margin-top:.4rem"></div><div id="profPort" style="margin-top:.6rem"></div>
         <details class="dmset2"><summary>Κεφάλαιο και νέα αρχή</summary><div id="dmAcct"></div></details></div></div>
-      <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div></div>
+      <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div><div id="pxAcc" class="px3d"></div></div>
       </div>
     </div>
     <div class="card" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div>
-    <div class="card" id="profExtraCard" style="margin-top:1rem"><div id="profExtra"></div></div>
+    
       <details class="card dmman" id="dmManCard"><summary>➕ Νέα χειροκίνητη demo συναλλαγή</summary><p class="muted" style="font-size:.8rem;margin:.4rem 0 0">Μπαίνει στον ίδιο λογαριασμό του Καθηγητή, με το όνομά σου.</p>
       <form id="dmForm" novalidate style="margin-top:.6rem">
         <div class="formhead"><span class="pill acc" id="dm-prof" hidden>Τεχνική Καθηγητή</span></div>
@@ -6750,7 +6763,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=200,VERS={sub:null,t:null};
+var APP_VER=201,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8501,7 +8514,7 @@ function pfLine(pts,ccy){if(pts.length<2)return '<div class="empty" style="paddi
 function pfBars(days,ccy){var mx=Math.max.apply(null,days.map(function(d){return Math.abs(d.v)}).concat([1e-9])),W=520,H=110,bw=(W-8)/days.length,mid=H/2;
   return '<svg viewBox="0 0 '+W+' '+H+'" class="pfbars" preserveAspectRatio="none" role="img" aria-label="PnL ανά ημέρα"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+days.map(function(d,i){var h=Math.abs(d.v)/mx*(mid-6),x=4+i*bw+bw*0.18,w=Math.max(2,bw*0.64);
     return '<g><rect x="'+(4+i*bw)+'" y="0" width="'+bw+'" height="'+H+'" fill="transparent"><title>'+esc(dateGr(d.k)+' · '+pfMoney(d.v,ccy)+' · '+d.n+' συναλλαγές')+'</title></rect>'+(d.n?'<rect x="'+x.toFixed(1)+'" y="'+(d.v>=0?mid-h:mid).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1.5,h).toFixed(1)+'" rx="2" fill="'+(d.v>=0?'var(--gain)':'var(--loss)')+'" pointer-events="none"/>':'')+'</g>'}).join('')+'</svg>'}
-function renderPf(){var e2=$('#profPort');if(e2){e2.innerHTML=pfHtml(PROF,'prof');try{var ph=pxHtml(),k=ph.indexOf('<div class="pxbox">');$('#profStat').innerHTML=ph.slice(0,k);$('#profExtra').innerHTML=ph.slice(k)}catch(x){console.error(x)}}}
+function renderPf(){var e2=$('#profPort');if(e2){e2.innerHTML=pfHtml(PROF,'prof');try{var ph=pxHtml(),k=ph.indexOf('<div class="pxbox">');$('#profStat').innerHTML=ph.slice(0,k);var pa=$('#pxAcc');if(pa)pa.innerHTML=ph.slice(k)}catch(x){console.error(x)}}}
 function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=dmBal(uid),L=dmOf(uid).filter(function(t){return (t.at||0)>=a.resetAt&&!apfOff(t)});
   var op=L.filter(function(t){return !dmClosed(t)}),run=op.filter(function(t){return !dmIsPend(t)}),pend=op.filter(dmIsPend);
   var unr=sum(run.map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),used=sum(op.map(function(t){return n(t.margin)||n(t.notional)||0})),eq=bal+unr,avail=bal-used,mr=eq>0?used/eq:NaN;
