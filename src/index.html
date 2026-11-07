@@ -1464,6 +1464,7 @@ body.station *{animation:none!important;transition:none!important}
 @media(max-width:900px){.otab .hhd,.otab .hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}}
 /* επιλογή θέματος: μόνο εικονίδιο, για να μη στριμώχνει τις καρτέλες */
 .thbtn{all:unset;cursor:pointer;font-size:1rem;line-height:1;padding:.3rem .45rem;border-radius:999px;border:1px solid var(--line);margin-left:.4rem}.thbtn:focus-visible{outline:2px solid var(--accent)}
+.otrk{height:8px!important;border-radius:4px!important;background:linear-gradient(90deg,rgba(239,83,80,.55),rgba(150,150,150,.25) 50%,rgba(38,166,154,.55))!important}.ote{top:-3px!important;height:14px!important;background:var(--fg)!important;opacity:.8}.otn{top:50%!important;transform:translateY(-50%);box-shadow:0 0 0 2px var(--surface)}.otn.pos{color:#26a69a}.otn.neg{color:#ef5350}
 </style>
 
 <header class="top pad">
@@ -6852,7 +6853,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=206,VERS={sub:null,t:null};
+var APP_VER=207,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
