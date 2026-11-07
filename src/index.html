@@ -5821,7 +5821,7 @@ function pSize(){if(!PCH.size){try{PCH.size=localStorage.getItem('tj-psize')||'s
 function pSetSize(z){PCH.size=z;try{localStorage.setItem('tj-psize',z)}catch(e){}PCH.full=z==='l';pCompact();try{renderProf()}catch(e){}}
 function pCompact(){var p=$('#profPanel');if(!p)return;var z=pSize();if(z==='l')PCH.full=true;var c=(QZ.tab==='chat'||QZ.tab==='group')&&!PCH.full;p.classList.toggle('compact',c);p.classList.toggle('csm',c&&z==='s');p.classList.toggle('cmd',c&&z==='m');var sh=$('#profShrink');if(sh)sh.hidden=c&&z==='s'||(!c&&!(QZ.tab==='chat'||QZ.tab==='group'));var g=QZ.tab==='group';var t=$('#profTitle'),sb=$('#profSub');if(t)t.textContent=c?(g?'Η παρέα μας':'Ο Καθηγητής'):'Ο Καθηγητής';if(sb)sb.textContent=c?(g?'συζήτηση της ομάδας':'ρώτα ό,τι θες'):'Μάθημα, τεστ και συζήτηση κάθε μέρα';$$('.pswitch [data-psw]').forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-psw')===(g?'group':'chat')?'true':'false')});var w=$('#profWide');if(w&&c){w.textContent='+';w.title=z==='s'?'Μεσαίο':'Μεγάλο (όλο το πάνελ)'}else if(w){w.textContent=$('#profPanel').classList.contains('wide')?'⤡':'⤢';w.title='Πλάτος'}}
 function profOpen(on){var p=$('#profPanel');if(on)P3D.openAt=Date.now();else PCH.full=pSize()==='l';p.hidden=!on;document.body.classList.toggle('prof-on',!!on);$('#profBubble').hidden=true;if(on){renderProf();profMood('wow');setTimeout(function(){profMood('')},900)}}
-function profDot(){var d=qMine(today());$('#profDot').hidden=!!(d&&d.done)}
+function profDot(){var el=$('#profDot');if(el)el.hidden=true}/* η κόκκινη τελεία («δεν έκανες το τεστ της ημέρας») αφαιρέθηκε: μπέρδευε */
 function renderProf(){
   profDot();
   if($('#profPanel').hidden)return;pCompact();
@@ -7041,7 +7041,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=235,VERS={sub:null,t:null};
+var APP_VER=236,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
