@@ -1460,7 +1460,16 @@ body.station *{animation:none!important;transition:none!important}
 .otab .hhd,.otab .hr{grid-template-columns:4.6rem 6.4rem 8.6rem minmax(0,1fr) minmax(0,13rem) 7.2rem 6.6rem}
 .otrk{position:relative;display:block;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--loss-soft),var(--line) 35%,var(--gain-soft));margin:.15rem 0 .25rem}.ote{position:absolute;top:-3px;width:2px;height:12px;background:var(--muted);margin-left:-1px}.otn{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;margin-left:-6px;background:currentColor;box-shadow:0 0 0 2px var(--surface)}
 .hP small{font-size:.72rem}.hst.run{color:var(--accent);border-color:var(--accent)}.hchip.idle{opacity:.55}.hchip .num{font-size:.75rem;margin-left:.2rem}
-.otx{padding:.6rem .8rem .8rem}.otx .dmtl{margin:0;max-width:44rem}.dmdot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);margin-right:.3rem;box-shadow:0 0 6px var(--accent)}
+.otx{padding:.6rem .8rem .8rem}.otxg{display:grid;grid-template-columns:minmax(0,44rem) minmax(0,1fr);gap:.8rem;align-items:stretch}.otxl{min-width:0}@media(max-width:1000px){.otxg{grid-template-columns:1fr}}
+.otc{min-width:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:.5rem .6rem .45rem;display:flex;flex-direction:column}.otch{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.3rem;font-size:.85rem}.otch b{display:inline-flex;align-items:center;gap:.3rem}
+.otcf{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.otcf button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:.75rem;padding:.2rem .55rem;cursor:pointer}.otcf button[aria-pressed="true"]{background:var(--accent);color:var(--surface);font-weight:700}
+.otsv{width:100%;height:auto;display:block;flex:1;min-height:12rem}.otce{flex:1;display:grid;place-items:center;min-height:12rem;color:var(--muted);font-size:.85rem;text-align:center;padding:1rem}
+.otg{stroke:var(--line);stroke-width:1;opacity:.6}.otax{fill:var(--muted);font-size:10px;font-family:ui-monospace,monospace}
+.otu line,.otu rect{stroke:var(--gain);fill:var(--gain)}.otd line,.otd rect{stroke:var(--loss);fill:var(--loss)}
+.otzw{fill:var(--gain);opacity:.1}.otzl{fill:var(--loss);opacity:.1}.otev{stroke:var(--muted);stroke-dasharray:2 3;opacity:.8}
+.otl{stroke-width:1.4}.otl.tp{stroke:var(--gain)}.otl.sl{stroke:var(--loss)}.otl.en{stroke:var(--fg);opacity:.75}.otl.nw{stroke:var(--accent);stroke-width:1}
+.ott text{font-size:10.5px;font-weight:700;font-family:ui-monospace,monospace;fill:#fff}.ott.tp rect{fill:var(--gain)}.ott.sl rect{fill:var(--loss)}.ott.en rect{fill:var(--muted)}.ott.nw rect{fill:var(--accent)}
+.otlg{display:flex;flex-wrap:wrap;gap:.3rem .8rem;font-size:.72rem;margin-top:.25rem}.otlg .tp{color:var(--gain)}.otlg .sl{color:var(--loss)}.otlg .en{color:var(--fg)}.otlg .nw{color:var(--accent)}.otlg .mu{color:var(--muted)}.otx .dmtl{margin:0;max-width:44rem}.dmdot{display:inline-block;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);margin-right:.3rem;box-shadow:0 0 6px var(--accent)}
 @media(max-width:900px){.otab .hhd,.otab .hr{grid-template-columns:4.4rem minmax(0,1fr) 5.6rem}}
 /* επιλογή θέματος: μόνο εικονίδιο, για να μη στριμώχνει τις καρτέλες */
 .thbtn{all:unset;cursor:pointer;font-size:1rem;line-height:1;padding:.3rem .45rem;border-radius:999px;border:1px solid var(--line);margin-left:.4rem}.thbtn:focus-visible{outline:2px solid var(--accent)}
@@ -6882,7 +6891,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=218,VERS={sub:null,t:null};
+var APP_VER=219,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7466,11 +7475,53 @@ function renderDmOpen(){var el=$('#dmOpen');if(!el)return;var uid='prof',all=dmO
       '<span class="hP hc-px"><span class="otw"><b class="sl">SL</b><span class="otrk" title="stop '+dmPx(sl)+' · είσοδος '+dmPx(e)+' · στόχος '+dmPx(tg)+'"><i class="ote" style="left:'+epos.toFixed(1)+'%"></i>'+(pos!=null?'<i class="otn '+(cr>=0?'pos':'neg')+'" style="left:'+pos.toFixed(1)+'%"></i>':'')+'</span><b class="tp">TP</b></span><small class="num">'+(pend?'περιμένει '+dmPx(e)+(isFinite(dd)?' · απέχει '+fmt(dd,2)+'%':''):(t.curStop!=null?'🔒 ':'')+dmPx(sl)+' · '+dmPx(tg))+'</small></span>'+
       '<span class="hM r num '+cls(pn)+'">'+(has?(pn>0?'+':'')+dmMoney(pn,''):'')+(isFinite(ro)?'<small>'+(ro>0?'+':'')+fmt(ro,1)+'%</small>':'')+'</span>'+
       '<span class="hA"><button type="button" class="tvob" data-tvo="'+esc(t.id)+'" title="Στείλε στο TradingView: ανοίγει το γράφημα και έχεις έτοιμες τις τιμές για αντιγραφή">📈 TV</button><span class="hst '+(pend?'nf':'run')+'">'+(pend?'αναμονή':'τρέχει')+'</span><span class="harr" aria-hidden="true">'+(open?'▴':'▾')+'</span></span></div>';
-    if(open)h+='<div class="hx otx"><button type="button" class="btn small primary" data-tvo="'+esc(t.id)+'" style="margin-bottom:.5rem">📈 Στείλε στο TradingView</button>'+dmTileAny(t,false)+'</div>'});
+    if(open)h+='<div class="hx otx"><button type="button" class="btn small primary" data-tvo="'+esc(t.id)+'" style="margin-bottom:.5rem">📈 Στείλε στο TradingView</button><div class="otxg"><div class="otxl">'+dmTileAny(t,false)+'</div>'+otChartHtml(t)+'</div></div>'});
   el.innerHTML=h+'</div>'}
 document.addEventListener('click',function(e){if(!e.target.closest)return;var c=e.target.closest('[data-opf]');if(c){DM.opf=c.getAttribute('data-opf');renderDmOpen();return}
   var r=e.target.closest('[data-ox]');if(r&&!e.target.closest('a,button,input')){DM.ox=DM.ox||{};var id=r.getAttribute('data-ox');DM.ox[id]=!DM.ox[id];renderDmOpen()}});
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-ox]')){e.preventDefault();e.target.click()}});
+/* Διάγραμμα δίπλα στην ανοιχτή συναλλαγή: κεριά του νομίσματος με είσοδο, SL, TP (και κλειδωμένο stop) */
+var OTC=window.__OTC={},OT_TFS=['15m','1h','4h'],OT_DAYS={'15m':2,'1h':6,'4h':24};
+function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];return u||(OT_TFS.indexOf(a.tf)>=0?a.tf:'1h')}
+function otLoad(k,sym,tf){var o=OTC[k]||{};o.busy=true;OTC[k]=o;
+  histBars(sym,tf,OT_DAYS[tf]||6).then(function(L){o.bars=(L||[]).filter(function(b){return isFinite(b.o)&&isFinite(b.h)&&isFinite(b.l)&&isFinite(b.c)}).slice(-96);o.err=!o.bars.length}).catch(function(){o.err=true}).then(function(){o.busy=false;o.at=Date.now();if(Object.keys(DM.ox||{}).some(function(i){return DM.ox[i]}))renderDmOpen()})}
+function otChartHtml(t){var tf=otTf(t),k=dmSym(t.symbol)+'|'+tf,C=OTC[k];
+  if(!C||(!C.busy&&Date.now()-(C.at||0)>(tf==='15m'?12e4:3e5)))otLoad(k,t.symbol,tf);C=OTC[k];
+  var tabs='<div class="otcf" role="group" aria-label="Χρονικό πλαίσιο">'+OT_TFS.map(function(x){return '<button type="button" data-otf="'+esc(t.id)+'" data-tf="'+x+'" aria-pressed="'+(x===tf)+'">'+x+'</button>'}).join('')+'</div>';
+  var b=String(t.symbol||'').replace(/(USDT|USDC|USD|PERP)$/,'');
+  var body=C.bars&&C.bars.length?otSvg(t,C.bars,tf):'<div class="otce">'+(C.err?'Δεν βρέθηκαν κεριά για '+esc(b)+' '+tf+'. Δοκίμασε άλλο πλαίσιο ή γέμισε το αρχείο κεριών.':'Φορτώνει κεριά…')+'</div>';
+  return '<div class="otc"><div class="otch"><b>'+symIcon(b,16)+' '+esc(b)+'/USDT · '+tf+'</b>'+tabs+'</div>'+body+'</div>'}
+function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l,c:b.c}}),lp=livePx(t.symbol),ms=CC_TFMS[tf]||36e5,last=B[B.length-1];
+  if(isFinite(lp)&&last){if(Date.now()-last.t<ms){last.c=lp;last.h=Math.max(last.h,lp);last.l=Math.min(last.l,lp)}else B.push({t:last.t+ms,o:last.c,h:Math.max(last.c,lp),l:Math.min(last.c,lp),c:lp})}
+  B=B.slice(-90);var W=640,H=300,R=74,T=10,Bm=22,pw=W-R,ph=H-T-Bm,N=B.length,bw=pw/(N+6);
+  var e=n(t.entry),st=n(t.stop),cs=t.curStop!=null?n(t.curStop):NaN,tg=n(t.target),pend=dmIsPend(t);
+  var lo=Infinity,hi=-Infinity;B.forEach(function(b){if(b.l<lo)lo=b.l;if(b.h>hi)hi=b.h});[e,st,tg,cs].forEach(function(v){if(isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}});
+  var pad=(hi-lo)*.06||hi*.01;lo-=pad;hi+=pad;
+  var Y=function(p){return T+(hi-p)/(hi-lo)*ph},X=function(i){return (i+.5)*bw},f=function(v){return v.toFixed(1)};
+  var ei=-1;if(t.at){for(var i=0;i<N;i++){if(B[i].t<=t.at)ei=i}if(t.at<B[0].t)ei=0}var zx=ei>=0?X(ei):0;
+  var s='<svg class="otsv" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Διάγραμμα '+esc(String(t.symbol))+' '+tf+' με είσοδο, stop loss και take profit">';
+  /* πλέγμα */
+  var stp=pcNice((hi-lo)/5);for(var g=Math.ceil(lo/stp)*stp;g<hi;g+=stp){var gy=Y(g);s+='<line class="otg" x1="0" x2="'+pw+'" y1="'+f(gy)+'" y2="'+f(gy)+'"/><text class="otax" x="'+(pw+6)+'" y="'+f(gy+3.5)+'">'+esc(dmPx(g))+'</text>'}
+  /* ζώνες κέρδους/ζημιάς από την είσοδο και μετά */
+  if(isFinite(e)&&isFinite(tg))s+='<rect class="otzw" x="'+f(zx)+'" width="'+f(pw-zx)+'" y="'+f(Math.min(Y(e),Y(tg)))+'" height="'+f(Math.abs(Y(tg)-Y(e)))+'"/>';
+  if(isFinite(e)&&isFinite(st))s+='<rect class="otzl" x="'+f(zx)+'" width="'+f(pw-zx)+'" y="'+f(Math.min(Y(e),Y(st)))+'" height="'+f(Math.abs(Y(st)-Y(e)))+'"/>';
+  if(ei>=0)s+='<line class="otev" x1="'+f(zx)+'" x2="'+f(zx)+'" y1="'+T+'" y2="'+(T+ph)+'"/>';
+  /* κεριά */
+  var cw=Math.max(1,bw*.64);B.forEach(function(b,i){var up=b.c>=b.o,x=X(i),y1=Y(Math.max(b.o,b.c)),y2=Y(Math.min(b.o,b.c));s+='<g class="'+(up?'otu':'otd')+'"><line x1="'+f(x)+'" x2="'+f(x)+'" y1="'+f(Y(b.h))+'" y2="'+f(Y(b.l))+'"/><rect x="'+f(x-cw/2)+'" y="'+f(y1)+'" width="'+f(cw)+'" height="'+f(Math.max(1,y2-y1))+'"/></g>'});
+  /* γραμμές επιπέδων με ετικέτες δεξιά */
+  var tags=[];var lvl=function(v,c,lab,dash){if(!isFinite(v))return;var y=Y(v);s+='<line class="otl '+c+'" x1="0" x2="'+pw+'" y1="'+f(y)+'" y2="'+f(y)+'"'+(dash?' stroke-dasharray="5 4"':'')+'/>';tags.push({y:y,c:c,t:lab+' '+dmPx(v)})};
+  lvl(tg,'tp','TP');lvl(st,'sl',isFinite(cs)&&cs!==st?'SL αρχ.':'SL',isFinite(cs)&&cs!==st);if(isFinite(cs)&&cs!==st)lvl(cs,'sl','🔒 SL');lvl(e,'en',pend?'Είσοδος (αναμονή)':'Είσοδος',pend);
+  if(isFinite(lp))lvl(lp,'nw','Τώρα',true);
+  /* ετικέτες χωρίς επικάλυψη */
+  tags.sort(function(a,b){return a.y-b.y});for(var j=1;j<tags.length;j++)if(tags[j].y-tags[j-1].y<15)tags[j].y=tags[j-1].y+15;for(j=tags.length-2;j>=0;j--)if(tags[j].y>H-Bm-6-(tags.length-1-j)*15)tags[j].y=Math.min(tags[j].y,tags[j+1].y-15);
+  tags.forEach(function(g){s+='<g class="ott '+g.c+'"><rect x="'+(pw-4)+'" y="'+f(g.y-7.5)+'" width="'+(R+4)+'" height="15" rx="3"/><text x="'+(pw+1)+'" y="'+f(g.y+3.8)+'">'+esc(g.t.length>13?g.t.split(' ').pop():g.t)+'</text></g>'});
+  /* άξονας χρόνου */
+  var every=Math.max(1,Math.round(N/6));for(var q=0;q<N;q+=every){var d=new Date(B[q].t),p2=function(x){return String(x).padStart(2,'0')};s+='<text class="otax" x="'+f(X(q))+'" y="'+(H-6)+'" text-anchor="middle">'+(ms>=144e5||q===0?p2(d.getDate())+'/'+p2(d.getMonth()+1)+' ':'')+p2(d.getHours())+':'+p2(d.getMinutes())+'</text>'}
+  s+='</svg>';
+  var leg='<div class="otlg"><span class="tp">━ TP '+dmPx(tg)+'</span><span class="en">━ Είσοδος '+dmPx(e)+'</span><span class="sl">━ SL '+dmPx(isFinite(cs)?cs:st)+'</span>'+(isFinite(lp)?'<span class="nw">┅ Τώρα '+dmPx(lp)+'</span>':'')+(ei>=0?'<span class="mu">┆ ώρα εισόδου</span>':'')+'</div>';
+  return s+leg}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-otf]');if(!b)return;e.stopPropagation();DM.otf=DM.otf||{};DM.otf[b.getAttribute('data-otf')]=b.getAttribute('data-tf');renderDmOpen()},true);
+
 /* 📈 Στο TradingView: γράφημα στο σωστό timeframe + τιμές έτοιμες για αντιγραφή στο Paper Trading */
 var TVO_INT={'15m':'15','30m':'30','1h':'60','4h':'240','1D':'D'};
 function tvoTrade(id){var t=dmOf('prof').concat(dmOf(S.uid||'me')).find(function(x){return x.id===id});return t||null}
