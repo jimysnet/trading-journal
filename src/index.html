@@ -1466,6 +1466,11 @@ body.station *{animation:none!important;transition:none!important}
 .thbtn{all:unset;cursor:pointer;font-size:1rem;line-height:1;padding:.3rem .45rem;border-radius:999px;border:1px solid var(--line);margin-left:.4rem}.thbtn:focus-visible{outline:2px solid var(--accent)}
 .otrk{height:8px!important;border-radius:4px!important;background:linear-gradient(90deg,rgba(239,83,80,.55),rgba(150,150,150,.25) 50%,rgba(38,166,154,.55))!important}.ote{top:-3px!important;height:14px!important;background:var(--fg)!important;opacity:.8}.otn{top:50%!important;transform:translateY(-50%);box-shadow:0 0 0 2px var(--surface)}.otn.pos{color:#26a69a}.otn.neg{color:#ef5350}
 .otw{display:flex;align-items:center;gap:.35rem}.otw .otrk{flex:1;margin:.15rem 0 .25rem}.otw .sl{color:#ef5350;font-size:.62rem;font-weight:700}.otw .tp{color:#26a69a;font-size:.62rem;font-weight:700}
+/* ο Καθηγητής μένει στη θέση του: τα αναπηδήματα κρατούν το κεντράρισμα (translateX(-50%)) */
+@keyframes prjump{0%,100%{transform:translateX(-50%) translateY(0)}40%{transform:translateX(-50%) translateY(-6px) scale(1.03)}}
+@keyframes prpop{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
+.prof-svg.pph.cut.cheer .prig,.prof-svg.pph.cut.happy .prig{animation:prjump .5s ease-out 1!important}.prof-svg.pph.cut.wow .prig{animation:prpop .45s ease-out!important}
+@media (prefers-reduced-motion:reduce){.prof-svg.pph.cut .prig{animation:none!important}}
 </style>
 
 <header class="top pad">
@@ -6854,7 +6859,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=209,VERS={sub:null,t:null};
+var APP_VER=210,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
