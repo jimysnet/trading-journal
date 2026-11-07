@@ -7018,7 +7018,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=229,VERS={sub:null,t:null};
+var APP_VER=230,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -9581,7 +9581,7 @@ function cnWho(m){return m.from==='claude'?['✳','Claude','cn-c']:m.from==='pro
 function cnTime(t){var d=new Date(t),p=function(x){return String(x).padStart(2,'0')};return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function cnRender(){var el=$('#cnList');if(!el)return;var L=S.council||[],pend=L.filter(function(m){return m.prop&&m.prop.status==='pending'});
   var pn=$('#cnPendN');if(pn)pn.textContent=pend.length?String(pend.length):'';
-  var lc=L.filter(function(m){return m.from==='claude'}).pop(),meta=$('#cnMeta');if(meta)meta.textContent='Claude: κάθε βράδυ ~23:00'+(lc?' · τελευταία φορά '+cnTime(lc.at):'');
+  var lc=L.filter(function(m){return m.from==='claude'}).pop(),meta=$('#cnMeta');if(meta)meta.textContent='Claude: κάθε βράδυ ~22:50'+(lc?' · τελευταία φορά '+cnTime(lc.at):'');
   var V=CN.f==='pend'?pend:CN.f==='done'?L.filter(function(m){return m.prop&&(m.prop.status==='done'||m.prop.status==='failed'||m.prop.status==='rejected')}):L;
   var stick=el.scrollHeight-el.scrollTop-el.clientHeight<40;
   el.innerHTML=(V.length?V.map(function(m){var w=cnWho(m),p=m.prop,h='<div class="cnm '+w[2]+'"><div class="cnav" aria-hidden="true">'+w[0]+'</div><div class="cnb"><div class="cnh"><b>'+esc(w[1])+'</b><span>'+cnTime(m.at)+'</span></div>'+(m.text?'<div class="cnt">'+esc(m.text)+'</div>':'');
