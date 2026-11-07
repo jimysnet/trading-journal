@@ -52,4 +52,4 @@
 - `apfPresets` / `APB_PRE`: τα έτοιμα προφίλ. Νέο προφίλ = νέο preset με `cfg:mk({...})`.
 - `BT`: οι στρατηγικές (id, rule, btSignal). `btSignal`: τα σήματα του backtest.
 - `mgTxt(c,long)`: κείμενο κανόνα εξόδου (σταθερό / break-even / trailing).
-- `cnRender`, `cnProf`: η κάρτα του Συμβουλίου.
+- `cnRender`, `cnProf`: η κάρτα του Συμβουλίου. `cnRunNow`: το κουμπί «▶️ Εκτέλεση τώρα» (fire_trigger μέσω Claude Code Remote). Ένα μήνυμα με `kind: "run"` σημαίνει ότι ο χρήστης ζήτησε εκτέλεση· όταν γράψεις το δικό σου μήνυμα, το κουμπί ξαναενεργοποιείται.

@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=230,VERS={sub:null,t:null};
+var APP_VER=231,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5732,7 +5732,7 @@ function cnWho(m){return m.from==='claude'?['✳','Claude','cn-c']:m.from==='pro
 function cnTime(t){var d=new Date(t),p=function(x){return String(x).padStart(2,'0')};return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function cnRender(){var el=$('#cnList');if(!el)return;var L=S.council||[],pend=L.filter(function(m){return m.prop&&m.prop.status==='pending'});
   var pn=$('#cnPendN');if(pn)pn.textContent=pend.length?String(pend.length):'';
-  var lc=L.filter(function(m){return m.from==='claude'}).pop(),meta=$('#cnMeta');if(meta)meta.textContent='Claude: κάθε βράδυ ~22:50'+(lc?' · τελευταία φορά '+cnTime(lc.at):'');
+  var lc=L.filter(function(m){return m.from==='claude'}).pop(),meta=$('#cnMeta');var lr=L.filter(function(m){return m.kind==='run'}).pop(),running=lr&&(!lc||lc.at<lr.at)&&Date.now()-lr.at<45*6e4,rb=$('#cnRunNow');if(rb&&!CN.firing){rb.disabled=!!running;rb.textContent=running?'⏳ Ο Claude δουλεύει…':'▶️ Εκτέλεση τώρα';rb.title=running?'Ζητήθηκε '+cnTime(lr.at)+'. Όταν τελειώσει, θα γράψει εδώ.':'Ο Claude ξεκινά τώρα: απαντά και υλοποιεί ό,τι έχεις εγκρίνει'}if(meta)meta.textContent='Claude: κάθε βράδυ ~22:50'+(lc?' · τελευταία φορά '+cnTime(lc.at):'');
   var V=CN.f==='pend'?pend:CN.f==='done'?L.filter(function(m){return m.prop&&(m.prop.status==='done'||m.prop.status==='failed'||m.prop.status==='rejected')}):L;
   var stick=el.scrollHeight-el.scrollTop-el.clientHeight<40;
   el.innerHTML=(V.length?V.map(function(m){var w=cnWho(m),p=m.prop,h='<div class="cnm '+w[2]+'"><div class="cnav" aria-hidden="true">'+w[0]+'</div><div class="cnb"><div class="cnh"><b>'+esc(w[1])+'</b><span>'+cnTime(m.at)+'</span></div>'+(m.text?'<div class="cnt">'+esc(m.text)+'</div>':'');
@@ -5754,6 +5754,19 @@ function cnProf(mode,userText){if(CN.busy||!S.sample)return;CN.busy=true;cnRende
   S.sample.json(pr,{modelTier:mode==='obs'?'complex':'default',effort:mode==='obs'?'medium':'low',cache:false}).then(function(r){var P=(r&&r.proposals||[]).filter(function(x){return x&&x.title}).slice(0,mode==='obs'?2:1);
     var t=String(r&&r.text||'').trim();if(t||!P.length)return cnAdd({from:'prof',by:'prof',text:t||'Δεν έχω κάτι χρήσιμο να προσθέσω ακόμα.'}).then(function(){return Promise.all(P.map(function(x,i){return cnAdd({from:'prof',by:'prof',at:Date.now()+i+1,text:'',prop:{title:String(x.title).slice(0,120),what:String(x.what||'').slice(0,600),why:String(x.why||'').slice(0,600),risk:['low','mid','high'].indexOf(x.risk)>=0?x.risk:'mid',status:'pending'}})}))})
   }).catch(function(e){return cnAdd({from:'prof',by:'prof',text:'Δεν μπόρεσα να απαντήσω τώρα ('+esc(String(e&&(e.code||e.message)||'σφάλμα'))+'). Δοκίμασε ξανά σε λίγο.'})}).then(function(){CN.busy=false;CN.jump=true;cnRender()})}
+
+/* «Εκτέλεση τώρα»: ξεκινά την προγραμματισμένη εργασία του Συμβουλίου μέσω της σύνδεσης Claude Code Remote (με τον λογαριασμό του θεατή) */
+var CN_TRIG='trig_01NeY4BdbKpLqrBKYEQ1kB8H';
+function cnRunMsg(t,cls){var el=$('#cnRunMsg');if(!el)return;el.hidden=!t;el.className='cnrunmsg'+(cls?' '+cls:'');el.textContent=t||''}
+function cnRunNow(){if(CN.firing)return;var b=$('#cnRunNow');if(!CG.mcp){cnRunMsg('Οι συνδέσεις δεν είναι διαθέσιμες σε αυτή την προβολή. Άνοιξε τη σελίδα στο claude.ai.','bad');return}
+  var ap=(S.council||[]).filter(function(m){return m.prop&&m.prop.status==='approved'}).length;
+  CN.firing=true;if(b){b.disabled=true;b.textContent='⏳ Ξεκινάω…'}cnRunMsg('');
+  CG.mcp.callTool('Claude Code Remote','fire_trigger',{trigger_id:CN_TRIG,text:'Ο χρήστης πάτησε «▶️ Εκτέλεση τώρα» στη σελίδα ('+new Date().toLocaleString('el-GR')+'). Εγκεκριμένες προτάσεις που περιμένουν: '+ap+'. Ξεκίνα από αυτές.'},{cache:false})
+   .then(function(){return cnAdd({from:'user',kind:'run',text:'▶️ Ζήτησα εκτέλεση τώρα'+(ap?' ('+ap+' εγκεκριμένες προτάσεις)':'')+'.'})})
+   .then(function(){cnRunMsg('✅ Ο Claude ξεκίνησε. Συνήθως θέλει 5–20 λεπτά· όταν τελειώσει θα γράψει εδώ τι έκανε'+(ap?' και θα μαρκάρει τις προτάσεις ως «έγινε»':'')+'.','ok')})
+   .catch(function(e){var c=e&&e.code,m={approval_required:'Χρειάζεται η άδειά σου: πάτα ξανά «Εκτέλεση τώρα» και επίτρεψε τη σύνδεση «Claude Code Remote» στο παράθυρο που θα ανοίξει.',not_in_manifest:'Η σύνδεση «Claude Code Remote» δεν επιτράπηκε σε αυτή τη σελίδα. Επίτρεψέ τη από το μενού Permissions του artifact.',server_not_connected:'Η σύνδεση «Claude Code Remote» δεν υπάρχει σε αυτόν τον λογαριασμό (Ρυθμίσεις → Connectors στο claude.ai).',needs_reauth:'Η σύνδεση «Claude Code Remote» θέλει ξανά σύνδεση (Ρυθμίσεις → Connectors στο claude.ai).',blocked_by_policy:'Ο οργανισμός δεν επιτρέπει αυτή την ενέργεια από σελίδα.',tool_error:'Η εργασία δεν ξεκίνησε: ίσως ανήκει σε άλλον λογαριασμό (μόνο ο κάτοχος μπορεί να την τρέξει) ή είναι σε παύση.',server_unavailable:'Η υπηρεσία δεν απάντησε. Ίσως ξεκίνησε, ίσως όχι: περίμενε λίγα λεπτά πριν ξαναπατήσεις.',upstream_error:'Η υπηρεσία δεν απάντησε. Ίσως ξεκίνησε, ίσως όχι: περίμενε λίγα λεπτά πριν ξαναπατήσεις.'}[c]||('Δεν ξεκίνησε ('+(c||'σφάλμα')+').');cnRunMsg('⚠️ '+m,'bad')})
+   .then(function(){CN.firing=false;cnRender()})}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cnRunNow'))cnRunNow()});
 document.addEventListener('submit',function(e){if(e.target.id!=='cnForm')return;e.preventDefault();var ta=$('#cnText'),v=String(ta.value||'').trim();if(!v)return;ta.value='';CN.jump=true;cnAdd({from:'user',text:v});if($('#cnProfOn')&&$('#cnProfOn').checked)cnProf('reply',v)});
 document.addEventListener('keydown',function(e){if(e.target&&e.target.id==='cnText'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();var f=$('#cnForm');if(f.requestSubmit)f.requestSubmit();else f.dispatchEvent(new Event('submit',{cancelable:true}))}});
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('#cnCard [data-cnf],#cnCard [data-cnok],#cnCard [data-cnno],#cnCard [data-cnnote],#cnCard [data-cnundo],#cnObs');if(!t)return;
