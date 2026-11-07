@@ -1936,7 +1936,7 @@ body.station *{animation:none!important;transition:none!important}
       <div class="approf" id="apProf"></div>
       <div class="fields apf">
         <label class="f">Σάρωση κάθε (όλα τα προφίλ)<select id="ap-iv"><option value="5">5 λεπτά</option><option value="10">10 λεπτά</option><option value="15">15 λεπτά</option><option value="30">30 λεπτά</option><option value="60">1 ώρα</option><option value="120">2 ώρες</option></select></label>
-        <label class="f">Timeframe<select id="ap-tf"><option value="both">1 ώρα + 4 ώρες</option><option value="1h">1 ώρα</option><option value="4h">4 ώρες</option></select></label>
+        <label class="f">Timeframe<select id="ap-tf"><option value="both">15 λεπτά + 1 ώρα + 4 ώρες</option><option value="fast">15 λεπτά + 1 ώρα</option><option value="15m">15 λεπτά</option><option value="1h4h">1 ώρα + 4 ώρες</option><option value="1h">1 ώρα</option><option value="4h">4 ώρες</option></select></label>
         <label class="f apcoins" hidden>Νομίσματα<input id="ap-coins" placeholder="BTC,ETH,SOL" autocomplete="off" autocapitalize="characters"></label>
         <label class="f">Μέχρι ανοιχτές<input id="ap-maxOpen" inputmode="numeric"></label>
         <label class="f">Μέχρι τη μέρα<input id="ap-maxDay" inputmode="numeric"></label>
@@ -6854,7 +6854,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=208,VERS={sub:null,t:null};
+var APP_VER=209,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7634,8 +7634,9 @@ function apInit(){window.__AP=AP;window.__APX={tag:apProfTag,ids:apStratIds,ev:d
 function apTick(){clearTimeout(AP.timer);AP.timer=setTimeout(apTick,60000);
   if(!AP.cfg||!AP.cfg.on||AP.busy||!qCanSave())return;if(!apLock()){apStatus();return}
   var due=AP.last+AP.cfg.iv*60000;AP.next=due;if(Date.now()>=due)apScan();else apStatus()}
-var AP_TFMS={'1h':36e5,'4h':144e5};
-function apTfs(){var t=apC().tf;return t==='4h'?['4h']:t==='1h'?['1h']:['1h','4h']}
+var AP_TFMS={'15m':9e5,'1h':36e5,'4h':144e5};
+function apTfsOf(c){var t=c&&c.tf;return t==='4h'?['4h']:t==='1h'?['1h']:t==='15m'?['15m']:t==='fast'?['15m','1h']:t==='1h4h'?['1h','4h']:['15m','1h','4h']}
+function apTfs(){return apTfsOf(apC())}
 function apAgg(b,ms){var out=[],cur=null,k=0;b.forEach(function(x){var s=Math.floor(x.t/ms)*ms;if(!cur||cur.t!==s){if(cur&&k===Math.round(ms/36e5))out.push(cur);cur={t:s,o:x.o,h:x.h,l:x.l,c:x.c,v:+x.v||0};k=1}else{cur.h=Math.max(cur.h,x.h);cur.l=Math.min(cur.l,x.l);cur.c=x.c;cur.v+=+x.v||0;k++}});
   if(cur&&k===Math.round(ms/36e5)&&cur.t+ms<=Date.now()+60000)out.push(cur);return out}
 function apGrade(x){if(!x.sig||x.fit<0||!(x.test.avgR>0)||(x.best.X||0)<1.5)return 0;
@@ -7676,7 +7677,7 @@ function apRunners(){var act=apfActive(),L=APF.list.filter(function(p){return p.
   var out=L.map(function(p){var me=act&&act.id===p.id;return {id:p.id,name:p.name,cfg:me?AP.cfg:Object.assign({},AP_DEF,p.cfg,{on:true,iv:AP.cfg.iv,coins:AP.cfg.coins}),main:me}});if(!out.some(function(r){return r.main}))out[0].main=true;out.sort(function(a,b){return (b.main?1:0)-(a.main?1:0)});return out}
 function apScan(manual){if(AP.busy)return;if(!qCanSave()){toast('Δεν μπορείς να ανοίξεις demo: χρειάζεσαι δικαίωμα Editor και δικό σου λογαριασμό.');return}
   AP.busy=true;AP.last=Date.now();try{localStorage.setItem(apKey('last'),String(AP.last))}catch(e){}AP.next=AP.last+AP.cfg.iv*60000;apStWrite({last:AP.last,runner:S.uid,tab:AP.tab,at:Date.now()});
-  var R=apRunners(),k=0,tot=0,BP={},EV={},SH={bars:function(coin){return BP[coin]||(BP[coin]=deepBars(coin+'USDT','1h'))},ev:EV,btc:undefined},multi=R.length>1;
+  var R=apRunners(),k=0,tot=0,BP={},EV={},SH={bars:function(coin){return BP[coin]||(BP[coin]=deepBars(coin+'USDT','1h').then(function(r){if(apTfs().indexOf('15m')<0&&!R.some(function(x){return x.cfg&&apTfsOf(x.cfg).indexOf('15m')>=0}))return r;return histBars(coin+'USDT','15m',20).then(function(q){r.b15=q.bars;return r}).catch(function(){return r})}))},ev:EV,btc:undefined},multi=R.length>1;
   var nx=function(){if(k>=R.length){AP.rc=null;AP.busy=false;AP.cur='';apRender();setTimeout(function(){try{labAuto()}catch(e){}},4000);if(tot){toast('🤖 Ο Αυτόματος Καθηγητής άνοιξε '+tot+' demo'+(multi?' σε '+R.length+' προφίλ':'')+'.');setTimeout(function(){autoEval(true)},2500)}return}
     var r=R[k++];r.multi=multi;AP.rc=r;apScanOne(r,SH,manual,function(o){tot+=o;setTimeout(nx,200)})};nx()}
 function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,c=RC.cfg,watch=[],props=[],tfs=apTfs(),ctx={btc:SH.btc||null,openedDir:{}},brk=apProt().brk?apBreaker():'',sid=sessOf(Date.now());apStatus();
@@ -7684,9 +7685,9 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
     }var msg=(RC.multi?'['+RC.name+'] ':'')+'Σάρωση '+coins.length+' νομισμάτων σε '+tfs.join(' + ')+' · '+sessName(sid)+(opened?': άνοιξαν '+opened+' demo.':props.length?': '+props.length+' πρόταση/εις για έγκριση.':': καμία νέα συναλλαγή.')+(blocked?' Οι προστασίες σταμάτησαν '+blocked+' σήμα/τα.':'');
     apAdd('','scan',msg);apRender();
     if(!opened&&RC.main&&props.length&&manual)toast('🤖 '+props.length+' πρόταση/εις περιμένουν την έγκρισή σου.');fin(opened)};
-  var evalTf=function(coin,b1,tf,r){var b=tf==='1h'?b1:apAgg(b1,AP_TFMS[tf]);if(b.length<250)return null;
+  var evalTf=function(coin,b1,tf,r){var b=tf==='15m'?(r.b15||[]).filter(function(x){return !x.approx&&x.t+9e5<=Date.now()+60000}):tf==='1h'?b1:apAgg(b1,AP_TFMS[tf]);if(b.length<250)return null;if(tf==='15m'&&Date.now()-(b[b.length-1].t+9e5)>45*60000)return null;/* 15λεπτα μόνο αν είναι φρέσκα */
     var fee=(+c.fee||0.1)+(+c.slip||0),key=coin+'|'+tf+'|'+fee,E=SH.ev[key];
-    if(!E){var all=BT.filter(function(x){return !BT_NOTGT[x.id]}).map(function(x){return x.id}),ev0=nowEval(b,{ids:all,fee:fee,sym:coin+'USDT'}),bh=apAgg(b1,tf==='1h'?AP_TFMS['4h']:864e5),gHi=null;if(bh.length>=60){try{gHi=regime(bh,btInd0(bh))}catch(e){}}
+    if(!E){var all=BT.filter(function(x){return !BT_NOTGT[x.id]}).map(function(x){return x.id}),ev0=nowEval(b,{ids:all,fee:fee,sym:coin+'USDT'}),bh=tf==='15m'?b1:apAgg(b1,tf==='1h'?AP_TFMS['4h']:864e5),gHi=null;if(bh.length>=60){try{gHi=regime(bh,btInd0(bh))}catch(e){}}
       E=SH.ev[key]={ev:ev0,med:apMedAtr(ev0,b),gHi:gHi}}
     var ids=apStratIds(),ev=Object.assign({},E.ev,{cands:E.ev.cands.filter(function(x){return ids.indexOf(x.id)>=0})});
     return {tf:tf,b:b,ev:ev,g:ev.g,med:E.med,gHi:E.gHi}};
