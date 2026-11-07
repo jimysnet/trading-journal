@@ -1,5 +1,6 @@
 <title>Ημερολόγιο Συναλλαγών</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<script id="thm">try{var __t=localStorage.getItem("tj-theme");if(__t)document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Noto+Sans:wght@400;500;600;700&family=Fira+Mono:wght@400;500&display=swap">
 <style>
@@ -20,6 +21,10 @@
   --bg:#0b1314; --surface:#111d1e; --sunk:#0e1819; --fg:#e2ecea; --muted:#93a7a5; --line:#233436;
   --accent:#4fc2b8; --accent-soft:#163533; --mark:#eaa055; --mark-soft:#36260f; --violet:#a993f0;
   --gain:#45c98f; --gain-soft:#11291f; --loss:#ff7d76; --loss-soft:#331918; --warn:#eaa055; --warn-soft:#36260f; color-scheme:dark}
+:root[data-theme="night"]{
+  --bg:#05080a; --surface:#0a0f11; --sunk:#070b0d; --fg:#c3cecc; --muted:#7a8987; --line:#162022;
+  --accent:#5c9f98; --accent-soft:#0f1e1c; --mark:#c08c55; --mark-soft:#1d150c; --violet:#8a7cc0;
+  --gain:#4c9f7b; --gain-soft:#0b1a14; --loss:#cc726c; --loss-soft:#1f1112; --warn:#c08c55; --warn-soft:#1d150c; color-scheme:dark}
 
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
@@ -1439,11 +1444,24 @@ body.station *{animation:none!important;transition:none!important}
 .c3d details:not(.apnc):not(.card)>summary{text-shadow:0 1px 0 rgba(0,0,0,.3)}
 .c3d .apstat,.c3d .pill{box-shadow:0 2px 0 rgba(0,0,0,.25)}
 @media (prefers-reduced-motion:reduce){.c3d .dmgrp,.c3d .btn{transition:none}.c3d .dmgrp:hover,.c3d .apnc[open]{transform:none}}
+/* θέμα: επιλογή */
+.thsel{display:inline-flex;align-items:center;gap:.3rem;font-size:.8rem;color:var(--muted);margin-left:.4rem}.thsel select{background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:.2rem .5rem;font:inherit;font-size:.8rem}
+/* «Νύχτα»: πολύ σκούρο και επίπεδο, χωρίς 3D, λάμψεις και σκιές, για να ξεκουράζει τα μάτια */
+:root[data-theme="night"] :is(.c3d,.acc3d,.sxcard,.card){background:var(--surface)!important;box-shadow:none!important}
+:root[data-theme="night"] :is(.c3d,.acc3d,.sxcard,.px3d) *{text-shadow:none!important}
+:root[data-theme="night"] :is(.pfk,.sxplate,.dmgrp,.dmtl,.apnc,.htab,.hR,.btn,.hchip,.hpg,.pfline,.pfbars,.pfdonut,.apnt,.pill,.aplog li,.sxwkdbar,.pxbox,.pfper,.dmsum>span,.apntabs,.hhd){box-shadow:none!important;transform:none!important;filter:none!important;background-image:none!important}
+:root[data-theme="night"] :is(.pfk,.sxplate,.dmgrp,.apnc,.pxbox){background:var(--sunk)!important;border-color:var(--line)!important}
+:root[data-theme="night"] :is(.dmgrp.open,.sxplate.on,.apnc.r0){border-color:color-mix(in srgb,var(--accent) 55%,transparent)!important}
+:root[data-theme="night"] :is(.pfdiv,.pfmeter,.sxliq){box-shadow:none!important;background:var(--line)!important}
+:root[data-theme="night"] :is(.pfdiv i,.pfmeter i,.sxliq i){background-image:none!important;box-shadow:none!important}
+:root[data-theme="night"] .apnt.on{background:var(--accent-soft)!important;color:var(--fg)!important}
+:root[data-theme="night"] .sxcard::before,:root[data-theme="night"] .sxcard::after{opacity:.25}
+:root[data-theme="night"] img{filter:brightness(.92)}
 </style>
 
 <header class="top pad">
   <div class="inner">
-    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button></div>
+    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button><label class="thsel" title="Θέμα εμφάνισης"><span aria-hidden="true">🌗</span><select id="themeSel" aria-label="Θέμα εμφάνισης"><option value="">Αυτόματο</option><option value="light">Φωτεινό</option><option value="dark">Σκούρο</option><option value="night">Νύχτα · ξεκούραστο</option></select></label></div>
     <nav class="tabs" role="tablist" aria-label="Ενότητες">
       <button role="tab" data-tab="today" aria-selected="true">🏠 Σήμερα</button>
       <button role="tab" data-tab="demo" aria-selected="false">🤖 AI Bot</button>
@@ -6827,7 +6845,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=204,VERS={sub:null,t:null};
+var APP_VER=205,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7054,7 +7072,10 @@ try{var mk0=JSON.parse(localStorage.getItem('tj-mk')||'null');if(mk0){MK.g=mk0.g
 function mkSave(){try{localStorage.setItem('tj-mk',JSON.stringify({g:MK.g,v:MK.v,int:MK.int,sel:MK.sel,days:MK.days}))}catch(e){}}
 function mkItem(){var L=MKS[MK.g];return L.find(function(x){return x[0]===MK.sel[MK.g]})||L[0]}
 function mkSym(it){return MK.g==='crypto'?it[0]+'USDT':it[0]}
-function mkDark(){var t=document.documentElement.getAttribute('data-theme');return t?t==='dark':!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
+(function(){var sel=document.getElementById('themeSel');if(!sel)return;var cur='';try{cur=localStorage.getItem('tj-theme')||''}catch(e){}sel.value=cur;
+  sel.addEventListener('change',function(){var v=sel.value;if(v)document.documentElement.setAttribute('data-theme',v);else document.documentElement.removeAttribute('data-theme');try{if(v)localStorage.setItem('tj-theme',v);else localStorage.removeItem('tj-theme')}catch(e){}
+    try{render()}catch(e){}try{renderDemo()}catch(e){}try{apSessBar()}catch(e){}})})();
+function mkDark(){var t=document.documentElement.getAttribute('data-theme');return t?t!=='light':!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function mkOpenLinks(it){var sym=mkSym(it),tv='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(it[2]);
   var h='<a class="exl big" href="'+esc(tv)+'" target="_blank" rel="noopener noreferrer"><span class="exi" style="background:#131722;color:#fff">TV</span><span class="exn">TradingView</span></a>';
   if(MK.g==='crypto')h+=EXL.slice(1).map(function(e){return '<a class="exl big" href="'+esc(exUrl(e[0],sym))+'" target="_blank" rel="noopener noreferrer"><span class="exi" style="background:'+e[3]+';color:'+e[4]+'">'+e[2]+'</span><span class="exn">'+e[1]+'</span></a>'}).join('');
@@ -8560,7 +8581,7 @@ function funInit(){var m=$('#funMenu');if(!m||m.dataset.b)return;m.dataset.b='1'
   if(S.db&&!FUN.sub){try{FUN.sub=S.db.collection('fun').orderBy('at','desc').limit(200).onSnapshot(function(sn){FUN.list=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});funMenuStat()},function(){})}catch(e){}}}
 /* ================= 📊 Επισκόπηση λογαριασμού (σαν πορτοφόλι ανταλλακτηρίου) ================= */
 var PF={per:{me:'30',prof:'30'},sel:null};var PF_COL=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#6250d6','#e34948','#008300'];
-function pfDark(){return document.documentElement.getAttribute('data-theme')==='dark'||(!document.documentElement.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches)}
+function pfDark(){var t0=document.documentElement.getAttribute('data-theme');return t0==='dark'||t0==='night'||(!document.documentElement.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches)}
 function pfMoney(x,ccy){return isFinite(x)?(x>0?'+':x<0?'−':'')+fmt(Math.abs(x),2)+' '+ccy:'–'}
 function pfDonut(segs,center,sub){var R=62,r=44,C=2*Math.PI,tot=sum(segs.map(function(s){return s.v})),a0=-Math.PI/2,h='',gap=segs.length>1?0.025:0;
   if(!(tot>0))return '<svg viewBox="0 0 160 160" class="pfdonut"><circle cx="80" cy="80" r="53" fill="none" stroke="var(--line)" stroke-width="18"/><text x="80" y="78" text-anchor="middle" class="pfdc">'+esc(center)+'</text><text x="80" y="96" text-anchor="middle" class="pfds">'+esc(sub)+'</text></svg>';
