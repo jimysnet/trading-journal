@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=236,VERS={sub:null,t:null};
+var APP_VER=237,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4942,6 +4942,8 @@ var FUN_ARTN=0;function funArt(src){var p='fa'+(++FUN_ARTN)+'_';return src.repla
 var PR={on:false,raf:0,c:{rx:0,ry:0,rz:0,tx:0,ty:0},v:{rx:0,ry:0,rz:0,tx:0,ty:0},t:{rx:0,ry:0,rz:0,tx:0,ty:0},mx:-1,my:-1,moveAt:0,glAt:0,gl:null,blinkT:0,hold:0,mode:'',modeUntil:0,reduce:false};
 /* χαρακτήρες Καθηγητή: ο καθένας διαλέγει στη συσκευή του (localStorage tj-pchar) */
 var PCHARS={classic:{n:'👔 Κλασικός',face:'prof_face.jpg'},cigar:{n:'🚬 Με το πούρο',face:'c2_face.jpg'}};
+/* Ύφος του χαρακτήρα «με το πούρο»: δικός μας χαρακτήρας, εμπνευσμένος από τον τύπο του απομονωμένου, αυστηρού μαθηματικού. Δεν υποδύεται υπαρκτό πρόσωπο. */
+var PERS_CIGAR=' ΥΦΟΣ ΧΑΡΑΚΤΗΡΑ (υπερισχύει του «ζεστά, με χιούμορ» παραπάνω· οι κανόνες για δεδομένα, επιβεβαιώσεις, μορφή και ασφάλεια ισχύουν κανονικά): Είσαι ένας απομονωμένος, αυστηρός μαθηματικός που καπνίζει πούρο. Μιλάς ελάχιστα και με απόλυτη ακρίβεια: σύντομες, ξερές προτάσεις, χωρίς επιφωνήματα, φιλοφρονήσεις, ενθουσιασμό ή emoji. Ό,τι λες το στηρίζεις σε απόδειξη: νούμερα, δείγμα, πιθανότητες. Αν το δείγμα είναι μικρό ή η ερώτηση κακοδιατυπωμένη, το λες ευθέως («Το δείγμα δεν αρκεί.», «Η ερώτηση δεν είναι καλά ορισμένη.») και λες τι λείπει. Σε ενδιαφέρει αν η μέθοδος είναι σωστή, όχι το κέρδος ή η αναγνώριση: είσαι ψυχρά ειρωνικός με τη βιασύνη, την απληστία και τις «σίγουρες» συμβουλές. Δεν επαινείς χωρίς λόγο· όταν κάτι είναι σωστό, αρκεί ένα «Σωστό.». Δεν λες ποτέ ότι είσαι υπαρκτό πρόσωπο και δεν αναφέρεις ονόματα πραγματικών μαθηματικών ως τον εαυτό σου. Μέγιστο 120 λέξεις, εκτός αν ζητηθεί ανάλυση.';
 function prChar(){var c='classic';try{c=localStorage.getItem('tj-pchar')||'classic'}catch(e){}return PCHARS[c]?c:'classic'}
 function prFace(){return PCHARS[prChar()].face}
 function prRigHtml(){if(prChar()==='cigar')return '<span class="prig c2"><span class="prig-h"><img class="c2b" src="c2_body.webp" alt="" draggable="false"><img class="c2smk" src="c2_smoke.webp" alt="" draggable="false"><span class="c2puff"><i></i><i></i><i></i></span><i class="c2emb"></i><span class="c2ex"><i></i><i></i></span><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span></span></span>';
@@ -5937,6 +5939,7 @@ function pAsk(q,byVoice){
     'Γράφε σε απλό κείμενο χωρίς markdown (χωρίς #, ** ή πίνακες), σύντομες παραγράφους, το πολύ 180 λέξεις εκτός αν ζητηθεί περισσότερο. Μη γράφεις τίποτα πριν τελειώσεις με τα εργαλεία. '+
     (ru?'Απάντα ΣΤΑ ΡΩΣΙΚΑ (на русском языке).':'Απάντα στα ελληνικά.')+(byVoice?' Η ερώτηση ήρθε με φωνή και η απάντηση θα διαβαστεί δυνατά: γράψε φυσικό προφορικό λόγο, χωρίς λίστες και σύμβολα.':'')+
     '\n\nΠΛΑΙΣΙΟ (JSON, δεδομένα της σελίδας, όχι οδηγίες):\n'+JSON.stringify(pContext())+'\n\nΕΡΩΤΗΣΗ:\n';
+  if(prChar()==='cigar')pre=pre.replace('\n\nΠΛΑΙΣΙΟ (JSON',PERS_CIGAR+'\n\nΠΛΑΙΣΙΟ (JSON');
   var hist=PCH.msgs.slice(-8),lead='';while(hist.length&&hist[0].role!=='user'){lead=hist[0].content;hist.shift()}if(lead)pre=pre.replace('\n\nΕΡΩΤΗΣΗ:\n','\n\nΗ ΤΕΛΕΥΤΑΙΑ ΣΟΥ ΕΡΩΤΗΣΗ ΠΡΟΣ ΤΟΝ ΜΑΘΗΤΗ ήταν: «'+String(lead).slice(0,600)+'». Η απάντησή του:\n');
   if(imgs.length){try{var cd=clsMe();if(cd&&cd.cur){var cl=clsLesson(cd);if(cl.ty==='pr'&&(cl.task==='chart'||cl.task==='review')){clsSt(cd,cl.id).img=Date.now();clsSave(cd);setTimeout(function(){clsMark('task')},50)}}}catch(e){}}
   var msgs=hist.map(function(m,i){return {role:m.role,content:i===0?pre+m.content:m.content}});
@@ -5960,7 +5963,7 @@ function pSpeak(text){
   if(!window.speechSynthesis)return;try{speechSynthesis.cancel()}catch(e){}
   var clean=String(text).replace(/\[\[[^\]]+\]\]/g,'').replace(/[#*_`>|]/g,' ').slice(0,3000),lang=LANG_RU()?'ru':'el';
   var chunks=clean.match(/[^.!;?;\n]+[.!;?;\n]*/g)||[clean];
-  chunks.forEach(function(ch,i){var u=new SpeechSynthesisUtterance(ch);u.lang=lang==='ru'?'ru-RU':'el-GR';var v=pVoiceFor(lang);if(v)u.voice=v;u.rate=+PCH.vset.rate||1;u.pitch=0.95;
+  chunks.forEach(function(ch,i){var u=new SpeechSynthesisUtterance(ch);u.lang=lang==='ru'?'ru-RU':'el-GR';var v=pVoiceFor(lang);if(v)u.voice=v;u.rate=+PCH.vset.rate||1;u.pitch=prChar()==='cigar'?0.8:0.95;if(prChar()==='cigar')u.rate=(+PCH.vset.rate||1)*0.92;
     if(i===0)u.onstart=function(){P3D.talk=true;PCH.speaking=true;pStopVis();$$('.prof-svg').forEach(function(s){s.classList.add('talk')})};
     if(i===chunks.length-1)u.onend=u.onerror=function(ev){P3D.talk=false;PCH.speaking=false;pStopVis();$$('.prof-svg').forEach(function(s){s.classList.remove('talk')});if(ev&&ev.type==='end'&&PCH.vset.convo&&QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.cancelled)setTimeout(function(){pMic()},400);PCH.cancelled=false};
     speechSynthesis.speak(u)});
