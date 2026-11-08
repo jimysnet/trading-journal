@@ -1741,6 +1741,15 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pre-a{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}.pre-sel{font-size:.7rem;color:var(--muted);margin-left:auto}.pre-sel select{font:inherit;font-size:.72rem;padding:.1rem .2rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
 .pre-done{font-size:.82rem;margin-top:.45rem}
 .mkgridmsg [data-mkperm]{width:auto;display:inline-flex;margin-left:.4rem}
+.pre-lv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem;margin:.1rem 0 .45rem}
+.pre-lv>div{display:flex;flex-direction:column;min-width:0;padding:.3rem .35rem;border-radius:9px;background:color-mix(in srgb,var(--fg) 5%,transparent)}
+.pre-lv span{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.pre-lv b{font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pre-lv small{font-size:.64rem;color:var(--muted);white-space:nowrap}
+.pre-lv .sl b,.pre-lv .sl small{color:var(--loss)}.pre-lv .tp b,.pre-lv .tp small{color:var(--gain)}
+.pre-b,.pre-lv,.pre-h{cursor:pointer}
+.pre-more{all:unset;cursor:pointer;font-size:.74rem;color:var(--accent);margin:0 0 .4rem}
+.pre-why{max-height:min(46vh,320px);overflow:auto;margin:0 0 .5rem;padding:.45rem .5rem;border-radius:10px;background:color-mix(in srgb,var(--fg) 5%,transparent);display:grid;gap:.4rem}
+.pre-why span{display:block;font-size:.66rem;font-weight:700;color:var(--muted)}.pre-why p{margin:.05rem 0 0;font-size:.76rem;line-height:1.35}
+@media(max-width:420px){.pre-lv{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 
 <header class="top pad">
