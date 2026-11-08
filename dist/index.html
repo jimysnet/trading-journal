@@ -1680,6 +1680,48 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pfpb-g{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.4rem;padding-top:.4rem;border-top:1px solid var(--line)}
 .pfpb-g>div{display:flex;flex-direction:column;min-width:0}.pfpb-g span{font-size:.66rem;color:var(--muted)}.pfpb-g b{font-size:.9rem}.pfpb-g small{font-size:.66rem;color:var(--muted);white-space:nowrap}.pfpb-g small.pos{color:var(--gain)}.pfpb-g small.neg{color:var(--loss)}
 @media(max-width:520px){.pfhead:has(.pfpbox){grid-template-columns:1fr}.pfhead:has(.pfpbox) .pfpbox{grid-column:1;grid-row:3}}
+
+/* κατάσταση χαρακτήρα (μέθη, μελανιές, κιλά, νερό, λερώματα) */
+.pst{position:absolute;inset:0;pointer-events:none;z-index:3;container-type:size}
+.pst .pp{position:absolute;display:block;transform:translate(-50%,-50%) rotate(var(--pr,0deg));aspect-ratio:1}
+.pst .pblush{aspect-ratio:1.7;border-radius:50%;background:radial-gradient(ellipse,rgba(255,40,60,.8),rgba(255,40,60,0) 68%);mix-blend-mode:multiply}
+.pst .pnose{border-radius:50%;background:radial-gradient(circle at 42% 38%,rgba(255,150,150,.95),rgba(225,25,45,.9) 42%,rgba(225,25,45,0) 70%);mix-blend-mode:multiply}
+.pst .pbruise{aspect-ratio:1.3;border-radius:58% 42% 55% 45%/50% 60% 40% 50%;background:radial-gradient(ellipse,rgba(80,25,115,.8),rgba(105,45,140,.6) 38%,rgba(120,140,60,.38) 60%,rgba(160,170,60,0) 74%);mix-blend-mode:multiply}
+.pst .pbruise.b2{border-radius:45% 55% 40% 60%/60% 45% 55% 40%}
+.pst .pblack{aspect-ratio:1.25;border-radius:50%;background:radial-gradient(ellipse,rgba(60,20,70,.1) 22%,rgba(55,12,75,.85) 40%,rgba(90,40,110,.6) 58%,rgba(90,40,110,0) 73%);mix-blend-mode:multiply}
+.pst .pband,.pst .pwrap,.pst .ptherm,.pst .psplat{aspect-ratio:auto}
+.pst .pband svg,.pst .pwrap svg,.pst .ptherm svg,.pst .psplat svg{display:block;width:100%;height:auto}
+.pst .pwrap{filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.pst .psplat{opacity:.96;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+.pst .pbump{border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe2d8,#f0a090 45%,#d0645a 62%,rgba(208,100,90,0) 70%)}
+.pst .pbump b{position:absolute;left:50%;bottom:78%;width:6%;height:38%;border-radius:2px;background:#d0645a;transform-origin:50% 160%}
+.pst .pbump b:nth-child(1){transform:rotate(-38deg)}.pst .pbump b:nth-child(3){transform:rotate(38deg)}
+.pst .pwetl{position:absolute;inset:0;background:linear-gradient(170deg,rgba(170,220,255,.6),rgba(90,170,240,.22) 45%,rgba(60,140,220,.38));-webkit-mask-size:100% 100%;mask-size:100% 100%;mix-blend-mode:screen}
+.pst .pdrips i{position:absolute;aspect-ratio:.7;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:radial-gradient(circle at 35% 40%,#fff,#8fd0ff 45%,#2f8fe0);opacity:0;animation:pstdrip 2.6s ease-in infinite}
+@keyframes pstdrip{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.95}100%{transform:translateY(900%) scale(1);opacity:0}}
+.pst .pblue{aspect-ratio:2;border-radius:50%;background:radial-gradient(ellipse,rgba(70,90,210,.6),rgba(70,90,210,0) 70%);mix-blend-mode:multiply}
+.pst .psnot{aspect-ratio:.6;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;background:radial-gradient(circle at 40% 40%,rgba(255,255,255,.9),rgba(170,220,190,.7));animation:pstsnot 3s ease-in-out infinite;transform-origin:50% 0}
+@keyframes pstsnot{0%,100%{transform:translate(-50%,-10%) scaleY(.6)}50%{transform:translate(-50%,-10%) scaleY(1.5)}}
+.pst .pstars{aspect-ratio:2.6}
+.pst .pstars b{position:absolute;font-size:7cqw;line-height:1;transform:translate(-50%,-50%);animation:pstorb 1.5s linear infinite}
+.pst .pstars b:nth-child(2){animation-delay:-.375s}.pst .pstars b:nth-child(3){animation-delay:-.75s}.pst .pstars b:nth-child(4){animation-delay:-1.125s}
+@keyframes pstorb{0%{left:100%;top:50%}25%{left:50%;top:100%}50%{left:0;top:50%}75%{left:50%;top:0}100%{left:100%;top:50%}}
+.pst .pzzz b{position:absolute;left:0;bottom:0;font:800 9cqw/1 var(--display);color:#cfe3ff;text-shadow:0 1px 2px rgba(0,0,0,.6);opacity:0;animation:pstz 3s ease-out infinite}
+.pst .pzzz b:nth-child(2){animation-delay:1s;font-size:7cqw}.pst .pzzz b:nth-child(3){animation-delay:2s;font-size:5.5cqw}
+@keyframes pstz{0%{transform:translate(0,0);opacity:0}20%{opacity:1}100%{transform:translate(160%,-260%);opacity:0}}
+.pst .phic{aspect-ratio:auto}.pst .phic b{display:inline-block;font:800 6cqw/1 var(--display);color:#3a2a10;background:#fff8d8;border:1px solid #e0c870;border-radius:999px;padding:.25em .5em;white-space:nowrap;opacity:0;animation:psthic 6s ease-out infinite;box-shadow:0 2px 4px rgba(0,0,0,.25)}
+@keyframes psthic{0%,70%{opacity:0;transform:scale(.6)}74%{opacity:1;transform:scale(1.1)}86%{opacity:1;transform:scale(1)}92%,100%{opacity:0}}
+.prig.pf1{scale:1.05 1.005}.prig.pf2{scale:1.1 1.01}.prig.pf3{scale:1.16 1.015}.prig.pf4{scale:1.22 1.02}.prig.pf5{scale:1.29 1.025}.prig.pf6{scale:1.36 1.03}
+.prig[class*=" pf"]{transition:scale .6s cubic-bezier(.3,1.6,.5,1)}
+.prig.plhalf .plid{transform:scaleY(.55)}.prig.c2.plhalf .plid.r{transform:rotate(-6deg) scaleY(.55)}.prig.c3.plhalf .plid.l{transform:rotate(22deg) scaleY(.55)}.prig.c3.plhalf .plid.r{transform:rotate(12deg) scaleY(.55)}
+.prig.pko .plid,.prig.plhalf .plid.on{transform:scaleY(1)}.prig.c2.pko .plid.r,.prig.c2.plhalf .plid.r.on{transform:rotate(-6deg) scaleY(1)}.prig.c3.pko .plid.l,.prig.c3.plhalf .plid.l.on{transform:rotate(22deg) scaleY(1)}.prig.c3.pko .plid.r,.prig.c3.plhalf .plid.r.on{transform:rotate(12deg) scaleY(1)}
+.pstbars{margin:.5rem 0 .2rem;display:grid;gap:.3rem}
+.pstb{display:grid;grid-template-columns:7.5rem 1fr auto;align-items:center;gap:.45rem;font-size:.76rem}
+.pstb i{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}.pstb i b{height:7px;border-radius:3px;background:color-mix(in srgb,var(--fg) 12%,transparent)}.pstb i b.on{background:var(--warn)}.pstb i b.hot{background:var(--loss)}
+.pstb small{color:var(--muted);font-variant-numeric:tabular-nums}
+.pstko{font-size:.78rem;font-weight:700;color:var(--loss);background:color-mix(in srgb,var(--loss) 12%,transparent);border-radius:8px;padding:.3rem .5rem}
+.pstbars .linkbtn{justify-self:start;font-size:.74rem}
+@media (prefers-reduced-motion:reduce){.pst .pdrips i,.pst .pstars b,.pst .pzzz b,.pst .phic b,.pst .psnot{animation:none}}
 </style>
 
 <header class="top pad">
