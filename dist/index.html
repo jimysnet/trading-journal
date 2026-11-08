@@ -1642,6 +1642,15 @@ section[data-panel=today]{gap:1rem}
 .mtg .gtxt{text-align:left;font-size:.8rem;line-height:1.45}
 @media(max-width:560px){.mtg .gauge{flex-direction:column;gap:.2rem}.mtg .gauge svg{width:80%}.mtg .gside{align-items:center}.mtg .gtxt{text-align:center}.mtg .gnum{font-size:1.8rem}}
 .pvnote{font-size:.8rem;margin:.1rem 0 0}.pvnote .pill{font-size:.7rem}
+
+/* κάρτες που κλείνουν */
+.cfoldh{position:relative;cursor:pointer;padding-right:2.4rem!important}
+.cfoldb{position:absolute;right:0;top:50%;transform:translateY(-50%);width:2rem;height:2rem;border-radius:9px;border:1px solid var(--line);background:var(--sunk);color:var(--muted);font-size:.95rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:transform .2s,color .15s;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.cfoldb:hover{color:var(--fg)}
+.card.cfold .cfoldb{transform:translateY(-50%) rotate(-90deg)}
+.card.cfold>:not(.cfoldh){display:none!important}
+.card.cfold{padding-bottom:.9rem}
+.card.cfold>.cfoldh{margin-bottom:0!important}
 </style>
 
 <header class="top pad">

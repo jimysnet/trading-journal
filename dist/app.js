@@ -279,6 +279,19 @@ function renderStrategySelects(){impStrategies();
   function init(){document.querySelectorAll('details.tdx[data-tdx]').forEach(function(d){var k=d.getAttribute('data-tdx');if(st[k])d.open=true;d.addEventListener('toggle',function(){st[k]=d.open?1:0;try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}})})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
   var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&d!==this&&!d.open)d.open=true;var g=this.closest&&this.closest('[data-angrp]');if(g&&g.hidden&&typeof anGo==='function')anGo(g.getAttribute('data-angrp'));return si.apply(this,arguments)}})();
+
+/* AI Bot: κάρτες που κλείνουν με βελάκι (όλες οι φαρδιές, εκτός Λογαριασμού / Ωρών αγορών). Θυμάται ανά συσκευή. */
+var CFOLD_IDS=['dmOpenCard','apNowCard','apCard','labCard','dmHistCard','dmEvalCard'],CFOLD={};
+try{CFOLD=JSON.parse(localStorage.getItem('tj-cfold')||'{}')||{}}catch(e){}
+function cfoldApply(){CFOLD_IDS.forEach(function(id){var c=document.getElementById(id);if(!c)return;var h=c.firstElementChild;if(!h)return;
+  if(!h.classList.contains('cfoldh')){h.classList.add('cfoldh');}
+  if(!h.querySelector(':scope > .cfoldb')){var b=document.createElement('button');b.type='button';b.className='cfoldb';b.setAttribute('data-cfold',id);h.appendChild(b)}
+  var on=!!CFOLD[id];c.classList.toggle('cfold',on);var bb=h.querySelector(':scope > .cfoldb');bb.textContent='▾';bb.setAttribute('aria-expanded',on?'false':'true');bb.setAttribute('aria-label',on?'Άνοιγμα κάρτας':'Κλείσιμο κάρτας');bb.title=on?'Άνοιγμα':'Κλείσιμο'})}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-cfold]'),h=!b&&e.target.closest&&e.target.closest('.cfoldh');
+  if(h&&(e.target.closest('button,a,input,select,textarea,label,[data-apnow],[data-opf],[data-hpf]')))h=null;
+  var id=b?b.getAttribute('data-cfold'):h&&h.parentNode&&CFOLD_IDS.indexOf(h.parentNode.id)>=0?h.parentNode.id:null;if(!id)return;
+  if(CFOLD[id])delete CFOLD[id];else CFOLD[id]=1;try{localStorage.setItem('tj-cfold',JSON.stringify(CFOLD))}catch(_){}cfoldApply()});
+setTimeout(cfoldApply,0);setInterval(cfoldApply,1500);
 function renderToday(){
   var d=today();$('#todayDate').textContent=dateGr(d);
   var ds=dayState(S.uid),set=S.settings,box=$('#dayStatus');
@@ -3169,7 +3182,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=247,VERS={sub:null,t:null};
+var APP_VER=248,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
