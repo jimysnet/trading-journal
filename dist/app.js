@@ -73,15 +73,15 @@ function syncLocal(coll){
 function subscribe(){
   var db=S.db, onErr=function(e){if(!e)return;if(e.code==='revoked')notice('Η πρόσβαση στα δεδομένα άλλαξε. Ανανέωσε τη σελίδα.');else notice('Πρόβλημα σύνδεσης με την αποθήκευση. Ανανέωσε τη σελίδα. ('+(e.code||'error')+')')};
   subscribeTrades(db,onErr);
-  db.collection('strategies').onSnapshot(function(s){S.strategies=s.docs.map(function(d){return Object.assign({id:d.id},d.data())}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','el')});render()},onErr);
+  db.collection('strategies').onSnapshot(function(s){S.strategies=s.docs.map(function(d){return Object.assign({id:d.id},d.data())}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','el')});qRun('all',render)},onErr);
   db.collection('checkins').orderBy('date','desc').limit(400).onSnapshot(function(s){S.checkins=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});fillCheckin();try{renderCiHist()}catch(e){}},onErr);
-  db.collection('accounts').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.accounts=o;fillAccount();render()},onErr);
-  db.doc('settings/main').onSnapshot(function(s){S.settings=Object.assign({},DEF,s.exists?s.data():{});fillParams();render()},onErr);
+  db.collection('accounts').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.accounts=o;fillAccount();qRun('all',render)},onErr);
+  db.doc('settings/main').onSnapshot(function(s){S.settings=Object.assign({},DEF,s.exists?s.data():{});fillParams();qRun('all',render)},onErr);
   db.collection('quiz').orderBy('date','desc').limit(1000).onSnapshot(function(s){S.quiz=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderProf();loadNames();profGreet()},onErr);
-  db.collection('demo').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.demo=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderDemo();loadNames()},onErr);
+  db.collection('demo').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.demo=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});qRun('demo',renderDemo);loadNames()},onErr);
   db.collection('files').orderBy('at','desc').limit(500).onSnapshot(function(s){S.files=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(grpIsOpen()&&GRP.view==='lib')renderGroup();loadNames()},onErr);
   db.collection('drawings').onSnapshot(function(s){S.drawings=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(typeof pcOnDrawSnap==='function')pcOnDrawSnap()},onErr);
-  db.collection('demoacct').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.demoacct=o;renderDemo()},onErr);
+  db.collection('demoacct').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.demoacct=o;qRun('demo',renderDemo)},onErr);
   db.collection('props').onSnapshot(function(s){S.props=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(QZ.tab==='props'&&!$('#profPanel').hidden)renderProps();if(!PP.bf){PP.bf=true;setTimeout(ppBackfill,4000)}},onErr);
   db.collection('qbank').onSnapshot(function(s){S.qb=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});S.qbMap={};S.qb.forEach(function(g){S.qbMap[g.id]=g});if(QZ.tab==='prac'&&!$('#profPanel').hidden&&(!QZ.prac||QZ.prac.ch!=null))renderQPrac()},onErr);
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
@@ -92,7 +92,7 @@ function subscribe(){
   db.collection('typing').onSnapshot(function(s){S.typing=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});grpTypeShow()},function(){});
   db.collection('chat').orderBy('at','desc').limit(500).onSnapshot(function(s){S.chat=s.docs.map(function(d){return Object.assign({id:d.id},d.data())}).reverse();grpOnData();loadNames()},onErr);
   db.collection('council').orderBy('at','desc').limit(200).onSnapshot(function(q){S.council=q.docs.map(function(d){return Object.assign({id:d.id},d.data())}).reverse();cnRender()},function(){});
-  db.collection('goals').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.goals=o;fillGoalForm();render()},onErr);
+  db.collection('goals').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.goals=o;fillGoalForm();qRun('all',render)},onErr);
 }
 /* trades: one window per quarter (the store caps a query at 1000 documents) */
 var TPARTS={},tTimer=null;
@@ -246,6 +246,9 @@ function renderInsights(el,items,max){
 }
 
 /* ---------- rendering ---------- */
+/* Οι αλλαγές της βάσης έρχονται συχνά κατά ριπές: μαζεύουμε τις ανανεώσεις σε μία (250ms) και, όταν το AI Bot δεν φαίνεται, το πολύ μία κάθε 4″ */
+var RQ={};function qRun(k,fn){if(RQ[k])return;var sec=document.querySelector('section[data-panel=demo]'),hid=k==='demo'&&!(typeof STN!=='undefined'&&STN.on)&&sec&&sec.hidden;RQ[k]=setTimeout(function(){RQ[k]=0;try{fn()}catch(e){console.error(e)}},hid?4000:250)}
+function qFlush(k,fn){if(RQ[k]){clearTimeout(RQ[k]);RQ[k]=0;try{fn()}catch(e){console.error(e)}}}
 function render(){try{var hs=$('section[data-panel=history]');if(hs&&!hs.hidden){clearTimeout(HI.rt);HI.rt=setTimeout(hiRender,150)}}catch(e){}try{renderCiHist()}catch(e){}try{symListFill()}catch(e){}
   estimateR();updatePlaybook(true);syncManual();renderWho();renderFilters();renderStrategySelects();renderToday();renderTrades();renderStrategies();renderStats();updateCalc();explainParams();renderProf();renderConfirms();renderDemo();
 }
@@ -3182,7 +3185,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=255,VERS={sub:null,t:null};
+var APP_VER=256,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5009,8 +5012,9 @@ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pChar
 function prHeads(){return Array.prototype.filter.call(document.querySelectorAll('.prig-h'),function(h){return h.offsetParent})}
 function prStart(){if(PR.on)return;try{PR.reduce=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}PR.on=true;
   document.addEventListener('pointermove',function(e){PR.mx=e.clientX;PR.my=e.clientY;PR.moveAt=Date.now()},{passive:true});
-  prBlinkLoop();(function loop(){PR.raf=requestAnimationFrame(loop);if(document.hidden||document.body.classList.contains('station'))return;var H=prHeads();if(!H.length)return;prStep(H)})()}
-function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*.5,T=PR.t;
+  prBlinkLoop();var HC=[],hAt=0,fAt=0;(function loop(){PR.raf=requestAnimationFrame(loop);if(document.hidden||document.body.classList.contains('station'))return;var t=performance.now();if(t-fAt<33)return;fAt=t;/* 30 fps αρκούν, και η λίστα κεφαλιών ανανεώνεται 1 φορά το δευτερόλεπτο αντί για κάθε frame */
+    if(t-hAt>1000||(HC[0]&&!HC[0].isConnected)){HC=prHeads();hAt=t}if(!HC.length)return;prStep(HC)})()}
+function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*.5,T=PR.t;if(H.length===1&&(r.bottom<0||r.top>innerHeight||!r.width))return;
   var idle=now-PR.moveAt>4000||PR.mx<0;
   if(PR.mode&&now>PR.modeUntil)PR.mode='';
   if(PR.mode==='eat'){var k=(now%420)/420;T.rx=4+Math.sin(k*Math.PI*2)*3;T.ry=0;T.rz=0;T.ty=1}
@@ -6525,7 +6529,7 @@ function showTab(t,keepHash){
   if(!keepHash){try{history.replaceState(null,'','#'+t)}catch(e){}}
   store('tj-tab',t);
   if(t==='history')setTimeout(function(){try{hiInit()}catch(e){console.error(e)}},0);
-  if(t==='demo')setTimeout(function(){try{dmLiveTick()}catch(e){}},300);
+  if(t==='demo'){qFlush('demo',renderDemo);setTimeout(function(){try{dmLiveTick()}catch(e){}},300)}
   if(t==='markets'&&typeof renderMarkets==='function'){if(!keepHash||!MK.v0){MK.v='grid';MK.v0=1}setTimeout(renderMarkets,0)}/* πρώτη εικόνα: όλα τα διαγράμματα μαζί */
   if(t==='train'&&typeof trnShow==='function')setTimeout(function(){trnShow(TRN.tab)},0);
   else if(typeof ccStop==='function')ccStop();
