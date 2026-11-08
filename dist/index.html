@@ -1752,6 +1752,19 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 @media(max-width:420px){.pre-lv{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .apstd{display:flex;gap:.55rem;align-items:flex-start;margin:.55rem 0 .2rem;padding:.55rem .7rem;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 9%,transparent);cursor:pointer}
 .apstd input{margin-top:.2rem;width:1.05rem;height:1.05rem;accent-color:var(--accent)}.apstd b{display:block;font-size:.88rem}.apstd small{display:block;font-size:.74rem;color:var(--muted);margin-top:.1rem}
+/* 🐢 Turtle */
+.ttl-tabs{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;margin-bottom:.6rem}
+.ttl-tabs button{border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:999px;padding:.3rem .75rem;font-size:.8rem;cursor:pointer}
+.ttl-tabs button.on{color:var(--fg);border-color:var(--fg);font-weight:600}
+.ttl-tabs small{opacity:.7}.ttl-sep{width:.6rem}
+.ttl-verd{border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:.6rem .8rem;font-size:.86rem;line-height:1.5;margin-bottom:.4rem}
+.ttl-verd.ok{border-left-color:#2e9d5b}.ttl-verd.no{border-left-color:#d0583f}
+.ttl-t td,.ttl-t th{padding:.35rem .45rem}
+.ttl-note{font-size:.76rem;margin:.35rem 0 .2rem}
+.ttl-h{font-size:.95rem;margin:.9rem 0 .2rem}
+.ttl-lesson{margin-top:.9rem;border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem}
+.ttl-lesson>summary{cursor:pointer;font-weight:600}
+.ttl-ls{margin:.6rem 0}.ttl-ls p{margin:.2rem 0 0;font-size:.86rem;line-height:1.55}
 </style>
 
 <header class="top pad">
@@ -2211,7 +2224,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
       <div class="dmleft"><div class="card sxcard" id="sessCard"><div id="apSess"></div><div id="pxAcc" class="px3d"></div></div>
       </div>
     </div>
-    <div class="card c3d" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card c3d" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div><details class="tdx cnx" data-tdx="cn" style="margin-top:1rem"><summary><span class="tdxi" aria-hidden="true">🏛️</span><span class="tdxt"><b>Συμβούλιο βελτιώσεων</b><small id="cnSum">εσύ, ο Καθηγητής και ο Claude</small></span><span class="tdxa" aria-hidden="true">▾</span></summary><div class="card" id="cnCard"><div class="formhead"><h2 style="margin:0">🏛️ Συμβούλιο βελτιώσεων</h2><div class="cnrun"><span class="muted" id="cnMeta" style="font-size:.78rem"></span><button type="button" class="btn small primary" id="cnRunNow" title="Ο Claude ξεκινά τώρα: απαντά και υλοποιεί ό,τι έχεις εγκρίνει">▶️ Εκτέλεση τώρα</button></div></div><div id="cnRunMsg" class="cnrunmsg" hidden></div>
+    <div class="card c3d" id="dmOpenCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🤖 Ανοιχτές AI συναλλαγές</h2></div><div id="dmOpen" style="margin-top:.6rem"></div></div><div class="card c3d" id="apNowCard" style="margin-top:1rem"><div class="formhead"><h2 style="margin:0">🧭 Τι κάνει τώρα ο Καθηγητής</h2><span class="muted" id="apNowAgo" style="font-size:.78rem"></span></div><div id="apNow" style="margin-top:.5rem"></div></div><details class="tdx" id="ttlDx" data-tdx="ttl" style="margin-top:1rem"><summary><span class="tdxi" aria-hidden="true">🐢</span><span class="tdxt"><b>Turtle Traders</b><small>νέα στρατηγική · backtest, μάθημα, σήματα · μόνο παρακολούθηση</small></span><span class="tdxa" aria-hidden="true">▾</span></summary><div class="card" id="ttlCard"><div class="formhead"><h2 style="margin:0">🐢 Turtle Traders</h2><span class="muted" style="font-size:.78rem">Donchian + pyramiding · demo χωρίς αυτόματο άνοιγμα</span></div><div id="ttlBody" style="margin-top:.5rem"></div></div></details><details class="tdx cnx" data-tdx="cn" style="margin-top:1rem"><summary><span class="tdxi" aria-hidden="true">🏛️</span><span class="tdxt"><b>Συμβούλιο βελτιώσεων</b><small id="cnSum">εσύ, ο Καθηγητής και ο Claude</small></span><span class="tdxa" aria-hidden="true">▾</span></summary><div class="card" id="cnCard"><div class="formhead"><h2 style="margin:0">🏛️ Συμβούλιο βελτιώσεων</h2><div class="cnrun"><span class="muted" id="cnMeta" style="font-size:.78rem"></span><button type="button" class="btn small primary" id="cnRunNow" title="Ο Claude ξεκινά τώρα: απαντά και υλοποιεί ό,τι έχεις εγκρίνει">▶️ Εκτέλεση τώρα</button></div></div><div id="cnRunMsg" class="cnrunmsg" hidden></div>
 <p class="muted cnintro">Εσύ, ο Καθηγητής και ο Claude σε μία συζήτηση. Ο Καθηγητής φέρνει παρατηρήσεις από τα νούμερα, ο Claude περνάει κάθε βράδυ, τις ελέγχει με backtest και υλοποιεί <b>μόνο ό,τι εγκρίνεις εσύ</b> εδώ.</p>
 <div class="cnfil" role="group" aria-label="Φίλτρο"><button type="button" data-cnf="all" class="on">Όλα</button><button type="button" data-cnf="pend">⏳ Περιμένουν έγκριση <b id="cnPendN"></b></button><button type="button" data-cnf="done">✅ Έγιναν</button></div>
 <div id="cnList" class="cnlist" aria-live="polite"></div>
