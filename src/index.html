@@ -7186,7 +7186,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=261,VERS={sub:null,t:null};
+var APP_VER=262,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8170,7 +8170,7 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
       if(brk){props.push(best);apAdd(coin,'block','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά ο διακόπτης ασφαλείας είναι ενεργός: '+brk+' Μπήκε στις προτάσεις.');return}
       var mine=apMineR(),op=mine.filter(function(t){return !dmClosed(t)}).length+opened,td=mine.filter(function(t){return t.date===lday(new Date())}).length+opened;
       if(op>=c.maxOpen||td>=c.maxDay){props.push(best);apAdd(coin,'lim','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά '+(op>=c.maxOpen?'έφτασε το όριο ανοιχτών ('+c.maxOpen+')':'έφτασε το όριο ημέρας ('+c.maxDay+')')+'. Μπήκε στις προτάσεις.');return}
-      return apPreEntry(best).then(function(go){if(!go){apAdd(coin,'skip','Σήμα «'+best.x.s.t+'» ('+best.tf+'): ακυρώθηκε από τον χρήστη πριν την είσοδο.');return false}return apOpenLive(best,false)}).then(function(ok){apPreDone(best,ok);if(ok){opened++;ctx.openedDir[best.x.d]=(ctx.openedDir[best.x.d]||0)+1}})}).catch(function(e){AP.noData=AP.noData||{};AP.noData[coin]='χωρίς κεριά';SH.fail[coin]=1;apAdd(coin,'err',gmErrText(e)+(AP.cfg&&AP.rc&&AP.rc.multi?' Ισχύει για όλα τα προφίλ.':'')+' [κωδικός: '+((e&&e.code)||'?')+']',true)}).then(function(){setTimeout(step,300)})};
+      return apPreCheck(best).then(function(pre){if(!pre)return preSecs()?apOpen(best,false):apOpenLive(best,false);return apPreEntry(best,pre).then(function(go){if(!go){apAdd(coin,'skip','Σήμα «'+best.x.s.t+'» ('+best.tf+'): ακυρώθηκε από τον χρήστη πριν την είσοδο.');return false}return apOpenLive(best,false)})}).then(function(ok){apPreDone(best,ok);if(ok){opened++;ctx.openedDir[best.x.d]=(ctx.openedDir[best.x.d]||0)+1}})}).catch(function(e){AP.noData=AP.noData||{};AP.noData[coin]='χωρίς κεριά';SH.fail[coin]=1;apAdd(coin,'err',gmErrText(e)+(AP.cfg&&AP.rc&&AP.rc.multi?' Ισχύει για όλα τα προφίλ.':'')+' [κωδικός: '+((e&&e.code)||'?')+']',true)}).then(function(){setTimeout(step,300)})};
   var go=function(){step()};
   /* BTC first: its trend filters the alts */
   if(coins.indexOf('BTC')>0){coins.splice(coins.indexOf('BTC'),1);coins.unshift('BTC')}else if(coins.indexOf('BTC')<0&&apProt().btc&&!ctx.btc){SH.bars('BTC').then(function(r){var b=r.bars.filter(function(x){return !x.approx});if(b.length>=300){ctx.btc=regime(b,btInd0(b));SH.btc=ctx.btc}}).catch(function(){}).then(go);return}
@@ -8184,7 +8184,9 @@ function prePlace(){var el=PRE.el;if(!el)return;var a=preAnchor(),w=Math.min(360
   else{el.style.left=(innerWidth-w-12)+'px';el.style.bottom='12px';el.style.top=''}
   var r2=el.getBoundingClientRect(),w2=el.querySelector('.pre-why');if(w2&&r2.top<8)w2.style.maxHeight=Math.max(70,w2.clientHeight+r2.top-8)+'px'}
 function preBeep(f,d){try{var A=window.AudioContext||window.webkitAudioContext;if(!A)return;var c=FUN.ac||(FUN.ac=new A());if(c.state==='suspended')c.resume();var o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f||880;g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.18,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+(d||.18));o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+(d||.18)+.02)}catch(e){}}
-function prePlan(it,px){try{var c=apC()||AP_DEF,top=it.x,g=it.g||{},d=top.d,e=+g.c,stp=+top.sig.stop,X=+top.best.X,ord='market';if(!isFinite(e)||!isFinite(stp))return null;
+/* έλεγχος «στεγνά» (χωρίς να ανοίξει τίποτα): θα άνοιγε τώρα; Αν όχι, δεν δείχνουμε αντίστροφη μέτρηση */
+function apPreCheck(it){if(!preSecs())return Promise.resolve(null);return mktPrice(it.coin+'USDT').then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){var d=null;try{d=apOpen(it,false,true)}catch(e){d=null}return d||null})}
+function prePlan(it,px){if(PRE.doc&&PRE.it===it){var D=PRE.doc,e0=+D.entry,ri=Math.abs(e0-D.stop);return {e:e0,sl:+D.stop,tp:+D.target,X:ri>0?Math.abs(D.target-e0)/ri:+it.x.best.X,ord:D.ord,lev:D.lev,margin:+D.margin,riskAmt:+D.riskAmt,slp:ri/e0*100,tpp:Math.abs(D.target-e0)/e0*100,c:apC()||AP_DEF}}try{var c=apC()||AP_DEF,top=it.x,g=it.g||{},d=top.d,e=+g.c,stp=+top.sig.stop,X=+top.best.X,ord='market';if(!isFinite(e)||!isFinite(stp))return null;
   if(isFinite(px)&&px>0){if((px-e)*d<=0.25*Math.abs(e-stp))e=px;else ord='limit'}else ord='limit';
   var risk=Math.abs(e-stp);if(!(risk>0))return null;var ext=d>0?g.hi:g.lo,room=(ext-e)*d/risk;if(FIT[top.id]==='range'&&room>0&&room<X&&room>=1.5)X=Math.floor(room*2)/2;
   var tg=e+d*X*risk,lev=Math.min(50,Math.max(1,+c.lev||10)),pid=AP.rc&&AP.rc.id,bal=pid?apfBal(pid):dmBal(PROF),margin=c.size==='risk'?(bal*Math.min(5,Math.max(0.1,+c.riskPct||1))/100/risk*e/lev):(+c.margin||1000);
@@ -8199,13 +8201,13 @@ function preWhy(it,P){var top=it.x,g=it.g||{},st=top.best&&top.best.st||{},ts=to
     L.push(['📥 Πώς μπαίνει',P.ord==='market'?'Με την τιμή της αγοράς μόλις τελειώσει η μέτρηση.':'Με εντολή ορίου στο '+dmPx(P.e)+': η τιμή έχει απομακρυνθεί από το σήμα και περιμένει να γυρίσει (λήγει αν δεν γεμίσει).'])}
   return '<div class="pre-why">'+L.map(function(x){return '<div><span>'+x[0]+'</span><p>'+esc(x[1])+'</p></div>'}).join('')+'</div>'}
 function preHtml(it,left,tot,px){var d=it.x.d>0,nm=prName(),pf=AP.rc&&AP.rc.name?AP.rc.name:'',pc=tot?left/tot:0,C=2*Math.PI*26;
-  return '<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(nm)+'</b><small>'+esc(pstG('Ετοιμάζομαι να μπω σε αυτή τη θέση'))+'</small></div></div>'+
+  return '<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(nm)+'</b><small>'+esc(pstG('Ετοιμάζομαι να μπω σε αυτή τη θέση'))+' · μπαίνω αυτόματα σε '+left+'″</small></div></div>'+
     '<div class="pre-b"><svg class="pre-ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" class="bg"/><circle cx="30" cy="30" r="26" class="fg" style="stroke-dasharray:'+C.toFixed(1)+';stroke-dashoffset:'+(C*(1-pc)).toFixed(1)+'"/><text x="30" y="35" text-anchor="middle">'+left+'</text></svg>'+
     '<div class="pre-i"><div class="pre-c">'+symIcon(it.coin,18)+'<b>'+esc(it.coin)+'</b> <span class="'+(d?'pos':'neg')+'">'+(d?'▲ Long':'▼ Short')+'</span></div><div class="pre-s">'+esc(it.x.s.t)+' · '+esc(it.tf)+(pf?' · '+esc(pf):'')+'</div>'+(isFinite(px)?'<div class="pre-p">τιμή τώρα <b class="num">'+dmPx(px)+'</b></div>':'')+'</div></div>'+
     (function(){var P=prePlan(it,px);PRE.plan=P;if(!P)return '';return '<div class="pre-lv"><div><span>Είσοδος</span><b class="num">'+dmPx(P.e)+'</b><small>'+(P.ord==='market'?'market':'όριο')+'</small></div><div class="sl"><span>Stop loss</span><b class="num">'+dmPx(P.sl)+'</b><small>−'+pctFmt(P.slp)+'</small></div><div class="tp"><span>Take profit</span><b class="num">'+dmPx(P.tp)+'</b><small>+'+pctFmt(P.tpp)+' · '+fmt(P.X,P.X%1?1:0)+'R</small></div><div><span>Κεφάλαιο</span><b class="num">'+fmt(P.margin,0)+'</b><small>x'+P.lev+' · ρίσκο '+fmt(P.riskAmt,0)+'</small></div></div>'})()+
     '<button type="button" class="pre-more" data-premore aria-expanded="'+(PRE.more?'true':'false')+'">'+(PRE.more?'▴ Λιγότερα':'▾ Γιατί και πώς')+'</button>'+(PRE.more?preWhy(it,PRE.plan):'')+
-    '<div class="pre-a"><button type="button" class="btn small" data-pre="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-pre="no">✕ Άκυρο</button><label class="pre-sel">αντίστροφη <select data-presec>'+[0,15,30,45,60,90,120].map(function(v){return '<option value="'+v+'"'+(v===preSecs()?' selected':'')+'>'+(v?v+'″':'χωρίς')+'</option>'}).join('')+'</select></label></div>'}
-function apPreEntry(it){var tot=preSecs();if(!tot)return Promise.resolve(true);
+    '<div class="pre-a"><button type="button" class="btn small" data-pre="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-pre="no">✕ Ακύρωσε</button><label class="pre-sel">αντίστροφη <select data-presec>'+[0,15,30,45,60,90,120].map(function(v){return '<option value="'+v+'"'+(v===preSecs()?' selected':'')+'>'+(v?v+'″':'χωρίς')+'</option>'}).join('')+'</select></label></div>'}
+function apPreEntry(it,doc){var tot=preSecs();if(!tot)return Promise.resolve(true);PRE.doc=doc||null;
   return new Promise(function(res){var el=PRE.el;if(!el){el=PRE.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');document.body.appendChild(el);
       el.addEventListener('click',function(e){if(e.target.closest('[data-premore]')||(!e.target.closest('button,select,label')&&e.target.closest('.pre-b,.pre-lv,.pre-h'))){PRE.more=!PRE.more;if(PRE.redraw)PRE.redraw();return}var b=e.target.closest('[data-pre]');if(b&&PRE.res){var r0=PRE.res;PRE.res=null;clearInterval(PRE.t);r0(b.getAttribute('data-pre')==='go');if(b.getAttribute('data-pre')==='no')preHide()}});
       el.addEventListener('change',function(e){if(e.target.matches('[data-presec]')){try{localStorage.setItem('tj-presec',e.target.value)}catch(_){}toast(+e.target.value?'Αντίστροφη μέτρηση '+e.target.value+'″ πριν από κάθε είσοδο.':'Χωρίς αντίστροφη μέτρηση: μπαίνει αμέσως.')}});
@@ -8218,28 +8220,29 @@ function apPreEntry(it){var tot=preSecs();if(!tot)return Promise.resolve(true);
 function apPreDone(it,ok){var el=PRE.el;if(!el||!el.classList.contains('on')||PRE.it!==it)return;var d=it.x.d>0;
   el.innerHTML='<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+'</b><small>'+(ok?esc(pstG('Μπήκα!')):'Τελικά δεν μπήκα')+'</small></div></div><div class="pre-done">'+(ok?'✅ '+esc(it.coin)+' '+(d?'Long':'Short')+' · '+esc(it.x.s.t)+' · δες τις ανοιχτές AI συναλλαγές.':'Η τιμή ή οι κανόνες άλλαξαν τελευταία στιγμή. Ο λόγος είναι στο ημερολόγιο του Καθηγητή.')+'</div>';
   if(ok){preBeep(784,.15);setTimeout(function(){preBeep(1175,.3)},170)}prePlace();clearTimeout(PRE.ht);PRE.ht=setTimeout(preHide,ok?7000:6000)}
-window.__pre={entry:function(it){return apPreEntry(it)},done:function(it,ok){apPreDone(it,ok)}};
+window.__pre={check:function(it){return apPreCheck(it)},open:function(it,m,d){return apOpen(it,m,d)},entry:function(it,doc){return apPreEntry(it,doc)},done:function(it,ok){apPreDone(it,ok)}};
 function preHide(){if(PRE.el){PRE.el.classList.remove('on')}}
 function apOpenLive(it,manual){/* τιμή αγοράς τώρα (κερί 1 λεπτού) πριν ανοίξει: χωρίς αυτήν μπαίνει μόνο εντολή με όριο */
   return mktPrice(it.coin+'USDT').then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){return apOpen(it,manual)})}
-function apOpen(it,manual){var c=apC(),pid=AP.rc&&AP.rc.id,coin=it.coin,top=it.x,g=it.g,b=it.b,r=it.r,tf=it.tf,d=top.d,i=b.length-1,ms=AP_TFMS[tf]||36e5,sk=(pid&&AP.rc.multi?pid+'|':'')+coin+'|'+top.id+'|'+d+'|'+tf+'|'+b[i-top.sig.ago].t;
-  if(apSeen()[sk]){apAdd(coin,'skip','Το σήμα «'+top.s.t+'» ('+tf+') το έχω ήδη παίξει.');return false}
+function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:apMark;var c=apC(),pid=AP.rc&&AP.rc.id,coin=it.coin,top=it.x,g=it.g,b=it.b,r=it.r,tf=it.tf,d=top.d,i=b.length-1,ms=AP_TFMS[tf]||36e5,sk=(pid&&AP.rc.multi?pid+'|':'')+coin+'|'+top.id+'|'+d+'|'+tf+'|'+b[i-top.sig.ago].t;
+  if(apSeen()[sk]){A(coin,'skip','Το σήμα «'+top.s.t+'» ('+tf+') το έχω ήδη παίξει.');return false}
   var e=g.c,stp=top.sig.stop,risk=Math.abs(e-stp),X=top.best.X,lp=isFinite(it.live)?it.live:NaN,ord='market';if(!isFinite(lp)){ord='limit'}
-  if(isFinite(lp)&&lp>0){if((lp-stp)*d<=0){apAdd(coin,'skip','Η τιμή ('+fmtPx(lp)+') πέρασε ήδη το stop του σήματος.');apMark(sk);return false}
+  if(isFinite(lp)&&lp>0){if((lp-stp)*d<=0){A(coin,'skip','Η τιμή ('+fmtPx(lp)+') πέρασε ήδη το stop του σήματος.');M(sk);return false}
     if((lp-e)*d<=0.25*risk)e=lp;else ord='limit'}
   risk=Math.abs(e-stp);if(!(risk>0))return false;
-  if(risk/e*100>9){apAdd(coin,'skip','Το stop θα ήταν '+fmt(risk/e*100,1)+'% μακριά (όριο 9%).');apMark(sk);return false}
-  var ext=d>0?g.hi:g.lo,room=(ext-e)*d/risk;if(FIT[top.id]==='range'&&room>0&&room<X){if(room>=1.5)X=Math.floor(room*2)/2;else{apAdd(coin,'skip','«'+top.s.t+'»: μόνο '+fmt(room,1)+'R ως το ακραίο σημείο των 50 κεριών. Λίγος χώρος.');apMark(sk);return false}}
+  if(risk/e*100>9){A(coin,'skip','Το stop θα ήταν '+fmt(risk/e*100,1)+'% μακριά (όριο 9%).');M(sk);return false}
+  var ext=d>0?g.hi:g.lo,room=(ext-e)*d/risk;if(FIT[top.id]==='range'&&room>0&&room<X){if(room>=1.5)X=Math.floor(room*2)/2;else{A(coin,'skip','«'+top.s.t+'»: μόνο '+fmt(room,1)+'R ως το ακραίο σημείο των 50 κεριών. Λίγος χώρος.');M(sk);return false}}
   var tg=e+d*X*risk,lev=Math.min(50,Math.max(1,+c.lev||10)),bal=pid?apfBal(pid):dmBal(PROF),used=sum((pid?apMineR():dmOf(PROF)).filter(function(t){return !dmClosed(t)}).map(function(t){return n(t.margin)||n(t.notional)||0}));
-  var margin=c.size==='risk'?(bal*Math.min(5,Math.max(0.1,+c.riskPct||1))/100/risk*e/lev):(+c.margin||1000);margin=Math.min(margin,bal-used);if(!(margin>=10)){apAdd(coin,'lim','Δεν υπάρχει ελεύθερο κεφάλαιο στον λογαριασμό'+(pid?' του προφίλ':'')+'.');return false}
+  var margin=c.size==='risk'?(bal*Math.min(5,Math.max(0.1,+c.riskPct||1))/100/risk*e/lev):(+c.margin||1000);margin=Math.min(margin,bal-used);if(!(margin>=10)){A(coin,'lim','Δεν υπάρχει ελεύθερο κεφάλαιο στον λογαριασμό'+(pid?' του προφίλ':'')+'.');return false}
   var notional=margin*lev,qty=notional/e,liq=lev>1?e*(d>0?1-1/lev+0.005:1+1/lev-0.005):NaN;
-  if(isFinite(liq)&&(stp-liq)*d<=0){apAdd(coin,'skip','Με '+lev+'x η ρευστοποίηση ('+fmtPx(liq)+') έρχεται πριν το stop.');apMark(sk);return false}
+  if(isFinite(liq)&&(stp-liq)*d<=0){A(coin,'skip','Με '+lev+'x η ρευστοποίηση ('+fmtPx(liq)+') έρχεται πριν το stop.');M(sk);return false}
   var now=Date.now(),dt=new Date(now),riskAmt=qty*risk,mk=regimeText(g)+' · ADX '+fmt(g.adx,0);
   var why=top.s.t+' · '+(d>0?'Long':'Short')+' · '+tf+' · '+mk+' · backtest '+top.best.st.n+' συναλλαγές, μέσο '+fR(top.best.st.avgR)+', σε νέα δεδομένα '+fR(top.test.avgR)+' ('+top.test.n+') · στόχος '+fmt(X,X%1?1:0)+'R · κεριά '+(r.src||'')+' ('+b.length+')'+(manual?' · εγκρίθηκε χειροκίνητα':'');
   var doc={by:PROF,runBy:S.uid,symbol:coin+'USDT',ex:'cc',dir:d>0?'long':'short',ord:ord,entry:e,stop:stp,target:tg,at:now,date:lday(dt),time:pad2(dt.getHours())+':'+pad2(dt.getMinutes()),
     riskPct:dmR2(riskAmt/bal*100),riskAmt:dmR2(riskAmt),qty:qty,notional:dmR2(notional),lev:lev,margin:dmR2(margin),liq:isFinite(liq)?liq:null,exp:ord==='limit'?Math.max(2,Math.round(3*ms/36e5)):null,
     src:'auto',mgmt:c.mgmt||'none',trA:+c.trA||1,trD:+c.trD||1,cfId:null,tech:top.s.mid||'',title:top.s.t,stratId:null,notes:('🤖 '+why).slice(0,500),status:'open',createdAt:now,
     auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual}};
+  if(dry)return doc;
   apMark(sk);AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')]={at:Date.now(),name:AP.rc&&AP.rc.name||'',coin:coin,strat:top.id,dir:d>0?'long':'short'};
   put('demo',newId(),doc).then(function(){apRender()}).catch(function(err){apAdd(coin,'err','Δεν αποθηκεύτηκε: '+writeErr(err));apRender()});
   apAdd(coin,'open',(manual?'Εγκρίθηκε και άνοιξε ':'Άνοιξε ')+(d>0?'Long':'Short')+' ('+(ord==='limit'?'εντολή με όριο':'market')+', '+tf+') με «'+top.s.t+'»: είσοδος '+fmtPx(e)+', stop '+fmtPx(stp)+', στόχος '+fmtPx(tg)+' ('+fmt(X,X%1?1:0)+'R). '+mk+'. Σε νέα δεδομένα '+fR(top.test.avgR)+' σε '+top.test.n+' συναλλαγές.');
