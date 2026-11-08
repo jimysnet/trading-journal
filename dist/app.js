@@ -278,7 +278,7 @@ function renderStrategySelects(){impStrategies();
 (function(){var K='tj-tdx',st={};try{st=JSON.parse(localStorage.getItem(K)||'{}')||{}}catch(e){}
   function init(){document.querySelectorAll('details.tdx[data-tdx]').forEach(function(d){var k=d.getAttribute('data-tdx');if(st[k])d.open=true;d.addEventListener('toggle',function(){st[k]=d.open?1:0;try{localStorage.setItem(K,JSON.stringify(st))}catch(e){}})})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-  var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&!d.open)d.open=true;var g=this.closest&&this.closest('[data-angrp]');if(g&&g.hidden&&typeof anGo==='function')anGo(g.getAttribute('data-angrp'));return si.apply(this,arguments)}})();
+  var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&d!==this&&!d.open)d.open=true;var g=this.closest&&this.closest('[data-angrp]');if(g&&g.hidden&&typeof anGo==='function')anGo(g.getAttribute('data-angrp'));return si.apply(this,arguments)}})();
 function renderToday(){
   var d=today();$('#todayDate').textContent=dateGr(d);
   var ds=dayState(S.uid),set=S.settings,box=$('#dayStatus');
@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=246,VERS={sub:null,t:null};
+var APP_VER=247,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5801,7 +5801,7 @@ var CN_ST={pending:'⏳ περιμένει έγκριση',approved:'👍 εγκ
 function cnWho(m){return m.from==='claude'?['✳','Claude','cn-c']:m.from==='prof'?['🧑‍🏫','Καθηγητής','cn-p']:['🧑',(S.names&&S.names[m.by])||name(m.by)||'Εσύ','cn-u']}
 function cnTime(t){var d=new Date(t),p=function(x){return String(x).padStart(2,'0')};return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes())}
 function cnRender(){var el=$('#cnList');if(!el)return;var L=S.council||[],pend=L.filter(function(m){return m.prop&&m.prop.status==='pending'});
-  var pn=$('#cnPendN');if(pn)pn.textContent=pend.length?String(pend.length):'';
+  var pn=$('#cnPendN');if(pn)pn.textContent=pend.length?String(pend.length):'';var sm=$('#cnSum');if(sm){var ap=L.filter(function(m){return m.prop&&m.prop.status==='approved'}).length;sm.innerHTML=(pend.length?'<b style="color:var(--warn)">⏳ '+pend.length+' περιμένουν την έγκρισή σου</b>':'καμία πρόταση σε αναμονή')+(ap?' · 👍 '+ap+' εγκεκριμένες για τον Claude':'')+(L.length?' · '+L.length+' μηνύματα':'')}
   var lc=L.filter(function(m){return m.from==='claude'}).pop(),meta=$('#cnMeta');var lr=L.filter(function(m){return m.kind==='run'}).pop(),running=lr&&(!lc||lc.at<lr.at)&&Date.now()-lr.at<45*6e4,rb=$('#cnRunNow');if(rb&&!CN.firing){rb.disabled=!!running;rb.textContent=running?'⏳ Ο Claude δουλεύει…':'▶️ Εκτέλεση τώρα';rb.title=running?'Ζητήθηκε '+cnTime(lr.at)+'. Όταν τελειώσει, θα γράψει εδώ.':'Ο Claude ξεκινά τώρα: απαντά και υλοποιεί ό,τι έχεις εγκρίνει'}if(meta)meta.textContent='Claude: κάθε βράδυ ~22:50'+(lc?' · τελευταία φορά '+cnTime(lc.at):'');
   var V=CN.f==='pend'?pend:CN.f==='done'?L.filter(function(m){return m.prop&&(m.prop.status==='done'||m.prop.status==='failed'||m.prop.status==='rejected')}):L;
   var stick=el.scrollHeight-el.scrollTop-el.clientHeight<40;
