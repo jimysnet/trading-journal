@@ -302,7 +302,7 @@ function renderToday(){
   renderInsights($('#insightsToday'),ins,insX?12:2);
   var imb=$('#insMore');if(imb){var tot=Math.min(ins.length,12);imb.hidden=!insX&&tot<=2;imb.textContent=insX?'Λιγότερα ▴':'Όλες οι γνώμες ('+tot+') ▾';imb.setAttribute('aria-expanded',insX)}
   renderRisk();renderGoals();renderProp();
-  var open=S.trades.filter(function(t){return t.status!=='closed'}).sort(sortTime).reverse(),ol=$('#openList');
+  var open=S.trades.filter(function(t){return t.status!=='closed'}).sort(sortTime).reverse(),ol=$('#openList');var osm=$('#openSum');if(osm)osm.textContent=open.length?open.length+(open.length===1?' ανοιχτή χειροκίνητη συναλλαγή':' ανοιχτές χειροκίνητες συναλλαγές'):'καμία ανοιχτή χειροκίνητη συναλλαγή';
   if(!open.length){ol.innerHTML='<div class="empty">Καμία ανοιχτή θέση. Όταν καταγράφεις συναλλαγή χωρίς τιμή εξόδου, εμφανίζεται εδώ για να την κλείσεις αργότερα.</div>';return}
   ol.innerHTML='<div class="tw"><table><thead><tr><th>Ημ/νία</th><th>Ποιος</th><th>Σύμβολο</th><th>Θέση</th><th class="r">Είσοδος</th><th class="r">Stop</th><th class="r">Στόχος</th><th></th></tr></thead><tbody>'+
     open.map(function(t){return '<tr><td>'+dateGr(t.date)+'</td><td>'+esc(name(t.by))+'</td><td><b>'+esc(t.symbol||'–')+'</b></td><td>'+dirPill(t)+'</td><td class="r num">'+esc(t.entry)+'</td><td class="r num">'+esc(t.stop)+'</td><td class="r num">'+esc(t.target||'–')+'</td><td><button class="btn small" type="button" data-close="'+esc(t.id)+'">Κλείσιμο</button></td></tr>'}).join('')+'</tbody></table></div>';
@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=245,VERS={sub:null,t:null};
+var APP_VER=246,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}

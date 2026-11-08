@@ -1732,12 +1732,12 @@ section[data-panel=today]{gap:1rem}
       <div class="card c3d" id="goalCard"><div class="formhead"><h2 style="margin:0">Στόχοι</h2><div class="advtabs" id="goalTabs" role="tablist" aria-label="Στόχοι"><button type="button" data-g="week" aria-selected="true">Εβδομάδα</button><button type="button" data-g="month" aria-selected="false">Μήνας</button><button type="button" data-g="quarter" aria-selected="false">Τρίμηνο</button></div></div><div id="goalBody" style="margin-top:.6rem"></div></div>
       </div>
     </div>
-    <div class="grid2 tdmain">
-    <div class="card c3d"><div class="formhead"><h2 style="margin:0">Ανοιχτές θέσεις</h2></div><div id="openList"></div></div>
-    <div class="card c3d"><div class="formhead"><h2 style="margin:0">Πριν πατήσεις Buy ή Sell</h2><span class="muted" id="preCount"></span></div><ul class="checks" id="preList" style="margin-top:.8rem"></ul><div class="row"><button class="btn small" type="button" id="preReset">Καθαρισμός</button><button class="btn small" type="button" data-ref="p-checklist">Γιατί αυτές οι ερωτήσεις</button></div></div>
-    </div>
+    <div class="card" hidden><div class="formhead"><h2 style="margin:0">Πριν πατήσεις Buy ή Sell</h2><span class="muted" id="preCount"></span></div><ul class="checks" id="preList" style="margin-top:.8rem"></ul><div class="row"><button class="btn small" type="button" id="preReset">Καθαρισμός</button><button class="btn small" type="button" data-ref="p-checklist">Γιατί αυτές οι ερωτήσεις</button></div></div>
     <div class="card" id="propCard" hidden><div class="formhead"><h2 style="margin:0">Prop challenge</h2><button class="btn small" type="button" data-goparams>Ρυθμίσεις</button></div><div id="propBody" style="margin-top:.6rem"></div></div>
     <div class="tdmore"><span class="tdmh">Περισσότερα</span>
+    <details class="tdx" data-tdx="open"><summary><span class="tdxi" aria-hidden="true">📂</span><span class="tdxt"><b>Ανοιχτές θέσεις</b><small id="openSum">χειροκίνητες συναλλαγές χωρίς τιμή εξόδου</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
+    <div class="card"><div class="formhead"><h2 style="margin:0">Ανοιχτές θέσεις</h2></div><div id="openList"></div></div>
+    </details>
     <details class="tdx" data-tdx="nw"><summary><span class="tdxi" aria-hidden="true">📰</span><span class="tdxt"><b>Ειδήσεις και γεγονότα</b><small>τίτλοι crypto και οικονομικό ημερολόγιο</small></span><span class="tdxa" aria-hidden="true">▾</span></summary>
     <div class="card" id="nwCard"><div class="formhead"><h2 style="margin:0">📰 Ειδήσεις και σημαντικά γεγονότα</h2><div class="row" style="gap:.4rem"><div class="nwseg" role="group" aria-label="Ποιες ειδήσεις"><button type="button" data-nws="imp">Σημαντικές</button><button type="button" data-nws="all">Όλες</button></div><button class="btn small" type="button" id="nwLang" title="Ελληνικά ή πρωτότυπο (αγγλικά)">🇬🇷 ΕΛ</button><button class="btn small" type="button" id="nwRef" aria-label="Ανανέωση">↻</button></div></div>
       <p class="muted" id="nwStat" style="font-size:.8rem;margin:.3rem 0 .5rem"></p>
