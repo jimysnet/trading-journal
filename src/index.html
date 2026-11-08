@@ -1722,6 +1722,25 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pstko{font-size:.78rem;font-weight:700;color:var(--loss);background:color-mix(in srgb,var(--loss) 12%,transparent);border-radius:8px;padding:.3rem .5rem}
 .pstbars .linkbtn{justify-self:start;font-size:.74rem}
 @media (prefers-reduced-motion:reduce){.pst .pdrips i,.pst .pstars b,.pst .pzzz b,.pst .phic b,.pst .psnot{animation:none}}
+
+/* ⏳ συννεφάκι πριν την είσοδο */
+.precloud{position:fixed;z-index:2147483000;display:none;padding:.7rem .8rem .65rem;border-radius:22px 22px 22px 22px;background:var(--surface);color:var(--fg);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.precloud.on{display:block;animation:prein .35s cubic-bezier(.3,1.5,.5,1)}
+.precloud::before,.precloud::after{content:'';position:absolute;border-radius:50%;background:var(--surface);border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.precloud::before{width:16px;height:16px;right:-14px;bottom:18px}.precloud::after{width:9px;height:9px;right:-26px;bottom:10px}
+.precloud.up::before{right:auto;left:50%;bottom:-13px}.precloud.up::after{right:auto;left:calc(50% + 12px);bottom:-24px}
+.precloud.lg{box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--gain) 45%,transparent)}.precloud.sh{box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--loss) 45%,transparent)}
+@keyframes prein{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:none}}
+.pre-h{display:flex;align-items:center;gap:.5rem}.pre-h img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}.pre-h b{display:block;font-size:.86rem}.pre-h small{display:block;font-size:.76rem;color:var(--muted)}
+.pre-b{display:flex;align-items:center;gap:.7rem;margin:.55rem 0}
+.pre-ring{width:64px;height:64px;flex:none}.pre-ring circle{fill:none;stroke-width:5}.pre-ring .bg{stroke:color-mix(in srgb,var(--fg) 12%,transparent)}.pre-ring .fg{stroke:var(--accent);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .95s linear}
+.precloud.lg .pre-ring .fg{stroke:var(--gain)}.precloud.sh .pre-ring .fg{stroke:var(--loss)}
+.pre-ring text{font:700 18px var(--display);fill:var(--fg)}
+.pre-i{min-width:0}.pre-c{display:flex;align-items:center;gap:.3rem;font-size:1rem}.pre-c .pos{color:var(--gain);font-weight:700;font-size:.82rem}.pre-c .neg{color:var(--loss);font-weight:700;font-size:.82rem}
+.pre-s{font-size:.76rem;color:var(--muted);margin-top:.1rem}.pre-p{font-size:.78rem;margin-top:.15rem}
+.pre-a{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}.pre-sel{font-size:.7rem;color:var(--muted);margin-left:auto}.pre-sel select{font:inherit;font-size:.72rem;padding:.1rem .2rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.pre-done{font-size:.82rem;margin-top:.45rem}
+.mkgridmsg [data-mkperm]{width:auto;display:inline-flex;margin-left:.4rem}
 </style>
 
 <header class="top pad">
@@ -7158,7 +7177,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=259,VERS={sub:null,t:null};
+var APP_VER=260,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7234,7 +7253,7 @@ function ccTry(cands,i,coin,sym,tf){var key=coin+'|'+tf;if(CC.key!==key)return;
   if(i>=cands.length){CC.bad[coin]='none';ccStop();renderMarkets();var m0=$('#mkCgMsg');if(m0)m0.textContent=(LANG_RU()?'На Crypto.com нет свечей для ':'Η Crypto.com δεν έχει κεριά για το ')+coin+(LANG_RU()?'. Показываю линию CoinGecko.':'. Δείχνω γραμμή από τη CoinGecko.');return}
   var inst=cands[i];ccCall(inst,tf).then(function(r){var bars=ccParse(r&&r.payload);if(!bars||!bars.length)throw {code:'tool_error'};
     CC.inst[coin]=inst;try{localStorage.setItem('tj-ccinst',JSON.stringify(CC.inst))}catch(e){}if(CC.key!==key)return;ccShow(inst,tf,bars,sym,r.cache?r.cache.storedAt:Date.now());ccWatch(inst,tf,sym,coin)})
-  .catch(function(e){if(CC.key!==key)return;if(e&&e.code==='tool_error'){if(CC.inst[coin]===inst){delete CC.inst[coin];cands=[coin+'_USDT',coin+'_USD'].filter(function(x){return x!==inst})}ccTry(cands,cands.indexOf(inst)+1>0?i+1:i,coin,sym,tf);return}
+  .catch(function(e){if(CC.key!==key)return;if(/^(not_granted|capability_disabled|capability_removed|server_not_connected|server_not_found|not_in_manifest|consent_required|blocked_by_policy|needs_reauth)$/.test((e&&e.code)||'')){ccStop();mkArcFallback(e);return}if(e&&e.code==='tool_error'){if(CC.inst[coin]===inst){delete CC.inst[coin];cands=[coin+'_USDT',coin+'_USD'].filter(function(x){return x!==inst})}ccTry(cands,cands.indexOf(inst)+1>0?i+1:i,coin,sym,tf);return}
     var m=$('#mkCgMsg');if(m)m.innerHTML='<span>'+esc(ccErrText(e))+'</span> <button type="button" class="btn small" data-ccretry="1">'+esc(cgNeedsAllowCC(e)?(LANG_RU()?'Разрешить':'Επίτρεψε'):(LANG_RU()?'Повторить':'Ξαναδοκίμασε'))+'</button>';
     if(!PC.raw.length||PC.sym!==sym)cgLoadChart()})}
 function cgNeedsAllowCC(e){var c=e&&e.code;return c==='approval_required'||c==='not_in_manifest'||c==='consent_required'}
@@ -7365,10 +7384,28 @@ function moodLoad(){if(MOOD.loading)return;clearTimeout(MOOD.timer);MOOD.timer=s
     .catch(function(){}).then(function(){MOOD.loading=false;moodRender()})}
 function cgTime(ms){var d=new Date(ms);return pad2(d.getHours())+':'+pad2(d.getMinutes())}
 function cgMoney(x){if(!isFinite(x))return '–';var a=Math.abs(x);return a>=1e12?fmt(x/1e12,2)+' τρισ. $':a>=1e9?fmt(x/1e9,2)+' δισ. $':a>=1e6?fmt(x/1e6,1)+' εκ. $':fmt(x,0)+' $'}
+/* Χωρίς συνδέσεις (άλλος λογαριασμός ή προβολή χωρίς connectors): κεριά από το κοινό αρχείο της σελίδας */
+function mkArcFallback(e){var it=mkItem(),coin=it[0],sym=mkSym(it),tf=CC.tf||'1h',msg=$('#mkCgMsg');if(tf==='1m'||tf==='5m')tf='15m';
+  var why=e?ccErrText(e):'Δεν βλέπω συνδέσεις (Crypto.com / CoinGecko) για τον λογαριασμό σου σε αυτή την προβολή.';
+  if(!S.db){if(msg)msg.innerHTML='<span>'+esc(why)+'</span>';cgDraw(null);return}
+  var key=coin+'|'+tf;MK.arcKey=key;pcSetData(sym,[],{empty:pcTr('Φέρνω κεριά από το κοινό αρχείο…')});
+  histBars(sym,tf,tf==='15m'?20:tf==='1D'||tf==='7D'?365:tf==='4h'?200:90).then(function(r){if(MK.arcKey!==key)return;pcSetData(sym,r.bars,{src:'κοινό αρχείο',tf:tf==='7D'?'1W':tf,tfMs:CC_TFMS[tf]});
+    if(msg)msg.innerHTML='<span>📦 '+esc(why)+' Δείχνω τα κεριά από το κοινό αρχείο της σελίδας ('+r.bars.length+', χωρίς ζωντανή τιμή).</span> '+mkPermBtn();var s0=$('#mkSrc');if(s0)s0.innerHTML='<span>Πηγή:</span> <b>κοινό αρχείο</b> · <b class="num">'+r.bars.length+'</b> κεριά · '+esc(tf)})
+  .catch(function(){if(MK.arcKey!==key)return;if(msg)msg.innerHTML='<span>'+esc(why)+' Το κοινό αρχείο δεν έχει ακόμα κεριά για το '+esc(coin)+' '+esc(tf)+'.</span> '+mkPermBtn();cgDraw(null)})}
+/* τιμές για το «Όλα μαζί» από το κοινό αρχείο (όταν ο θεατής δεν έχει συνδέσεις) */
+function mkArcGrid(){MK.am=MK.am||{d:{},at:0,busy:false};var A=MK.am;if(!A.busy&&Date.now()-A.at>300000){A.busy=true;A.at=Date.now();var L=MKS.crypto.map(function(x){return x[0]}),i=0;
+    (function nx(){if(i>=L.length){A.busy=false;try{if(MK.v==='grid'&&cgMkVisible())renderMarkets()}catch(e){}return}var c=L[i++];histBars(c+'USDT','1h',8).then(function(r){var b=r.bars,l=b[b.length-1],d1=b.filter(function(q){return q.t<=l.t-864e5}).pop()||b[0];
+      A.d[c]={currentPrice:l.c,priceChangePercentage24h:(l.c/d1.c-1)*100,sparkline7d:b.slice(-168).map(function(q){return q.c}),marketCapRank:null}}).catch(function(){}).then(function(){setTimeout(nx,60)})})()}
+  return A.d}
+window.__mk=function(){return JSON.stringify({am:MK.am&&Object.keys(MK.am.d),busy:MK.am&&MK.am.busy,v:MK.v,ready:CG.ready,mcp:!!CG.mcp,mk:!!CG.mk,db:!!S.db})};
+function mkPermBtn(){return '<button type="button" class="btn small" data-mkperm>🔓 Επίτρεψε τις συνδέσεις</button>'}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-mkperm]');if(!b)return;var cl=window.claude;
+  var fail=function(){toast('Άνοιξε τη σελίδα από το claude.ai συνδεδεμένος στον λογαριασμό σου, πρόσθεσε τα Crypto.com και CoinGecko (Ρυθμίσεις → Connectors) και πάτα «Allow» όταν το ζητήσει η σελίδα.')};
+  if(!cl||!cl.use){fail();return}cl.use('permissions').then(function(P){if(!P){fail();return}return P.request(['mcp:Crypto.com','mcp:CoinGecko']).then(function(st){var ok=st&&(st['mcp:Crypto.com']==='granted'||st['mcp:CoinGecko']==='granted');if(ok){toast('Ευχαριστώ! Φορτώνω ξανά τις αγορές…');setTimeout(function(){location.reload()},900)}else if(st&&(st['mcp:Crypto.com']==='denied'||st['mcp:CoinGecko']==='denied')){P.manage().catch(fail)}else fail()})}).catch(fail)});
 function cgLoadChart(){
   var it=mkItem(),id=CGID[it[0]],days=MK.days,key=id+'|'+days,msg=$('#mkCgMsg');if(!msg)return;
   if(!CG.ready){msg.textContent='Σύνδεση…';return}
-  if(!CG.mcp){msg.innerHTML='<span>'+esc(cgErrText({code:'not_granted'}))+'</span>';cgDraw(null);return}
+  if(!CG.mcp){mkArcFallback();return}
   if(CG.chart[key]){cgDraw(CG.chart[key]);msg.textContent=''}else{cgDraw(null);msg.textContent='Φέρνω τιμές από το CoinGecko…'}
   CG.mcp.callTool('CoinGecko','get-coin-market-chart',{id:id,days:days},{cache:{staleTime:days==='1'?60000:300000,gcTime:1800000}}).then(function(r){
     var pl=r.payload;if(!pl||!pl.prices||pl.prices.length<2)throw {code:'tool_error'};
@@ -7422,9 +7459,10 @@ function renderMarkets(){if(!$('#mkChips'))return;try{arcPanel()}catch(e){}MK.g=
     if(MK.msgFor!==MK.g+it[0]){MK.msgFor=MK.g+it[0];$('#mkMsg').textContent=''}}
   else{var box=$('#mkGridBox');
     if(MK.g==='crypto'){if(vis){cgWatch();if(!CG.mk&&!CG.mkErr&&CG.mcp)cgMarketsOnce()}
-      var em=!CG.ready?'Σύνδεση…':!CG.mcp?cgErrText({code:'not_granted'}):(!CG.mk&&CG.mkErr)?cgErrText(CG.mkErr):'';
-      box.innerHTML=(em?'<p class="status warn mkgridmsg"><span>'+esc(em)+'</span>'+(CG.mkErr?cgAllowBtn(CG.mkErr):'')+'</p>':'')+MKS.crypto.map(function(x){var c=CG.mk&&CG.mk[CGID[x[0]]];
-        return '<button type="button" class="mkcell" data-mkfocus="'+esc(x[0])+'"><div class="mkcell-h">'+symIcon(x[0],22)+'<b>'+esc(x[0])+'</b> <span class="muted">'+esc(x[1])+'</span>'+(c?'<span class="mkrank">#'+(c.marketCapRank||'–')+'</span>':'')+'</div>'+
+      var em=!CG.ready?'Σύνδεση…':!CG.mcp?cgErrText({code:'not_granted'}):(!CG.mk&&CG.mkErr)?cgErrText(CG.mkErr):'',AM=null;
+      if(CG.ready&&!CG.mk&&(!CG.mcp||CG.mkErr)&&S.db){AM=mkArcGrid();if(AM&&Object.keys(AM).length)em='📦 '+(!CG.mcp?'Δεν βλέπω συνδέσεις (Crypto.com / CoinGecko) για τον λογαριασμό σου εδώ.':cgErrText(CG.mkErr))+' Δείχνω τιμές από το κοινό αρχείο κεριών της σελίδας.'}
+      box.innerHTML=(em?'<p class="status warn mkgridmsg"><span>'+esc(em)+'</span>'+(CG.mkErr?cgAllowBtn(CG.mkErr):'')+(!CG.mcp||AM?' '+mkPermBtn():'')+'</p>':'')+MKS.crypto.map(function(x){var c=CG.mk&&CG.mk[CGID[x[0]]]||(AM&&AM[x[0]]);
+        return '<button type="button" class="mkcell" data-mkfocus="'+esc(x[0])+'"><div class="mkcell-h">'+symIcon(x[0],22)+'<b>'+esc(x[0])+'</b> <span class="muted">'+esc(x[1])+'</span>'+(c&&c.marketCapRank?'<span class="mkrank">#'+c.marketCapRank+'</span>':'')+'</div>'+
           (c?'<div class="mkcell-p"><b class="num">'+dmPx(c.currentPrice)+' $</b> <span class="num '+cls(c.priceChangePercentage24h)+'">'+(c.priceChangePercentage24h>0?'+':'')+fmt(c.priceChangePercentage24h,2)+'%</span></div>'+(function(){var sp=(c.sparkline7d||[]).filter(isFinite).filter(function(_,k,a){return k%3===0||k===a.length-1}),ch=sp.length>1?(sp[sp.length-1]/sp[0]-1)*100:NaN;return spark3d(sp,ch>=0).replace('class="spk3"','class="spk3 mk3"')+'<span class="muted mk7">7 ημέρες '+pctS(ch)+'</span>'})():'<div class="mkcell-p muted">–</div>')+'</button>'}).join('')+
         (CG.mk?'<p class="muted mkgridsrc"><span>Πηγή: CoinGecko · ενημέρωση</span> <b class="num">'+cgTime(CG.mkAt)+'</b></p>':'')}
     else box.innerHTML=MKS.stock.map(function(x){return '<div class="mkcell mkcell-s"><div class="mkcell-h">'+symIcon(x[0],22)+'<b>'+esc(x[0])+'</b> <span class="muted">'+esc(x[1])+'</span></div><div class="row" style="gap:.3rem;flex-wrap:wrap"><a class="btn small" href="https://www.tradingview.com/chart/?symbol='+encodeURIComponent(x[2])+'" target="_blank" rel="noopener noreferrer">TradingView</a><a class="btn small" href="https://finance.yahoo.com/quote/'+encodeURIComponent(x[0].replace('.','-'))+'" target="_blank" rel="noopener noreferrer">Yahoo</a><button type="button" class="btn small" data-mkfocus="'+esc(x[0])+'">Δικό μας γράφημα</button></div></div>'}).join('')}
@@ -8123,11 +8161,39 @@ function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,
       if(brk){props.push(best);apAdd(coin,'block','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά ο διακόπτης ασφαλείας είναι ενεργός: '+brk+' Μπήκε στις προτάσεις.');return}
       var mine=apMineR(),op=mine.filter(function(t){return !dmClosed(t)}).length+opened,td=mine.filter(function(t){return t.date===lday(new Date())}).length+opened;
       if(op>=c.maxOpen||td>=c.maxDay){props.push(best);apAdd(coin,'lim','Ισχυρό σήμα «'+best.x.s.t+'» ('+best.tf+'), αλλά '+(op>=c.maxOpen?'έφτασε το όριο ανοιχτών ('+c.maxOpen+')':'έφτασε το όριο ημέρας ('+c.maxDay+')')+'. Μπήκε στις προτάσεις.');return}
-      return apOpenLive(best,false).then(function(ok){if(ok){opened++;ctx.openedDir[best.x.d]=(ctx.openedDir[best.x.d]||0)+1}})}).catch(function(e){AP.noData=AP.noData||{};AP.noData[coin]='χωρίς κεριά';SH.fail[coin]=1;apAdd(coin,'err',gmErrText(e)+(AP.cfg&&AP.rc&&AP.rc.multi?' Ισχύει για όλα τα προφίλ.':'')+' [κωδικός: '+((e&&e.code)||'?')+']',true)}).then(function(){setTimeout(step,300)})};
+      return apPreEntry(best).then(function(go){if(!go){apAdd(coin,'skip','Σήμα «'+best.x.s.t+'» ('+best.tf+'): ακυρώθηκε από τον χρήστη πριν την είσοδο.');return false}return apOpenLive(best,false)}).then(function(ok){apPreDone(best,ok);if(ok){opened++;ctx.openedDir[best.x.d]=(ctx.openedDir[best.x.d]||0)+1}})}).catch(function(e){AP.noData=AP.noData||{};AP.noData[coin]='χωρίς κεριά';SH.fail[coin]=1;apAdd(coin,'err',gmErrText(e)+(AP.cfg&&AP.rc&&AP.rc.multi?' Ισχύει για όλα τα προφίλ.':'')+' [κωδικός: '+((e&&e.code)||'?')+']',true)}).then(function(){setTimeout(step,300)})};
   var go=function(){step()};
   /* BTC first: its trend filters the alts */
   if(coins.indexOf('BTC')>0){coins.splice(coins.indexOf('BTC'),1);coins.unshift('BTC')}else if(coins.indexOf('BTC')<0&&apProt().btc&&!ctx.btc){SH.bars('BTC').then(function(r){var b=r.bars.filter(function(x){return !x.approx});if(b.length>=300){ctx.btc=regime(b,btInd0(b));SH.btc=ctx.btc}}).catch(function(){}).then(go);return}
   go()}
+/* ⏳ Πριν μπει: συννεφάκι δίπλα στον Καθηγητή με αντίστροφη μέτρηση, για να ετοιμαστούμε κι εμείς */
+var PRE={el:null,t:null,res:null,it:null};
+function preSecs(){var v=null;try{v=localStorage.getItem('tj-presec')}catch(e){}if(v===null||v==='')return 45;v=+v;return isFinite(v)&&v>=0?v:45}
+function preAnchor(){var p=$('#profPanel');if(p&&!p.hidden){var m=$('#profMini');if(m&&m.offsetParent)return m}var b=$('#profBtn');return b&&b.offsetParent?b:null}
+function prePlace(){var el=PRE.el;if(!el)return;var a=preAnchor(),w=Math.min(300,innerWidth-24);el.style.width=w+'px';
+  if(a){var r=a.getBoundingClientRect();var left=r.left-w-10;if(left<8){left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2));el.style.top='';el.style.bottom=Math.max(8,innerHeight-r.top+10)+'px';el.classList.add('up')}else{el.classList.remove('up');el.style.top='';el.style.bottom=Math.max(8,innerHeight-r.bottom+4)+'px'}el.style.left=left+'px'}
+  else{el.style.left=(innerWidth-w-12)+'px';el.style.bottom='12px';el.style.top=''}}
+function preBeep(f,d){try{var A=window.AudioContext||window.webkitAudioContext;if(!A)return;var c=FUN.ac||(FUN.ac=new A());if(c.state==='suspended')c.resume();var o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f||880;g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.18,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+(d||.18));o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+(d||.18)+.02)}catch(e){}}
+function preHtml(it,left,tot,px){var d=it.x.d>0,nm=prName(),pf=AP.rc&&AP.rc.name?AP.rc.name:'',pc=tot?left/tot:0,C=2*Math.PI*26;
+  return '<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(nm)+'</b><small>'+esc(pstG('Ετοιμάζομαι να μπω σε αυτή τη θέση'))+'</small></div></div>'+
+    '<div class="pre-b"><svg class="pre-ring" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" class="bg"/><circle cx="30" cy="30" r="26" class="fg" style="stroke-dasharray:'+C.toFixed(1)+';stroke-dashoffset:'+(C*(1-pc)).toFixed(1)+'"/><text x="30" y="35" text-anchor="middle">'+left+'</text></svg>'+
+    '<div class="pre-i"><div class="pre-c">'+symIcon(it.coin,18)+'<b>'+esc(it.coin)+'</b> <span class="'+(d?'pos':'neg')+'">'+(d?'▲ Long':'▼ Short')+'</span></div><div class="pre-s">'+esc(it.x.s.t)+' · '+esc(it.tf)+(pf?' · '+esc(pf):'')+'</div>'+(isFinite(px)?'<div class="pre-p">τιμή τώρα <b class="num">'+dmPx(px)+'</b></div>':'')+'</div></div>'+
+    '<div class="pre-a"><button type="button" class="btn small" data-pre="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-pre="no">✕ Άκυρο</button><label class="pre-sel">αντίστροφη <select data-presec>'+[0,15,30,45,60,90].map(function(v){return '<option value="'+v+'"'+(v===preSecs()?' selected':'')+'>'+(v?v+'″':'χωρίς')+'</option>'}).join('')+'</select></label></div>'}
+function apPreEntry(it){var tot=preSecs();if(!tot)return Promise.resolve(true);
+  return new Promise(function(res){var el=PRE.el;if(!el){el=PRE.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');document.body.appendChild(el);
+      el.addEventListener('click',function(e){var b=e.target.closest('[data-pre]');if(b&&PRE.res){var r0=PRE.res;PRE.res=null;clearInterval(PRE.t);r0(b.getAttribute('data-pre')==='go');if(b.getAttribute('data-pre')==='no')preHide()}});
+      el.addEventListener('change',function(e){if(e.target.matches('[data-presec]')){try{localStorage.setItem('tj-presec',e.target.value)}catch(_){}toast(+e.target.value?'Αντίστροφη μέτρηση '+e.target.value+'″ πριν από κάθε είσοδο.':'Χωρίς αντίστροφη μέτρηση: μπαίνει αμέσως.')}});
+      addEventListener('resize',prePlace)}
+    PRE.it=it;PRE.res=res;var end=Date.now()+tot*1000,px=NaN;el.className='precloud on '+(it.x.d>0?'lg':'sh');
+    var draw=function(){var left=Math.max(0,Math.ceil((end-Date.now())/1000));el.innerHTML=preHtml(it,left,tot,px);prePlace();return left};
+    var pb0=$('#profBubble');if(pb0)pb0.hidden=true;draw();preBeep(660,.25);setTimeout(function(){preBeep(880,.25)},260);try{profMood('cheer')}catch(e){}
+    mktPrice(it.coin+'USDT').then(function(q){if(q&&isFinite(q.px)){px=q.px;draw()}}).catch(function(){});
+    clearInterval(PRE.t);PRE.t=setInterval(function(){var l=draw();if(l<=3&&l>0)preBeep(1000,.12);if(l<=0){clearInterval(PRE.t);var r0=PRE.res;PRE.res=null;if(r0)r0(true)}},1000)})}
+function apPreDone(it,ok){var el=PRE.el;if(!el||!el.classList.contains('on')||PRE.it!==it)return;var d=it.x.d>0;
+  el.innerHTML='<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+'</b><small>'+(ok?esc(pstG('Μπήκα!')):'Τελικά δεν μπήκα')+'</small></div></div><div class="pre-done">'+(ok?'✅ '+esc(it.coin)+' '+(d?'Long':'Short')+' · '+esc(it.x.s.t)+' · δες τις ανοιχτές AI συναλλαγές.':'Η τιμή ή οι κανόνες άλλαξαν τελευταία στιγμή. Ο λόγος είναι στο ημερολόγιο του Καθηγητή.')+'</div>';
+  if(ok){preBeep(784,.15);setTimeout(function(){preBeep(1175,.3)},170)}prePlace();clearTimeout(PRE.ht);PRE.ht=setTimeout(preHide,ok?7000:6000)}
+window.__pre={entry:function(it){return apPreEntry(it)},done:function(it,ok){apPreDone(it,ok)}};
+function preHide(){if(PRE.el){PRE.el.classList.remove('on')}}
 function apOpenLive(it,manual){/* τιμή αγοράς τώρα (κερί 1 λεπτού) πριν ανοίξει: χωρίς αυτήν μπαίνει μόνο εντολή με όριο */
   return mktPrice(it.coin+'USDT').then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){return apOpen(it,manual)})}
 function apOpen(it,manual){var c=apC(),pid=AP.rc&&AP.rc.id,coin=it.coin,top=it.x,g=it.g,b=it.b,r=it.r,tf=it.tf,d=top.d,i=b.length-1,ms=AP_TFMS[tf]||36e5,sk=(pid&&AP.rc.multi?pid+'|':'')+coin+'|'+top.id+'|'+d+'|'+tf+'|'+b[i-top.sig.ago].t;

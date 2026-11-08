@@ -1722,6 +1722,25 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pstko{font-size:.78rem;font-weight:700;color:var(--loss);background:color-mix(in srgb,var(--loss) 12%,transparent);border-radius:8px;padding:.3rem .5rem}
 .pstbars .linkbtn{justify-self:start;font-size:.74rem}
 @media (prefers-reduced-motion:reduce){.pst .pdrips i,.pst .pstars b,.pst .pzzz b,.pst .phic b,.pst .psnot{animation:none}}
+
+/* ⏳ συννεφάκι πριν την είσοδο */
+.precloud{position:fixed;z-index:2147483000;display:none;padding:.7rem .8rem .65rem;border-radius:22px 22px 22px 22px;background:var(--surface);color:var(--fg);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--accent) 35%,transparent)}
+.precloud.on{display:block;animation:prein .35s cubic-bezier(.3,1.5,.5,1)}
+.precloud::before,.precloud::after{content:'';position:absolute;border-radius:50%;background:var(--surface);border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.precloud::before{width:16px;height:16px;right:-14px;bottom:18px}.precloud::after{width:9px;height:9px;right:-26px;bottom:10px}
+.precloud.up::before{right:auto;left:50%;bottom:-13px}.precloud.up::after{right:auto;left:calc(50% + 12px);bottom:-24px}
+.precloud.lg{box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--gain) 45%,transparent)}.precloud.sh{box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 0 3px color-mix(in srgb,var(--loss) 45%,transparent)}
+@keyframes prein{from{opacity:0;transform:translateY(10px) scale(.92)}to{opacity:1;transform:none}}
+.pre-h{display:flex;align-items:center;gap:.5rem}.pre-h img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}.pre-h b{display:block;font-size:.86rem}.pre-h small{display:block;font-size:.76rem;color:var(--muted)}
+.pre-b{display:flex;align-items:center;gap:.7rem;margin:.55rem 0}
+.pre-ring{width:64px;height:64px;flex:none}.pre-ring circle{fill:none;stroke-width:5}.pre-ring .bg{stroke:color-mix(in srgb,var(--fg) 12%,transparent)}.pre-ring .fg{stroke:var(--accent);stroke-linecap:round;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset .95s linear}
+.precloud.lg .pre-ring .fg{stroke:var(--gain)}.precloud.sh .pre-ring .fg{stroke:var(--loss)}
+.pre-ring text{font:700 18px var(--display);fill:var(--fg)}
+.pre-i{min-width:0}.pre-c{display:flex;align-items:center;gap:.3rem;font-size:1rem}.pre-c .pos{color:var(--gain);font-weight:700;font-size:.82rem}.pre-c .neg{color:var(--loss);font-weight:700;font-size:.82rem}
+.pre-s{font-size:.76rem;color:var(--muted);margin-top:.1rem}.pre-p{font-size:.78rem;margin-top:.15rem}
+.pre-a{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem}.pre-sel{font-size:.7rem;color:var(--muted);margin-left:auto}.pre-sel select{font:inherit;font-size:.72rem;padding:.1rem .2rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.pre-done{font-size:.82rem;margin-top:.45rem}
+.mkgridmsg [data-mkperm]{width:auto;display:inline-flex;margin-left:.4rem}
 </style>
 
 <header class="top pad">
