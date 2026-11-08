@@ -3182,7 +3182,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=253,VERS={sub:null,t:null};
+var APP_VER=254,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5141,17 +5141,21 @@ function pfBars(days,ccy){var mx=Math.max.apply(null,days.map(function(d){return
     return '<g><rect x="'+(4+i*bw)+'" y="0" width="'+bw+'" height="'+H+'" fill="transparent"><title>'+esc(dateGr(d.k)+' · '+pfMoney(d.v,ccy)+' · '+d.n+' συναλλαγές')+'</title></rect>'+(d.n?'<rect x="'+x.toFixed(1)+'" y="'+(d.v>=0?mid-h:mid).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1.5,h).toFixed(1)+'" rx="2" fill="'+(d.v>=0?'var(--gain)':'var(--loss)')+'" pointer-events="none"/>':'')+'</g>'}).join('')+'</svg>'}
 function renderPf(){var e2=$('#profPort');if(e2){e2.innerHTML=pfHtml(PROF,'prof');try{var ph=pxHtml(),k=ph.indexOf('<div class="pxbox">');$('#profStat').innerHTML=ph.slice(0,k);var pa=$('#pxAcc');if(pa)pa.innerHTML=ph.slice(k)}catch(x){console.error(x)}}}
 /* Λογαριασμός Καθηγητή: στατιστικά ανά προφίλ (κεφάλαιο, επιτυχία, R, PnL) */
-function pfProfHtml(ccy){if(typeof APF==='undefined'||!APF)return '';var rows;try{rows=apfRows()}catch(e){return ''}if(!rows.length)return '';
-  var act=apfActive&&apfActive();
-  var h=rows.map(function(r){var st=r.st,p=r.p,start=apfStart(p),bal=apfBal(r.id),op=(S.demo||[]).filter(function(t){return t.src==='auto'&&apfTagId(t)===r.id&&!dmClosed(t)}),
-      unr=sum(op.filter(function(t){return !dmIsPend(t)}).map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),eq=bal+unr,ch=eq-start,chp=start>0?ch/start*100:NaN,
-      run=p?p.run!==false:false,wr=st.wr,wc=!isFinite(wr)?'muted':wr>=.5?'pos':wr>=.4?'':'neg';
-    return {k:(act&&act.id===r.id?2:0)+(st.all?1:0),eq:eq,html:'<div class="pfpr'+(run?'':' off')+'" role="row">'+
-      '<span class="pp-n"><b>'+esc(r.name)+'</b><small>'+(act&&act.id===r.id?'ενεργό · ':'')+(p?(run?'τρέχει':'σταματημένο'):'διαγραμμένο')+'</small></span>'+
-      '<span class="pp-c r"><b class="num">'+dmMoney(eq,'')+'</b><small class="num '+(ch?cls(ch):'muted')+'">'+(ch>0?'+':'')+(isFinite(chp)?fmt(chp,2)+'%':'–')+'</small></span>'+
-      '<span class="pp-w r"><b class="num '+wc+'">'+(isFinite(wr)?Math.round(wr*100)+'%':'–')+'</b><small>'+(st.n?Math.round((wr||0)*st.n)+'/'+st.n:'0 κλειστές')+'</small></span>'+
-      '<span class="pp-r r"><b class="num '+(st.n?cls(st.sumR):'muted')+'">'+(st.n?fR(st.sumR):'–')+'</b><small>'+(op.length?op.length+' ανοιχτ'+(op.length===1?'ή':'ές'):'καμία ανοιχτή')+'</small></span></div>'}}).sort(function(a,b){return (b.k-a.k)||(b.eq-a.eq)}).map(function(x){return x.html}).join('');
-  return '<span class="lbl" style="display:block;margin-top:1rem">Ανά προφίλ ('+esc(ccy)+')</span><div class="pfprs" role="table"><div class="pfpr pfprh" role="row"><span>Προφίλ</span><span class="r">Κεφάλαιο</span><span class="r">Επιτυχία</span><span class="r">Σύνολο R</span></div>'+h+'</div>'}
+function pfProfData(){if(typeof APF==='undefined'||!APF)return [];var rows;try{rows=apfRows()}catch(e){return []}var act=apfActive&&apfActive();
+  return rows.map(function(r){var st=r.st,p=r.p,start=apfStart(p),bal=apfBal(r.id),op=(S.demo||[]).filter(function(t){return t.src==='auto'&&apfTagId(t)===r.id&&!dmClosed(t)}),
+    unr=sum(op.filter(function(t){return !dmIsPend(t)}).map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),eq=bal+unr;
+    return {id:r.id,name:r.name,p:p,st:st,start:start,eq:eq,unr:unr,op:op.length,act:!!(act&&act.id===r.id),run:p?p.run!==false:false,k:(act&&act.id===r.id?2:0)+(st.all?1:0)}}).sort(function(a,b){return (b.k-a.k)||(b.eq-a.eq)})}
+function pfProfBox(ccy){var L=pfProfData();if(!L.length)return '';var sel=store('tj-pfsel'),i=Math.max(0,L.findIndex(function(x){return x.id===sel})),x=L[i],st=x.st,ch=x.eq-x.start,chp=x.start>0?ch/x.start*100:NaN,wr=st.wr,wc=!isFinite(wr)?'muted':wr>=.5?'pos':wr>=.4?'':'neg';
+  return '<div class="pfpbox'+(x.run?'':' off')+'"><div class="pfpb-h"><button type="button" class="pfpb-nv" data-pfsnv="'+esc(L[(i-1+L.length)%L.length].id)+'" aria-label="Προηγούμενο προφίλ">‹</button>'+
+    '<select data-pfsel aria-label="Προφίλ">'+L.map(function(y){return '<option value="'+esc(y.id)+'"'+(y.id===x.id?' selected':'')+'>'+esc(y.name)+'</option>'}).join('')+'</select>'+
+    '<button type="button" class="pfpb-nv" data-pfsnv="'+esc(L[(i+1)%L.length].id)+'" aria-label="Επόμενο προφίλ">›</button></div>'+
+    '<div class="pfpb-st"><span class="'+(x.run?'pos':'muted')+'">● '+(x.p?(x.run?'τρέχει':'σταματημένο'):'διαγραμμένο')+'</span>'+(x.act?' · ενεργό':'')+' · '+(i+1)+'/'+L.length+'</div>'+
+    '<div class="pfpb-c"><b class="num">'+fmt(x.eq,2)+' <small>'+esc(ccy)+'</small></b><em class="num '+(ch?cls(ch):'muted')+'">'+(ch>0?'+':'')+fmt(ch,2)+' · '+(isFinite(chp)?(chp>0?'+':'')+fmt(chp,2)+'%':'–')+'</em></div>'+
+    '<div class="pfpb-g"><div><span>Επιτυχία</span><b class="num '+wc+'">'+(isFinite(wr)?Math.round(wr*100)+'%':'–')+'</b><small>'+(st.n?Math.round((wr||0)*st.n)+'/'+st.n:'0 κλειστές')+'</small></div>'+
+    '<div><span>Σύνολο R</span><b class="num '+(st.n?cls(st.sumR):'muted')+'">'+(st.n?fR(st.sumR):'–')+'</b><small>PF '+(isFinite(st.pf)?(st.pf===Infinity?'∞':fmt(st.pf,2)):'–')+'</small></div>'+
+    '<div><span>Ανοιχτές</span><b class="num">'+x.op+'</b><small class="num '+(x.op?cls(x.unr):'')+'">'+(x.op?(x.unr>0?'+':'')+fmt(x.unr,2):'–')+'</small></div></div></div>'}
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.matches&&t.matches('[data-pfsel]')){store('tj-pfsel',t.value);try{renderPf()}catch(_){}}});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pfsnv]');if(b){store('tj-pfsel',b.getAttribute('data-pfsnv'));try{renderPf()}catch(_){}}});
 function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=dmBal(uid),L=dmOf(uid).filter(function(t){return (t.at||0)>=a.resetAt&&!apfOff(t)});
   var op=L.filter(function(t){return !dmClosed(t)}),run=op.filter(function(t){return !dmIsPend(t)}),pend=op.filter(dmIsPend);
   var unr=sum(run.map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),used=sum(op.map(function(t){return n(t.margin)||n(t.notional)||0})),eq=bal+unr,avail=bal-used,mr=eq>0?used/eq:NaN;
@@ -5169,11 +5173,11 @@ function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=d
   Object.keys(agg).forEach(function(s){segs.push({l:s+' (περιθώριο)',v:agg[s],c:symC[s],t:fmt(agg[s],2)+' '+ccy})});if(avail>0)segs.push({l:'Διαθέσιμο',v:avail,c:'var(--line)',t:fmt(avail,2)+' '+ccy});
   var kp=function(l,v,s,c){return '<div class="pfk"><span>'+esc(l)+'</span><b class="num '+(c||'')+'">'+v+'</b>'+(s?'<small>'+s+'</small>':'')+'</div>'};
   var h='<div class="pfhead"><div class="pfeq"><span>Συνολική αξία (equity)</span><b class="num">'+fmt(eq,2)+' <small>'+esc(ccy)+'</small></b><em class="num '+cls(eq-a.start)+'">'+pfMoney(eq-a.start,ccy)+' · '+(eq-a.start>=0?'+':'')+fmt((eq-a.start)/a.start*100,2)+'% από την αρχή</em></div>'+
+    (key==='prof'?pfProfBox(ccy):'')+
     '<div class="pfper" role="group" aria-label="Περίοδος">'+[['1','24ω'],['7','7Η'],['30','30Η'],['all','Όλα']].map(function(x){return '<button type="button" data-pfper="'+x[0]+'" data-pfk="'+key+'" class="'+(per===x[0]?'on':'')+'">'+x[1]+'</button>'}).join('')+'</div></div>'+
     '<div class="pfgrid"><div class="pfalloc">'+pfDonut(segs,fmt(eq,0),ccy+' equity')+'<ul class="pfleg">'+segs.map(function(s){return '<li><i style="background:'+s.c+'"></i><span>'+esc(s.l)+'</span><b class="num">'+esc(s.t)+'</b></li>'}).join('')+(pend.length?'<li class="muted"><i style="background:transparent;border:1px dashed var(--muted)"></i><span>'+pend.length+' εντολές σε αναμονή</span></li>':'')+'</ul></div>'+
     '<div class="pfks">'+'<div class="pfk" style="grid-column:1/-1;background:transparent;padding:0"><span>Ποσά σε '+esc(ccy)+'</span></div>'+kp('Μη ρευστοποιημένο PnL',pfMoney(unr,''),run.length+' θέσεις σε εξέλιξη',cls(unr))+kp('Ρευστοποιημένο PnL',pfMoney(real,''),C.length+' κλειστές',cls(real))+kp('Διαθέσιμο',fmt(avail,2),'για νέες θέσεις')+kp('Δεσμευμένο περιθώριο',fmt(used,2),op.length+' ανοιχτές')+
     '<div class="pfk pfmr"><span>Margin ratio</span><b class="num '+(mr>0.8?'neg':mr>0.5?'':'pos')+'">'+(isFinite(mr)?fmt(mr*100,1)+'%':'–')+'</b><div class="pfmeter"><i style="width:'+Math.min(100,(mr||0)*100)+'%;background:'+(mr>0.8?'var(--loss)':mr>0.5?'var(--warn)':'var(--gain)')+'"></i></div></div></div></div>'+
-    (key==='prof'?pfProfHtml(ccy):'')+
     '<span class="lbl" style="display:block;margin-top:1rem">Ανάλυση PnL ('+esc(ccy)+') · '+({1:'τελευταίες 24 ώρες',7:'τελευταίες 7 μέρες',30:'τελευταίες 30 μέρες',all:'από την αρχή'}[per])+'</span>'+
     '<div class="pfstats">'+kp('ROI',isFinite(real)?(real>=0?'+':'')+fmt(real/a.start*100,2)+'%':'–','',cls(real))+kp('Επιτυχία',pct(C.length?W.length/C.length:NaN),W.length+' / '+C.length)+kp('Profit factor',isFinite(pf)?fmt(pf,2):pf===Infinity?'∞':'–','')+kp('Μέσο κέρδος',W.length?pfMoney(avg(W),''):'–','','pos')+kp('Μέση ζημιά',Ls.length?pfMoney(avg(Ls),''):'–','','neg')+
       kp('Καλύτερη',pn.length?pfMoney(Math.max.apply(null,pn),''):'–','','pos')+kp('Χειρότερη',pn.length?pfMoney(Math.min.apply(null,pn),''):'–','','neg')+kp('Μέγιστη πτώση',pfMoney(dd,''),'από κορυφή','neg')+kp('Μέση διάρκεια',isFinite(avgH)?(avgH>=24?fmt(avgH/24,1)+' μέρες':fmt(avgH,1)+' ώρες'):'–','')+
