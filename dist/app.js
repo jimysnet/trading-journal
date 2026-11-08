@@ -3182,7 +3182,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=251,VERS={sub:null,t:null};
+var APP_VER=252,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3783,7 +3783,7 @@ document.addEventListener('click',function(e){if(!e.target.closest)return;var c=
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-ox]')){e.preventDefault();e.target.click()}});
 /* Διάγραμμα δίπλα στην ανοιχτή συναλλαγή: κεριά του νομίσματος με είσοδο, SL, TP (και κλειδωμένο stop) */
 var OTC=window.__OTC={},OT_TFS=['15m','1h','4h'],OT_DAYS={'15m':10,'1h':30,'4h':120},OT_CG={'15m':'1','1h':'7','4h':'30'};
-function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];return u||(OT_TFS.indexOf(a.tf)>=0?a.tf:'1h')}
+function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];return u||'15m'}
 /* εφεδρικό: κεριά φτιαγμένα από τις τιμές του CoinGecko (ανά 5λεπτο/ώρα) ομαδοποιημένες στο πλαίσιο */
 function otCg(base,tf){var id=CGID[base],ms=CC_TFMS[tf];if(!id||!CG.mcp)return Promise.resolve([]);
   return CG.mcp.callTool('CoinGecko','get-coin-market-chart',{id:id,days:OT_CG[tf]},{cache:{staleTime:120000,gcTime:1800000}}).then(function(r){var P=(r&&r.payload&&r.payload.prices)||[],out=[],cur=null;
