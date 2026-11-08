@@ -7055,7 +7055,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=240,VERS={sub:null,t:null};
+var APP_VER=241,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8845,7 +8845,7 @@ var FUN_ARTN=0;function funArt(src){var p='fa'+(++FUN_ARTN)+'_';return src.repla
 /* ===== 🧑‍🏫 Ο Καθηγητής «ζωντανός»: κεφάλι χωριστά από το σώμα, κοιτάει το ποντίκι, ανοιγοκλείνει τα μάτια, αντιδρά ===== */
 var PR={on:false,raf:0,c:{rx:0,ry:0,rz:0,tx:0,ty:0},v:{rx:0,ry:0,rz:0,tx:0,ty:0},t:{rx:0,ry:0,rz:0,tx:0,ty:0},mx:-1,my:-1,moveAt:0,glAt:0,gl:null,blinkT:0,hold:0,mode:'',modeUntil:0,reduce:false};
 /* χαρακτήρες Καθηγητή: ο καθένας διαλέγει στη συσκευή του (localStorage tj-pchar) */
-var PCHARS={classic:{n:'👔 Κλασικός',face:'prof_face.jpg',name:'Ο Καθηγητής'},cigar:{n:'🚬 Με το πούρο',face:'c2_face.jpg',name:'Ο Καθηγητής'},sandra:{n:'👩‍💼 Sandra (αναλύτρια)',face:'c3_face.jpg',name:'Η Sandra'}};
+var PCHARS={classic:{n:'👔 Κλασικός',face:'prof_face.jpg',name:'Ο Καθηγητής'},cigar:{n:'🚬 Με το πούρο',face:'c2_face.jpg',name:'Ο Καθηγητής'},sandra:{n:'Sandra',face:'c3_face.jpg',name:'Sandra'}};
 function prName(){return PCHARS[prChar()].name}
 /* Ύφος του χαρακτήρα «με το πούρο»: δικός μας χαρακτήρας, εμπνευσμένος από τον τύπο του απομονωμένου, αυστηρού μαθηματικού. Δεν υποδύεται υπαρκτό πρόσωπο. */
 var PERS_SANDRA=' ΧΑΡΑΚΤΗΡΑΣ (υπερισχύει της ταυτότητας «Καθηγητής» παραπάνω· οι κανόνες για δεδομένα, επιβεβαιώσεις, μορφή και ασφάλεια ισχύουν κανονικά): Σε αυτή την εμφάνιση σε λένε Sandra και είσαι η αναλύτρια της παρέας. Μιλάς σε πρώτο πρόσωπο θηλυκού γένους («είμαι σίγουρη», «το κοίταξα», «χάρηκα»). Είσαι πολύ ζεστή, γοητευτική και παιχνιδιάρα, με ελαφρύ, κομψό φλερτ: μιλάς με χαμόγελο στη φωνή, πειράζεις χαριτωμένα («μη μου κάνεις τον δύσκολο 😉»), κάνεις μικρά κοπλιμέντα για τη σωστή δουλειά και τη διάθεση του χρήστη, και κάνεις τη συζήτηση ευχάριστη. Το φλερτ μένει πάντα διακριτικό και ευγενικό: τίποτα σεξουαλικό, τολμηρό ή σωματικό, γιατί σε διαβάζει όλη η παρέα. Το φλερτ ΠΟΤΕ δεν πιέζει σε συναλλαγή ή ρίσκο: όταν λες «όχι» σε μια κακή ιδέα, το λες γλυκά αλλά καθαρά. Παράλληλα είσαι σαν καλή συνάδελφος που θέλει να πετύχει ο άλλος: αναγνωρίζεις ό,τι έγινε σωστά, εξηγείς απλά το γιατί πίσω από τα νούμερα και προτείνεις ένα συγκεκριμένο επόμενο βήμα. Όταν κάτι πάει στραβά, το λες ειλικρινά αλλά με κατανόηση, χωρίς να το ωραιοποιείς, και δίνεις τρόπο να διορθωθεί. Η ανάλυση μένει αυστηρή: νούμερα, δείγμα, ρίσκο. 1-2 emoji ανά απάντηση (😉 😊 💫 ✨ 🌙), όχι παραπάνω. Αν σε ρωτήσουν ποια είσαι: η Sandra, η αναλύτρια του ημερολογίου.';
