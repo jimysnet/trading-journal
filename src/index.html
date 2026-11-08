@@ -1691,7 +1691,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pst .pblack{aspect-ratio:1.25;border-radius:50%;background:radial-gradient(ellipse,rgba(60,20,70,.1) 22%,rgba(55,12,75,.85) 40%,rgba(90,40,110,.6) 58%,rgba(90,40,110,0) 73%);mix-blend-mode:multiply}
 .pst .pband,.pst .pwrap,.pst .ptherm,.pst .psplat{aspect-ratio:auto}
 .pst .pband svg,.pst .pwrap svg,.pst .ptherm svg,.pst .psplat svg{display:block;width:100%;height:auto}
-.pst .pwrap{filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.pst .pclip{position:absolute;inset:0;-webkit-mask-size:100% 100%;mask-size:100% 100%}.pst .pwrap svg{height:auto;aspect-ratio:100/26}
 .pst .psplat{opacity:.96;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
 .pst .pbump{border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe2d8,#f0a090 45%,#d0645a 62%,rgba(208,100,90,0) 70%)}
 .pst .pbump b{position:absolute;left:50%;bottom:78%;width:6%;height:38%;border-radius:2px;background:#d0645a;transform-origin:50% 160%}
@@ -7158,7 +7158,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=258,VERS={sub:null,t:null};
+var APP_VER=259,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8969,8 +8969,8 @@ var PST_FX={beer:{d:1},coffee:{d:-1.5},water:{w:1,m:-2,d:-.4},pizza:{f:1},hotdog
 var PST_KO={d:'λιπόθυμος από το μεθύσι',h:'νοκ άουτ',f:'σε κώμα φαγητού',w:'άρπαξε γρίπη',m:'δεν βλέπει τίποτα από τις τούρτες'};
 var PST_KOMS=120000;
 /* σημεία προσώπου ανά χαρακτήρα, σε % του κουτιού του κεφαλιού (u = απόσταση ματιών, rot = κλίση προσώπου) */
-var PST_GEO={classic:{eL:[38,42],eR:[64,42],cL:[32,58],cR:[69,58],n:[50,53],m:[50,66],f:[50,27],t:[50,7],u:26,rot:0,mask:'prof_head2.webp'},
-  cigar:{eL:[30,29],eR:[42,27.5],cL:[31,38],cR:[47,36],n:[35,36],m:[34,44],f:[39,17],t:[46,6],u:12,rot:-4,mask:'c2_body.webp'},
+var PST_GEO={classic:{eL:[38,42],eR:[64,42],cL:[32,58],cR:[69,58],n:[50,53],m:[50,66],f:[50,27],t:[50,7],u:26,rot:0,mask:'prof_head2.webp',wrap:{c:[50,24.5],w:100,r:-3}},
+  cigar:{eL:[30,29],eR:[42,27.5],cL:[31,38],cR:[47,36],n:[35,36],m:[34,44],f:[39,17],t:[46,6],u:12,rot:-4,mask:'c2_body.webp',wrap:{c:[50,20.5],w:52,r:-8},band:[36,22]},
   sandra:{eL:[53.5,33.5],eR:[71,45],cL:[42,46],cR:[67,57],n:[58,51],m:[51,57],f:[63,21],t:[60,5],u:19,rot:30,mask:'c3_body.webp'}};
 var PST={all:null,cur:null};
 function pstLoad(){if(PST.all)return PST.all;try{PST.all=JSON.parse(localStorage.getItem('tj-pst')||'{}')||{}}catch(e){PST.all={}}return PST.all}
@@ -9028,7 +9028,7 @@ function pstLine(r){var L=PST_SAY[r.k]&&PST_SAY[r.k][r.lvl];if(!L)return '';var 
 /* τι «φοράει» το πρόσωπο ανάλογα με τα επίπεδα */
 function pstPiece(g,pt,k,cls,inner,extra){var p=g[pt]||pt;return '<i class="pp '+cls+'" style="left:'+p[0]+'%;top:'+p[1]+'%;width:'+(g.u*k).toFixed(2)+'%;--pr:'+g.rot+'deg;'+(extra||'')+'">'+(inner||'')+'</i>'}
 var PST_BAND='<svg viewBox="0 0 60 22"><rect x="1" y="5" width="58" height="12" rx="6" fill="#f6e3c4" stroke="#c9a77c" stroke-width="1"/><rect x="22" y="3" width="16" height="16" rx="3" fill="#e9cfa8"/><g fill="#c9a77c" opacity=".6"><circle cx="26" cy="8" r=".9"/><circle cx="30" cy="8" r=".9"/><circle cx="34" cy="8" r=".9"/><circle cx="26" cy="14" r=".9"/><circle cx="30" cy="14" r=".9"/><circle cx="34" cy="14" r=".9"/></g></svg>';
-var PST_WRAP='<svg viewBox="0 0 100 30"><path d="M2 12 Q50 2 98 12 L98 24 Q50 14 2 24Z" fill="#fbfbf7" stroke="#d9d6cc"/><path d="M10 15 Q50 6 90 15 M10 20 Q50 11 90 20" stroke="#e3e0d6" fill="none"/><path d="M84 14 l10 -8 l3 5z" fill="#fbfbf7" stroke="#d9d6cc"/></svg>';
+var PST_WRAP='<svg viewBox="0 0 100 26" preserveAspectRatio="none"><defs><linearGradient id="§g" x1="0" x2="1"><stop offset="0" stop-color="#9f9b91"/><stop offset=".16" stop-color="#e9e6de"/><stop offset=".5" stop-color="#fffefb"/><stop offset=".84" stop-color="#e9e6de"/><stop offset="1" stop-color="#9f9b91"/></linearGradient><linearGradient id="§v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".16"/></linearGradient></defs><path d="M0 11 Q50 1 100 11 L100 24 Q50 14 0 24Z" fill="rgba(0,0,0,.22)" transform="translate(0 1.6)"/><path d="M0 9 Q50 -1 100 9 L100 22 Q50 12 0 22Z" fill="url(#§g)"/><path d="M0 9 Q50 -1 100 9 L100 22 Q50 12 0 22Z" fill="url(#§v)"/><g fill="none" stroke="#d4d0c6" stroke-width=".6"><path d="M0 13.5 Q50 3.5 100 13.5"/><path d="M0 17.5 Q50 7.5 100 17.5"/><path d="M8 20.5 Q40 9 70 9.8"/><path d="M30 15.5 Q62 5 96 12"/></g></svg>';
 var PST_THERM='<svg viewBox="0 0 12 40"><rect x="4" y="2" width="4" height="30" rx="2" fill="#eef4f8" stroke="#9fb0bc"/><rect x="5" y="14" width="2" height="18" fill="#e3342f"/><circle cx="6" cy="34" r="4.5" fill="#e3342f"/></svg>';
 function pstLayer(){var c=PST.cur||pstCur(),g=PST_GEO[c.ch]||PST_GEO.classic,L=c.L,h='',ko=c.ko&&c.ko.k;
   /* μέθη: κοκκίνισμα, κόκκινη μύτη */
@@ -9037,9 +9037,9 @@ function pstLayer(){var c=PST.cur||pstCur(),g=PST_GEO[c.ch]||PST_GEO.classic,L=c
   /* χτυπήματα: μελανιές, μαυρισμένο μάτι, τσιρότο, καρούμπαλο, επίδεσμος */
   if(L.h>=1)h+=pstPiece(g,'cL',.62,'pbruise');
   if(L.h>=2)h+=pstPiece(g,'eR',.78,'pblack');
-  if(L.h>=3)h+=pstPiece(g,[g.f[0]-g.u*.45,g.f[1]+2],.9,'pband',PST_BAND,'--pr:'+(g.rot-28)+'deg');
+  if(L.h>=3)h+=pstPiece(g,g.band||[g.f[0]-g.u*.45,g.f[1]+2],.9,'pband',PST_BAND,'--pr:'+(g.rot-28)+'deg');
   if(L.h>=4)h+=pstPiece(g,'cR',.6,'pbruise b2')+pstPiece(g,'t',.55,'pbump','<b></b><b></b><b></b>');
-  if(L.h>=5)h+=pstPiece(g,'eL',.78,'pblack')+pstPiece(g,'f',2.9,'pwrap',PST_WRAP);
+  if(L.h>=5)h+=pstPiece(g,'eL',.78,'pblack')+'<span class="pclip" style="-webkit-mask-image:url('+g.mask+');mask-image:url('+g.mask+')">'+(g.wrap?pstPiece(g,g.wrap.c,g.wrap.w/g.u,'pwrap',funArt(PST_WRAP),'--pr:'+g.wrap.r+'deg'):pstPiece(g,'f',3.6,'pwrap',funArt(PST_WRAP)))+'</span>';
   /* βρεγμένος: λάμψη νερού και σταγόνες, μπλε χείλη, θερμόμετρο */
   if(L.w)h+='<i class="pwetl" style="-webkit-mask-image:url('+g.mask+');mask-image:url('+g.mask+');opacity:'+Math.min(.85,.25+L.w*.11)+'"></i><span class="pdrips">'+[0,1,2,3,4,5].slice(0,Math.min(6,1+L.w)).map(function(i){var x=[g.f[0]-g.u*.9,g.f[0]+g.u*.8,g.eL[0]-g.u*.3,g.eR[0]+g.u*.3,g.n[0],g.m[0]+g.u*.5][i],y=[g.t[1]+8,g.t[1]+10,g.eL[1],g.eR[1],g.n[1]+3,g.m[1]];return '<i style="left:'+x+'%;top:'+y+'%;width:'+(g.u*.16).toFixed(2)+'%;animation-delay:'+(i*.53).toFixed(2)+'s"></i>'}).join('')+'</span>';
   if(L.w>=4)h+=pstPiece(g,'m',.62,'pblue');
