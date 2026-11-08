@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=241,VERS={sub:null,t:null};
+var APP_VER=242,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3325,7 +3325,7 @@ function gaugeSvg(v,uid){v=Math.max(0,Math.min(100,v));var cx=100,cy=96,r=74,D=9
   return h+'</svg>'}
 function gaugeTile(title,score,div,sub,uid,vv){var V=vv!=null&&isFinite(vv)?moodVerdictV(vv):moodVerdict(score);if(!V)return '<div class="mt"><div class="mtl">'+title+'</div><div class="mtd" style="margin-top:.6rem">Δεν υπάρχουν δεδομένα αυτή τη στιγμή.</div></div>';
   var v=vv!=null&&isFinite(vv)?Math.round(vv):Math.round(50+Math.max(-1,Math.min(1,score/div))*50),col=v<20?'#e5484d':v<40?'#f2802e':v<60?'#f5c518':v<80?'#9bd13f':'#18b26b';
-  return '<div class="mt"><div class="mtl">'+title+'</div><div class="gauge">'+gaugeSvg(v,uid)+'<div class="gnum">'+v+'</div><span class="gpill" style="background:'+col+'">'+V[1]+'</span><div class="gtxt">'+V[2]+(sub?'<br>'+sub:'')+'</div></div></div>'}
+  return '<div class="mt mtg"><div class="mtl">'+title+'</div><div class="gauge">'+gaugeSvg(v,uid)+'<div class="gside"><div class="gnum">'+v+'<small>/100</small></div><span class="gpill" style="background:'+col+'">'+V[1]+'</span><div class="gtxt">'+V[2]+(sub?'<br>'+sub:'')+'</div></div></div></div>'}
 function spark(arr,up){if(!arr||arr.length<2)return '';var mn=Math.min.apply(null,arr),mx=Math.max.apply(null,arr),w=100,h=30,pts=arr.map(function(v,k){return (k/(arr.length-1)*w).toFixed(1)+','+(h-2-(mx>mn?(v-mn)/(mx-mn):.5)*(h-4)).toFixed(1)}).join(' '),c=up?'var(--gain)':'var(--loss)';
   return '<svg class="spk" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>'}
 /* 🧊 3D διαγράμματα: ισομετρικές στήλες για την κίνηση των νομισμάτων και ανάγλυφη περιοχή για το BTC */

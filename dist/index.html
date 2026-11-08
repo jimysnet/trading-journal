@@ -1635,6 +1635,12 @@ section[data-panel=today]{gap:1rem}
 .prig.c3 .plid.r.on{transform:rotate(12deg) scaleY(1)}
 .prig.c3.pwet .prig-h::after{-webkit-mask:url(c3_body.webp) center/100% 100%;mask:url(c3_body.webp) center/100% 100%}
 @media (prefers-reduced-motion:reduce){.prig.c3 .prig-h img.c3b{animation:none!important}}
+.mtg .gauge{flex-direction:row;align-items:center;justify-content:center;gap:1.4rem;padding:.2rem 0}
+.mtg .gauge svg{width:52%;max-width:240px;flex:none}
+.mtg .gside{display:flex;flex-direction:column;align-items:flex-start;gap:.4rem;min-width:0;flex:1;max-width:16rem}
+.mtg .gnum{margin:0;font-size:2.6rem;line-height:1;font-weight:700}.mtg .gnum small{font-size:.8rem;color:var(--muted);font-weight:500;margin-left:.2rem}
+.mtg .gtxt{text-align:left;font-size:.8rem;line-height:1.45}
+@media(max-width:560px){.mtg .gauge{flex-direction:column;gap:.2rem}.mtg .gauge svg{width:80%}.mtg .gside{align-items:center}.mtg .gtxt{text-align:center}.mtg .gnum{font-size:1.8rem}}
 </style>
 
 <header class="top pad">
