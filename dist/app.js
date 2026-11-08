@@ -3169,7 +3169,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=243,VERS={sub:null,t:null};
+var APP_VER=244,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3185,11 +3185,21 @@ function histBars(sym,tf,days){var base=dmSym(sym).replace(/(USDT|USDC|USD|EUR)$
       A=S.db&&ARC_CH[tf]?arcChart(base,tf,days).catch(function(){return []}):Promise.resolve([]),
       F=CC_TFMS[tf]?ccFetchBars(base+'USDT',tf).then(function(r){return r.bars}).catch(function(){return []}):Promise.resolve([]),
       Q=S.db&&ms>9e5&&ms<=4*36e5?arcChart(base,'15m',days).then(function(L){return histUp(L,ms)}).catch(function(){return []}):Promise.resolve([]);/* όπου λείπουν κεριά του πλαισίου, φτιάχνονται από τα 15λεπτα (μόνο ολόκληρες ώρες) */
-  return Promise.all([D,A,F,Q]).then(function(x){var m={},now=Date.now();[x[3],x[0],x[1],x[2]].forEach(function(L){(L||[]).forEach(function(b){if(b&&!b.approx&&isFinite(b.c)&&b.t>=since&&b.t+ms<=now+60000)m[b.t]=b})});
-    var bars=Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.t-b.t});if(bars.length<10)throw {code:'no_data_any'};
-    var src=[x[1].length?'αρχείο κεριών':'',x[3].length?'15λεπτα του αρχείου':'',x[0].length?'κοινό ιστορικό':'',x[2].length?'Crypto.com':''].filter(Boolean).join(' + ');
+  var merge=function(x){var m={},now=Date.now();[x[3],x[0],x[1],x[2],x[4]||[]].forEach(function(L){(L||[]).forEach(function(b){if(b&&!b.approx&&isFinite(b.c)&&b.t>=since&&b.t+ms<=now+60000)m[b.t]=b})});return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.t-b.t})};
+  return Promise.all([D,A,F,Q]).then(function(x){var bars=merge(x),lb=bars[bars.length-1];
+    /* έλεγχος φρεσκάδας: αν η ένωση βγαίνει παλιά ή άδεια (π.χ. το ευρετήριο του αρχείου δεν έχει ακόμα τον τρέχοντα μήνα), διαβάζω απευθείας τα μηνιαία έγγραφα του αρχείου, χωρίς ευρετήριο */
+    if(S.db&&ARC_CH[tf]&&(bars.length<10||!lb||Date.now()-(lb.t+ms)>2*36e5))return arcDirect(base,tf,since).then(function(X){x[4]=X;return {x:x,bars:merge(x)}}).catch(function(){return {x:x,bars:bars}});return {x:x,bars:bars}}).then(function(R0){var x=R0.x,bars=R0.bars;if(bars.length<10)throw {code:'no_data_any'};
+    var src=[x[1].length?'αρχείο κεριών':'',x[3].length?'15λεπτα του αρχείου':'',x[0].length?'κοινό ιστορικό':'',x[2].length?'Crypto.com':'',x[4]&&x[4].length?'αρχείο (απευθείας)':''].filter(Boolean).join(' + ');
     if(tf==='1h'&&x[2].length&&bars.length>=50){try{shbSave(base+'_USD',tf,bars,1500)}catch(e){}}
     return {inst:base+'_USD',bars:bars,src:src,arc:x[1].length,basis:{n:bars.length,from:bars[0].t,to:bars[bars.length-1].t,tf:tf}}})}
+/* απευθείας ανάγνωση του αρχείου ανά μήνα (χωρίς ευρετήριο): για τον έλεγχο φρεσκάδας της σάρωσης. Για 30m/1h/4h ενώνει και τα 15λεπτα (ολόκληρες ώρες). */
+function arcMonths(since){var out=[],d=new Date(Math.max(since||0,Date.now()-70*864e5));d=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1));while(d.getTime()<=Date.now()){out.push(arcMo(d.getTime()));d=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1))}return out}
+function arcDirect(coin,tf,since){var m=ARC_CH[tf];if(!m||!S.db)return Promise.resolve([]);var cm=arcMo(Date.now()),ms=CC_TFMS[tf]||ARC.ms[tf]||36e5;
+  var rd=function(t2){return Promise.all(arcMonths(since).map(function(mo){var id=arcDoc(coin,t2,mo),c=ARC.mem[id];if(c&&(mo<cm||Date.now()-c.at<120000))return Promise.resolve(c.b);
+    return S.db.collection('barsarc').doc(id).get().then(function(sn){var b=(sn.exists&&sn.data()&&sn.data().b)||[];ARC.mem[id]={at:Date.now(),b:b};return b}).catch(function(){return []})})).then(function(parts){var o=[],seen={};parts.forEach(function(p){p.forEach(function(r){if(seen[r[0]])return;seen[r[0]]=1;o.push({t:r[0],o:r[1],h:r[2],l:r[3],c:r[4],v:r[5]})})});return o.sort(function(a,b){return a.t-b.t})})};
+  var own=tf==='4h'?Promise.all([rd('4h'),rd('1h')]).then(function(x){var mp={};arcAgg(x[1],144e5,0).forEach(function(b){mp[b.t]=b});x[0].forEach(function(b){mp[b.t]=b});return Object.keys(mp).map(function(k){return mp[k]})}):rd(m[0]).then(function(b){return m[1]?arcAgg(b,m[1],m[2]):b});
+  var q=ms>9e5&&ms<=4*36e5?rd('15m').then(function(L){return histUp(L,ms)}):Promise.resolve([]);
+  return Promise.all([q,own]).then(function(x){var mp={};x[0].concat(x[1]).forEach(function(b){mp[b.t]=b});return Object.keys(mp).map(function(k){return mp[k]}).sort(function(a,b){return a.t-b.t})})}
 function deepBars(sym,tf,days){return histBars(sym,tf,days||120)}
 function deepBars0(sym,tf){return histBars(sym,tf,120)}
 /* τι «βάση δεδομένων» κεριών έχουμε (για να φαίνεται παντού πάνω σε τι κρίνονται όλα) */
@@ -4289,6 +4299,7 @@ function apfPresets(base){var b=apfSnap(Object.assign({},AP_DEF,base||{}));var m
   {id:'p_trend',name:'🏄 Ακολουθία τάσης',desc:'Μόνο στρατηγικές τάσης, με trailing stop (ξεκινά στο +1R, stop 1R πίσω από το καλύτερο σημείο) για να «τρέχουν» τα κέρδη, όπως τα trend bots και το trailing του Freqtrade/3Commas.',cfg:mk({strats:'trend',mgmt:'trail',minEdge:0.1,pMtf:true,pBtc:true})},
   {id:'p_range',name:'↔️ Εύρος (grid-style)',desc:'Μόνο στρατηγικές επαναφοράς σε πλάγια αγορά: η ιδέα των grid bots (Pionex, Bitsgap), αλλά πάντα με stop, που είναι η μεγάλη αδυναμία των grid.',cfg:mk({strats:'range',mgmt:'none',pMtf:false,minEdge:0.1})},
   {id:'p_aggr',name:'⚡ Επιθετικό',desc:'Περισσότερες θέσεις και ρίσκο 2%, όλες οι ώρες, χαμηλότερο όριο πλεονεκτήματος, trailing stop από +1R με απόσταση 1R. Για σύγκριση: δείχνει τι κοστίζει η χαλαρή πειθαρχία.',cfg:mk({size:'risk',riskPct:2,maxOpen:5,maxDay:10,minEdge:0.05,sess:'all',mgmt:'trail',pCool:false,pCorr:false})},
+  {id:'p_aggrc',name:'⚡ Επιθετικό + συσχέτιση',desc:'Ίδιο με το ⚡ Επιθετικό (ρίσκο 2%, έως 5 θέσεις, όλες οι ώρες, trailing από +1R με απόσταση 1R), με μόνη διαφορά την προστασία συσχέτισης ανοιχτή (όριο θέσεων ίδιας κατεύθυνσης). Δοκιμή του Συμβουλίου: δείχνει αν το όριο κόβει μόνο ρίσκο ή και κέρδος.',cfg:mk({size:'risk',riskPct:2,maxOpen:5,maxDay:10,minEdge:0.05,sess:'all',mgmt:'trail',pCool:false,pCorr:true})},
   {id:'p_mprof',name:'📊 Market Profile μήνα',desc:'Παίζει μόνο τις δύο στρατηγικές του μηνιαίου Market Profile: επαναφορά από τα όρια της Value Area προς το M/POC, και αποδοχή έξω από τη Value Area. Stop στο break-even μετά από +1R. Ανοίγει θέση μόνο αν η στρατηγική έχει δείξει πλεονέκτημα στο αρχείο κεριών του νομίσματος.',cfg:mk({strats:'pick',pick:'mv,mk',mgmt:'be',minEdge:0.1})},
   {id:'p_ema921',name:'⚡ Scalping EMA 9/21',desc:'Παίζει μόνο τη στρατηγική «Scalping EMA 9/21»: μπαίνει στις επιστροφές της τιμής στον EMA 9 όταν ο EMA 9 είναι πάνω (ή κάτω) από τον EMA 21. Stop στο break-even μετά από +1R. Ανοίγει θέση μόνο αν η στρατηγική έχει δείξει πλεονέκτημα στο αρχείο κεριών του νομίσματος.',cfg:mk({strats:'pick',pick:'e9',mgmt:'be',minEdge:0.1})}]}
 function apfSub(){if(!S.db||APF.sub)return;try{APF.sub=S.db.collection('approfiles').onSnapshot(function(sn){APF.list=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});APF.loaded=true;apfSeed();apfSeedE9();apfRender()},function(){})}catch(e){}}
@@ -4296,7 +4307,8 @@ function apfSeed(){if(APF.seeded||!APF.loaded||APF.list.length||!AP.cfg||!qCanSa
   var L=[{id:'p_start',name:'📌 Αρχικό',desc:'Οι ρυθμίσεις με τις οποίες δούλευε ο Αυτόματος Καθηγητής μέχρι σήμερα. Οι αυτόματες συναλλαγές από πριν τα προφίλ μετράνε εδώ.',cfg:cur}].concat(apfPresets(AP.cfg));
   L.forEach(function(p,ix){var d={name:p.name,desc:p.desc,cfg:p.cfg,start:10000,run:true,by:S.uid,at:now+ix,builtin:p.id!=='p_start',hist:[]};APF.list.push(Object.assign({id:p.id},d));put('approfiles',p.id,d).catch(function(){})});
   if(!(AP.state&&AP.state.profile))apStWrite({profile:'p_start'})}
-function apfSeedE9(){if(!APF.loaded||!APF.list.length||!AP.cfg||!qCanSave())return;APF.e9s=APF.e9s||{};['p_ema921','p_mprof'].forEach(function(id){if(APF.e9s[id]||apfGet(id))return;APF.e9s[id]=1;var p=apfPresets(AP.cfg).find(function(x){return x.id===id});if(!p)return;
+function apfSeedE9(){if(!APF.loaded||!APF.list.length||!AP.cfg||!qCanSave())return;APF.e9s=APF.e9s||{};['p_ema921','p_mprof','p_aggrc'].forEach(function(id){if(APF.e9s[id]||apfGet(id))return;APF.e9s[id]=1;var p=apfPresets(AP.cfg).find(function(x){return x.id===id});if(!p)return;
+  if(id==='p_aggrc'){var ag=apfGet('p_aggr');if(ag&&ag.cfg)p=Object.assign({},p,{cfg:Object.assign({},ag.cfg,{pCorr:true})})}/* αντίγραφο του Επιθετικού όπως τρέχει, μόνη διαφορά pCorr */
   var d={name:p.name,desc:p.desc,cfg:p.cfg,start:10000,run:true,by:S.uid,at:Date.now(),builtin:true,hist:[]};APF.list.push(Object.assign({id:p.id},d));put('approfiles',p.id,d).catch(function(){})})}
 function apfGet(id){return APF.list.find(function(p){return p.id===id})||null}
 function apfActive(){var id=AP.state&&AP.state.profile;return apfGet(id)||(!id&&APF.list.length?(apfGet('p_start')||APF.list[0]):null)}
@@ -4370,7 +4382,7 @@ function apCoinChips(sel,attr,ro){var top=apTop10(),extra=sel.filter(function(c)
     return '<label class="apcc'+(on?' on':'')+'"><input type="checkbox" '+attr+'="'+c+'"'+(on?' checked':'')+(ro?' disabled':'')+'>'+symIcon(c,26)+'<span class="apcn"><b>'+c+(AP.noData&&AP.noData[c]?' <span class="apcw" title="Ο Αυτόματος δεν μπορεί ακόμα να το ελέγξει: '+esc(AP.noData[c])+'">⚠️</span>':'')+'</b><small>'+(AP.noData&&AP.noData[c]?esc(AP.noData[c]):(i<top.length?'#'+(i+1)+' · ':'')+esc((m&&m.name)||CNAME[c]||c))+'</small></span>'+(isFinite(px)&&px>0?'<span class="apcp"><span class="num">'+fmtPx(px)+'</span>'+(isFinite(ch)?'<small class="num '+cls(ch)+'">'+(ch>0?'+':'')+fmt(ch,2)+'%</small>':'')+'</span>':'')+'</label>'}).join('')}
 function apCoinPick(){var el=$('#apCoinPick');if(!el||!AP.cfg)return;var sel=apCoins(),ro=!qCanSave();el.innerHTML=apCoinChips(sel,'data-apcoin',ro)+'<div class="apcoinf"><span class="muted">'+sel.length+' επιλεγμένα · κάθε νόμισμα προσθέτει χρόνο στη σάρωση</span>'+(ro?'':'<span class="row" style="gap:.3rem"><button type="button" class="btn small" data-apcall="top">Όλα τα 10</button><button type="button" class="btn small" data-apcall="top5">Τα 5 πρώτα</button></span>')+'</div>'}
 /* 🧬 Δημιουργός προφίλ: όλες οι ρυθμίσεις των επαγγελματικών bots + βοηθός που προτείνει ρυθμίσεις από backtest, αγορά και αποτελέσματα της ομάδας */
-var APB_PRE=[['cur','Τις τρέχουσες ρυθμίσεις'],['def','Προεπιλογές'],['p_cons','🛡️ Συντηρητικό'],['p_trend','🏄 Ακολουθία τάσης'],['p_range','↔️ Εύρος'],['p_aggr','⚡ Επιθετικό'],['p_ema921','⚡ Scalping EMA 9/21'],['p_mprof','📊 Market Profile μήνα']];
+var APB_PRE=[['cur','Τις τρέχουσες ρυθμίσεις'],['def','Προεπιλογές'],['p_cons','🛡️ Συντηρητικό'],['p_trend','🏄 Ακολουθία τάσης'],['p_range','↔️ Εύρος'],['p_aggr','⚡ Επιθετικό'],['p_aggrc','⚡ Επιθετικό + συσχέτιση'],['p_ema921','⚡ Scalping EMA 9/21'],['p_mprof','📊 Market Profile μήνα']];
 function apbD(){return APF.draft||(APF.draft={name:'',desc:'',start:10000,cfg:apfSnap(AP.cfg)})}
 function apbCoinsOf(c){return String(c.coins||'').toUpperCase().split(/[\s,;]+/).filter(Boolean)}
 function apbHtml(){var D=apbD(),c=Object.assign({},AP_DEF,D.cfg),A=APF.adv||{},coins=apbCoinsOf(c),allC={};apTop10().concat(coins).forEach(function(x){allC[x]=1});
