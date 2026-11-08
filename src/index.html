@@ -1661,6 +1661,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .tdkick{font-size:clamp(1.2rem,1rem + .8vw,1.6rem)}
 .anh h2{font-size:var(--h2fs)!important}
 @media(max-width:600px){main .card,section>.card{padding:.85rem .9rem}.kpi b{font-size:1.15rem}.mtg .gnum{font-size:1.6rem}}
+.pxscan{margin-left:.35rem;padding:.2rem .6rem;font-size:.8rem;vertical-align:middle}
 </style>
 
 <header class="top pad">
@@ -7094,7 +7095,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=249,VERS={sub:null,t:null};
+var APP_VER=250,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -9076,12 +9077,13 @@ function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=d
     '<div class="pfcharts"><div><span class="lbl">PnL ανά νόμισμα</span>'+(symL.length?'<ul class="pfsym">'+symL.map(function(x){var w=Math.abs(x.v)/smx*50;return '<li><span>'+esc(x.k)+'</span><div class="pfdiv"><i style="'+(x.v>=0?'left:50%;':'right:50%;')+'width:'+w.toFixed(1)+'%;background:'+(x.v>=0?'var(--gain)':'var(--loss)')+'"></i></div><b class="num '+cls(x.v)+'">'+pfMoney(x.v,'')+'</b></li>'}).join('')+'</ul>':'<div class="empty" style="padding:.8rem">Καμία κλειστή.</div>')+'</div>'+
       '<div><span class="lbl">PnL ανά πηγή</span><ul class="pfsym">'+bySrc.map(function(x){return '<li><span>'+esc(x.l)+'</span><span class="muted" style="font-size:.78rem">'+x.n+' · '+(x.n?fmt(x.w/x.n*100,0)+'%':'–')+'</span><b class="num '+cls(x.v)+'">'+(x.n?pfMoney(x.v,''):'–')+'</b></li>'}).join('')+'</ul></div></div>';
   return h}
+document.addEventListener('click',function(e){var sb=e.target.closest&&e.target.closest('[data-pxscan]');if(sb){if(AP.busy){toast('Η σάρωση τρέχει ήδη.');return}if(!qCanSave()){toast('Χρειάζεσαι δικαίωμα Editor για σάρωση.');return}sb.disabled=true;sb.textContent='⏳ Σαρώνει…';toast('🔍 Σάρωση τώρα: ελέγχω όλα τα νομίσματα…');apScan(true);try{renderPf()}catch(_){}var w=setInterval(function(){if(!AP.busy){clearInterval(w);try{renderPf()}catch(_){}}},1500);return}});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pfper]');if(b){PF.per[b.getAttribute('data-pfk')||'me']=b.getAttribute('data-pfper');renderPf()}});
 /* ---- Λογαριασμός Καθηγητή: κατάσταση, «πόσο μέσα πέφτει», «τι περιμένει» ---- */
 function pxHtml(){var st=AP.state||{},c=AP.cfg||AP_DEF,L=dmOf(PROF).filter(function(t){return t.src==='auto'}),cl=L.filter(dmCounts),op=L.filter(function(t){return !dmClosed(t)}),now=Date.now();
   var running=c.on&&st.at&&now-st.at<180000,who=st.runner?(st.runner===S.uid?'αυτή τη σελίδα':'τη σελίδα του '+name(st.runner)):'',nx=c.on&&st.last?Math.max(0,Math.round((st.last+c.iv*60000-now)/60000)):null;
   var h='<div class="pxstat">'+(c.on?(running?'<span class="pill gain apdot"><i></i>Δουλεύει</span> <span class="muted">τρέχει από '+esc(who)+'</span>':'<span class="pill warn">Ενεργός, αλλά καμία σελίδα ανοιχτή</span> <span class="muted">Ξεκινά μόλις κάποιος ανοίξει τη σελίδα.</span>'):'<span class="pill">Σβηστός</span> <span class="muted">Άναψέ τον στις ρυθμίσεις παρακάτω.</span>')+
-    '<span class="muted"> · τελευταία σάρωση '+(st.last?apAgo(st.last):'καμία ακόμα')+(nx!=null&&running?' · επόμενη σε '+nx+'′':'')+' · τώρα: '+esc(sessName(sessOf(now)))+'</span> <button type="button" class="linkbtn" data-pxcfg>⚙️ Ρυθμίσεις</button></div>';
+    '<span class="muted"> · τελευταία σάρωση '+(st.last?apAgo(st.last):'καμία ακόμα')+(nx!=null&&running?' · επόμενη σε '+nx+'′':'')+' · τώρα: '+esc(sessName(sessOf(now)))+'</span> <button type="button" class="btn small pxscan" data-pxscan'+(AP.busy?' disabled':'')+'>'+(AP.busy?'⏳ Σαρώνει…':'🔍 Σάρωση τώρα')+'</button> <button type="button" class="linkbtn" data-pxcfg>⚙️ Ρυθμίσεις</button></div>';
   /* πόσο μέσα πέφτει */
   var act=cl.map(function(t){return n(t.r)}),prom=cl.filter(function(t){return t.auto&&isFinite(t.auto.testR)}),pr=avg(prom.map(function(t){return t.auto.testR})),aR=avg(act),wr=cl.length?cl.filter(function(t){return n(t.r)>0}).length/cl.length:NaN,ew=avg(cl.filter(function(t){return t.auto&&isFinite(t.auto.wr)}).map(function(t){return t.auto.wr}));
   var by={};cl.forEach(function(t){var k=t.title||'?',x=by[k]=by[k]||{k:k,n:0,r:0,p:[],w:0};x.n++;x.r+=n(t.r);if(n(t.r)>0)x.w++;if(t.auto&&isFinite(t.auto.testR))x.p.push(t.auto.testR)});var BL=Object.keys(by).map(function(k){var x=by[k];x.a=x.r/x.n;x.pa=avg(x.p);return x}).sort(function(a,b){return b.n-a.n}).slice(0,6);
