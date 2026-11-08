@@ -1670,6 +1670,14 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .hT .pctag{gap:.15rem .45rem;margin-top:.2rem}.hT .pctag i{padding:0;background:none;font-size:.7rem}
 @media(max-width:600px){.pctag i{font-size:.66rem}}
 #tradeTable .pctag{margin-top:.3rem}
+.pfprs{margin-top:.45rem;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.pfpr{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.2fr) minmax(0,.8fr) minmax(0,.8fr);gap:.5rem;align-items:center;padding:.45rem .7rem;border-top:1px solid var(--line)}
+.pfpr:first-child{border-top:0}.pfpr.off{opacity:.6}
+.pfprh{font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:.35rem .7rem;background:color-mix(in srgb,var(--fg) 4%,transparent)}
+.pfpr>span{display:flex;flex-direction:column;min-width:0}.pfpr>span.r{align-items:flex-end;text-align:right}
+.pfpr b{font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.pfpr small{font-size:.68rem;color:var(--muted);white-space:nowrap}
+.pfpr small.pos{color:var(--gain)}.pfpr small.neg{color:var(--loss)}
+@media(max-width:480px){.pfpr{grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.9fr);row-gap:.15rem;column-gap:.4rem}.pfpr .pp-n{grid-column:1/-1;flex-direction:row;align-items:baseline;gap:.45rem}.pfprh>span:first-child{display:none}.pfpr>span.pp-c,.pfprh>span.r:nth-child(2){align-items:flex-start;text-align:left}}
 </style>
 
 <header class="top pad">

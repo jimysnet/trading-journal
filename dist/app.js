@@ -3182,7 +3182,7 @@ function stnRender(){var v=$('#stnView');if(!v||!STN.on)return;var c=AP.cfg||{},
 document.addEventListener('click',function(e){if(!e.target.closest)return;if(e.target.closest('#stnExit')){stnExit();return}if(e.target.closest('[data-stn]')){stnEnter()}});
 
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=252,VERS={sub:null,t:null};
+var APP_VER=253,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5140,6 +5140,18 @@ function pfBars(days,ccy){var mx=Math.max.apply(null,days.map(function(d){return
   return '<svg viewBox="0 0 '+W+' '+H+'" class="pfbars" preserveAspectRatio="none" role="img" aria-label="PnL ανά ημέρα"><line x1="0" x2="'+W+'" y1="'+mid+'" y2="'+mid+'" stroke="var(--line)"/>'+days.map(function(d,i){var h=Math.abs(d.v)/mx*(mid-6),x=4+i*bw+bw*0.18,w=Math.max(2,bw*0.64);
     return '<g><rect x="'+(4+i*bw)+'" y="0" width="'+bw+'" height="'+H+'" fill="transparent"><title>'+esc(dateGr(d.k)+' · '+pfMoney(d.v,ccy)+' · '+d.n+' συναλλαγές')+'</title></rect>'+(d.n?'<rect x="'+x.toFixed(1)+'" y="'+(d.v>=0?mid-h:mid).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1.5,h).toFixed(1)+'" rx="2" fill="'+(d.v>=0?'var(--gain)':'var(--loss)')+'" pointer-events="none"/>':'')+'</g>'}).join('')+'</svg>'}
 function renderPf(){var e2=$('#profPort');if(e2){e2.innerHTML=pfHtml(PROF,'prof');try{var ph=pxHtml(),k=ph.indexOf('<div class="pxbox">');$('#profStat').innerHTML=ph.slice(0,k);var pa=$('#pxAcc');if(pa)pa.innerHTML=ph.slice(k)}catch(x){console.error(x)}}}
+/* Λογαριασμός Καθηγητή: στατιστικά ανά προφίλ (κεφάλαιο, επιτυχία, R, PnL) */
+function pfProfHtml(ccy){if(typeof APF==='undefined'||!APF)return '';var rows;try{rows=apfRows()}catch(e){return ''}if(!rows.length)return '';
+  var act=apfActive&&apfActive();
+  var h=rows.map(function(r){var st=r.st,p=r.p,start=apfStart(p),bal=apfBal(r.id),op=(S.demo||[]).filter(function(t){return t.src==='auto'&&apfTagId(t)===r.id&&!dmClosed(t)}),
+      unr=sum(op.filter(function(t){return !dmIsPend(t)}).map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),eq=bal+unr,ch=eq-start,chp=start>0?ch/start*100:NaN,
+      run=p?p.run!==false:false,wr=st.wr,wc=!isFinite(wr)?'muted':wr>=.5?'pos':wr>=.4?'':'neg';
+    return {k:(act&&act.id===r.id?2:0)+(st.all?1:0),eq:eq,html:'<div class="pfpr'+(run?'':' off')+'" role="row">'+
+      '<span class="pp-n"><b>'+esc(r.name)+'</b><small>'+(act&&act.id===r.id?'ενεργό · ':'')+(p?(run?'τρέχει':'σταματημένο'):'διαγραμμένο')+'</small></span>'+
+      '<span class="pp-c r"><b class="num">'+dmMoney(eq,'')+'</b><small class="num '+(ch?cls(ch):'muted')+'">'+(ch>0?'+':'')+(isFinite(chp)?fmt(chp,2)+'%':'–')+'</small></span>'+
+      '<span class="pp-w r"><b class="num '+wc+'">'+(isFinite(wr)?Math.round(wr*100)+'%':'–')+'</b><small>'+(st.n?Math.round((wr||0)*st.n)+'/'+st.n:'0 κλειστές')+'</small></span>'+
+      '<span class="pp-r r"><b class="num '+(st.n?cls(st.sumR):'muted')+'">'+(st.n?fR(st.sumR):'–')+'</b><small>'+(op.length?op.length+' ανοιχτ'+(op.length===1?'ή':'ές'):'καμία ανοιχτή')+'</small></span></div>'}}).sort(function(a,b){return (b.k-a.k)||(b.eq-a.eq)}).map(function(x){return x.html}).join('');
+  return '<span class="lbl" style="display:block;margin-top:1rem">Ανά προφίλ ('+esc(ccy)+')</span><div class="pfprs" role="table"><div class="pfpr pfprh" role="row"><span>Προφίλ</span><span class="r">Κεφάλαιο</span><span class="r">Επιτυχία</span><span class="r">Σύνολο R</span></div>'+h+'</div>'}
 function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=dmBal(uid),L=dmOf(uid).filter(function(t){return (t.at||0)>=a.resetAt&&!apfOff(t)});
   var op=L.filter(function(t){return !dmClosed(t)}),run=op.filter(function(t){return !dmIsPend(t)}),pend=op.filter(dmIsPend);
   var unr=sum(run.map(function(t){var lv=dmLiveR(t),cr=lv?lv.r:n(t.curR);return isFinite(cr)?cr*n(t.riskAmt):0})),used=sum(op.map(function(t){return n(t.margin)||n(t.notional)||0})),eq=bal+unr,avail=bal-used,mr=eq>0?used/eq:NaN;
@@ -5161,6 +5173,7 @@ function pfHtml(uid,key){var per=PF.per[key]||'30',a=dmAcct(uid),ccy=a.ccy,bal=d
     '<div class="pfgrid"><div class="pfalloc">'+pfDonut(segs,fmt(eq,0),ccy+' equity')+'<ul class="pfleg">'+segs.map(function(s){return '<li><i style="background:'+s.c+'"></i><span>'+esc(s.l)+'</span><b class="num">'+esc(s.t)+'</b></li>'}).join('')+(pend.length?'<li class="muted"><i style="background:transparent;border:1px dashed var(--muted)"></i><span>'+pend.length+' εντολές σε αναμονή</span></li>':'')+'</ul></div>'+
     '<div class="pfks">'+'<div class="pfk" style="grid-column:1/-1;background:transparent;padding:0"><span>Ποσά σε '+esc(ccy)+'</span></div>'+kp('Μη ρευστοποιημένο PnL',pfMoney(unr,''),run.length+' θέσεις σε εξέλιξη',cls(unr))+kp('Ρευστοποιημένο PnL',pfMoney(real,''),C.length+' κλειστές',cls(real))+kp('Διαθέσιμο',fmt(avail,2),'για νέες θέσεις')+kp('Δεσμευμένο περιθώριο',fmt(used,2),op.length+' ανοιχτές')+
     '<div class="pfk pfmr"><span>Margin ratio</span><b class="num '+(mr>0.8?'neg':mr>0.5?'':'pos')+'">'+(isFinite(mr)?fmt(mr*100,1)+'%':'–')+'</b><div class="pfmeter"><i style="width:'+Math.min(100,(mr||0)*100)+'%;background:'+(mr>0.8?'var(--loss)':mr>0.5?'var(--warn)':'var(--gain)')+'"></i></div></div></div></div>'+
+    (key==='prof'?pfProfHtml(ccy):'')+
     '<span class="lbl" style="display:block;margin-top:1rem">Ανάλυση PnL ('+esc(ccy)+') · '+({1:'τελευταίες 24 ώρες',7:'τελευταίες 7 μέρες',30:'τελευταίες 30 μέρες',all:'από την αρχή'}[per])+'</span>'+
     '<div class="pfstats">'+kp('ROI',isFinite(real)?(real>=0?'+':'')+fmt(real/a.start*100,2)+'%':'–','',cls(real))+kp('Επιτυχία',pct(C.length?W.length/C.length:NaN),W.length+' / '+C.length)+kp('Profit factor',isFinite(pf)?fmt(pf,2):pf===Infinity?'∞':'–','')+kp('Μέσο κέρδος',W.length?pfMoney(avg(W),''):'–','','pos')+kp('Μέση ζημιά',Ls.length?pfMoney(avg(Ls),''):'–','','neg')+
       kp('Καλύτερη',pn.length?pfMoney(Math.max.apply(null,pn),''):'–','','pos')+kp('Χειρότερη',pn.length?pfMoney(Math.min.apply(null,pn),''):'–','','neg')+kp('Μέγιστη πτώση',pfMoney(dd,''),'από κορυφή','neg')+kp('Μέση διάρκεια',isFinite(avgH)?(avgH>=24?fmt(avgH/24,1)+' μέρες':fmt(avgH,1)+' ώρες'):'–','')+
