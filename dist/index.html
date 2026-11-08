@@ -1750,6 +1750,8 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 .pre-why{max-height:min(46vh,320px);overflow:auto;margin:0 0 .5rem;padding:.45rem .5rem;border-radius:10px;background:color-mix(in srgb,var(--fg) 5%,transparent);display:grid;gap:.4rem}
 .pre-why span{display:block;font-size:.66rem;font-weight:700;color:var(--muted)}.pre-why p{margin:.05rem 0 0;font-size:.76rem;line-height:1.35}
 @media(max-width:420px){.pre-lv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.apstd{display:flex;gap:.55rem;align-items:flex-start;margin:.55rem 0 .2rem;padding:.55rem .7rem;border-radius:12px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));background:color-mix(in srgb,var(--accent) 9%,transparent);cursor:pointer}
+.apstd input{margin-top:.2rem;width:1.05rem;height:1.05rem;accent-color:var(--accent)}.apstd b{display:block;font-size:.88rem}.apstd small{display:block;font-size:.74rem;color:var(--muted);margin-top:.1rem}
 </style>
 
 <header class="top pad">
@@ -2236,11 +2238,12 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
           <label class="f full">Σημειώσεις<textarea id="dm-notes" rows="2" placeholder="Γιατί μπαίνεις, τι θα ακύρωνε την ιδέα"></textarea></label>
         </div>
         <div class="dmcalc" id="dmCalc"></div>
-        <div class="row"><button class="btn primary" type="submit" id="dm-save">Άνοιξε demo συναλλαγή</button><button class="btn" type="button" id="dm-clear">Καθαρισμός</button><span class="muted" id="dm-msg"></span></div>
+        <div class="row"><button class="btn primary" type="submit" id="dm-save">Άνοιξε demo συναλλαγή</button><button class="btn" type="button" id="dm-clear">Καθαρισμός</button><button class="btn" type="button" id="dm-std" title="TP 2% · SL 1% · περιθώριο 1000 · x10">📏 Ενιαίο μοτίβο</button><span class="muted" id="dm-msg"></span></div>
       </form>
       </details>
     <div class="card c3d" id="apCard">
       <div class="formhead"><h2 style="margin:0">⚙️ Αυτόματος Καθηγητής · ρυθμίσεις</h2><label class="apsw"><input type="checkbox" id="ap-on"><i></i><span>Ενεργός</span></label></div>
+      <label class="apstd"><input type="checkbox" id="ap-std"><span><b>📏 Ενιαίο μοτίβο για όλους</b><small>Κάθε νέα συναλλαγή (όλα τα προφίλ, και οι δικές μας demo): TP 2% · SL 1% από την είσοδο · κεφάλαιο 1000 · x10 · σταθερό stop και στόχος. Ίδιες συναλλαγές, συγκρίσιμα στατιστικά.</small></span></label>
       <p class="muted" style="font-size:.86rem;margin:.4rem 0 .6rem">Διαχειρίζεται μόνος του τον <b>Λογαριασμό Καθηγητή</b> (συνολικά = το άθροισμα των εικονικών κεφαλαίων όλων των προφίλ). Τρέχει όσο η σελίδα είναι ανοιχτή σε οποιοδήποτε μέλος (μία σελίδα κάθε φορά) και οι ρυθμίσεις είναι κοινές για όλη την ομάδα. Σαρώνει τα νομίσματα σε κεριά 1 ώρας και 4 ωρών και δοκιμάζει όλες τις στρατηγικές με backtest. <b>Ανοίγει μόνος του demo</b> μόνο όταν υπάρχει σήμα τώρα και η στρατηγική έχει αποδεδειγμένο πλεονέκτημα (θετική σε κεριά που δεν «είδε», 20+ συναλλαγές, και είτε ταιριάζει στην αγορά είτε είναι θετική σε όλο το ιστορικό). Όταν το σήμα είναι υποσχόμενο αλλά με λίγα δεδομένα, σου το βάζει στις <b>προτάσεις για έγκριση</b>. Κοιτάζει και <b>τις ώρες των αγορών</b>: ανοίγει μόνο στις συνεδρίες όπου η στρατηγική έχει κερδίσει στο backtest, και περνά κάθε σήμα από τις <b>προστασίες</b> παρακάτω. Ό,τι αποφασίζει γράφεται στο 📜 Ιστορικό για όλη την ομάδα. Χωρίς πραγματικά χρήματα, χωρίς κόστος.</p>
       <div class="approf" id="apProf"></div>
       <div class="fields apf">
