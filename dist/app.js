@@ -3322,7 +3322,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=267,VERS={sub:null,t:null};
+var APP_VER=268,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5704,7 +5704,10 @@ function autoEval(force){if(AE.busy||!CG.mcp||!S.uid||!qCanSave())return;if(!for
   (S.props||[]).filter(function(p){return p.by===S.uid&&(!p.res||p.res==='running')&&!p.bad&&p.at&&p.dir&&isFinite(n(p.entry))&&isFinite(n(p.stop))&&isFinite(n(p.target))&&p.at>Date.now()-7*864e5&&!(S.demo||[]).some(function(t){return t.cfId===p.id})}).forEach(function(p){add(p.market,{k:'pp',c:p,at:p.at})});
   var syms=Object.keys(g),done={dm:0,cf:0},TF=['1m','5m','15m','30m','1h','4h','1D','7D'];
   var run=function(i){if(i>=syms.length){AE.busy=false;if(done.dm||done.cf)toast('Αυτόματος έλεγχος: '+(done.dm?done.dm+' demo έκλεισαν':'')+(done.dm&&done.cf?', ':'')+(done.cf?done.cf+' επιβεβαιώσεις πήραν αποτέλεσμα':'')+'.');try{renderConfirms()}catch(e){}return}
-    var sym=syms[i],items=g[sym],first=Math.min.apply(null,items.map(function(x){return x.at})),tf=ccTfFor(first);
+    var sym=syms[i],items=g[sym],act=items.filter(function(x){return x.k!=='fc'}),first=Math.min.apply(null,(act.length?act:items).map(function(x){return x.at})),span=Date.now()-first,
+      /* Το histBars ενώνει αρχείο (μήνες πίσω) + φρέσκα κεριά, άρα δεν χρειάζεται χοντρό πλαίσιο για να «χωρέσει» η θέση: 15m για νέες θέσεις, αλλιώς 1h.
+         (Πριν: οι κλειστές θέσεις 7 ημερών που μπαίνουν για πρόβλεψη τραβούσαν το πλαίσιο σε 1D, και με ημερήσια κεριά οι ανοιχτές δεν ελέγχονταν ποτέ.) */
+      tf=span<10*36e5?'15m':span<55*864e5?'1h':'4h';
     var go=function(tf,tries){return histBars(sym,tf,60).then(function(r){var bars=r.bars.filter(function(b){return !b.approx}),retry=false;
       items.forEach(function(it){if(it.ok)return;
         if(it.k!=='cf'&&!it.t.fc){var fv=dmForecast(it.t,bars);if(fv==='err'){retry=true;return}if(fv){it.t=Object.assign({},it.t,{fc:fv,fcAt:Date.now()});it.fcNew=true}}
