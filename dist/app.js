@@ -284,7 +284,7 @@ function renderStrategySelects(){impStrategies();
   var si=Element.prototype.scrollIntoView;Element.prototype.scrollIntoView=function(){var d=this.closest&&this.closest('details.tdx');if(d&&d!==this&&!d.open)d.open=true;var g=this.closest&&this.closest('[data-angrp]');if(g&&g.hidden&&typeof anGo==='function')anGo(g.getAttribute('data-angrp'));return si.apply(this,arguments)}})();
 
 /* AI Bot: κάρτες που κλείνουν με βελάκι (όλες οι φαρδιές, εκτός Λογαριασμού / Ωρών αγορών). Θυμάται ανά συσκευή. */
-var CFOLD_IDS=['dmOpenCard','apNowCard','apCard','labCard','dmHistCard','dmEvalCard'],CFOLD={};
+var CFOLD_IDS=['dmOpenCard','lrnCard','apNowCard','apCard','labCard','dmHistCard','dmEvalCard'],CFOLD={};
 try{CFOLD=JSON.parse(localStorage.getItem('tj-cfold')||'{}')||{}}catch(e){}
 function cfoldApply(){CFOLD_IDS.forEach(function(id){var c=document.getElementById(id);if(!c)return;var h=c.firstElementChild;if(!h)return;
   if(!h.classList.contains('cfoldh')){h.classList.add('cfoldh');}
@@ -3322,7 +3322,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=269,VERS={sub:null,t:null};
+var APP_VER=270,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4263,9 +4263,46 @@ function apProt(){var c=apC();return {news:c.pNews!==false,sess:c.sess||'smart',
 function apBreaker(){var mine=apMineR().filter(dmCounts).sort(function(a,b){return (a.exitAt||a.at||0)-(b.exitAt||b.at||0)}),td=lday(new Date()),dayR=sum(mine.filter(function(t){return lday(new Date(t.exitAt||t.at||0))===td}).map(function(t){return n(t.r)})),L=mine.slice(-3);
   if(dayR<=-3)return 'Σήμερα οι αυτόματες έχουν ήδη '+fR(dayR)+'. Παύση νέων ανοιγμάτων μέχρι αύριο.';
   if(L.length===3&&L.every(function(t){return n(t.r)<0})&&Date.now()-(L[2].exitAt||L[2].at||0)<24*36e5)return '3 συνεχόμενες χαμένες αυτόματες. Παύση 24 ωρών από την τελευταία.';return ''}
+/* ===== 🧠 Μάθηση από τα πραγματικά αποτελέσματα =====
+   1) Καθαρά στατιστικά: κάθε σήμα μετράει μία φορά (όσα προφίλ κι αν το άνοιξαν) και χωρίζονται σε «εποχές» (πριν / με ενιαίο μοτίβο).
+   2) Παύση: στρατηγική × timeframe με ≥10 πραγματικές θέσεις και μέσο < −0,3R μπαίνει σε παύση 72 ωρών από την τελευταία της θέση·
+      μετά παίζει ξανά μία φορά (δοκιμή) και ξαναμετριέται.
+   3) Ρεαλιστική πρόβλεψη: η διαφορά «backtest σε νέα δεδομένα» − «πραγματικό» (με συρρίκνωση για μικρό δείγμα, έως 0,4R) αφαιρείται
+      από την πρόβλεψη πριν συγκριθεί με το ελάχιστο μέσο R του προφίλ. */
+var LRN={c:null,at:0},LRN_MIN=8,LRN_BAD=-0.3,LRN_WAIT=72*36e5,LRN_WIN=15;
+function lrnKey(t){var a=t.auto||{};return dmSym(t.symbol)+'|'+t.dir+'|'+(a.strat||'')+'|'+(a.tf||'')+'|'+(a.sigT||Math.round((t.at||0)/36e5))}
+function lrnStats(){if(LRN.c&&LRN.src===S.demo&&Date.now()-LRN.at<30000)return LRN.c;LRN.src=S.demo;var all=(S.demo||[]).filter(function(t){return t.src==='auto'&&t.auto&&t.auto.strat&&!t.ttl}),seen={},dup=0,last={};
+  all.forEach(function(t){var k=t.auto.strat+'|'+(t.auto.tf||'?');last[k]=Math.max(last[k]||0,t.at||0);last[t.auto.strat+'|*']=Math.max(last[t.auto.strat+'|*']||0,t.at||0)});
+  var C=all.filter(function(t){return dmClosed(t)&&!t.nofill&&isFinite(n(t.r))&&/^(win|loss|closed|expired)$/.test(t.status||'')}).sort(function(a,b){return (a.at||0)-(b.at||0)}).filter(function(t){var k=lrnKey(t);if(seen[k]){dup++;return false}seen[k]=1;return true});
+  var agg=function(L){var m=L.length,sm=0,w=0;L.forEach(function(t){var r=n(t.r);sm+=r;if(r>0)w++});return {n:m,sum:sm,avg:m?sm/m:NaN,wr:m?w/m:NaN}};
+  var by={};C.forEach(function(t){var k=t.auto.strat+'|'+(t.auto.tf||'?');(by[k]=by[k]||[]).push(t);(by[t.auto.strat+'|*']=by[t.auto.strat+'|*']||[]).push(t)});
+  var B={};Object.keys(by).forEach(function(k){var L=by[k].slice(-LRN_WIN),g=agg(L),p=k.split('|');g.id=p[0];g.tf=p[1];g.last=last[k]||0;g.all=agg(by[k]);B[k]=g});
+  var P=C.filter(function(t){return isFinite(n(t.auto.testR))}),pn=P.length,pp=pn?P.reduce(function(a,t){return a+n(t.auto.testR)},0)/pn:NaN,pa=pn?P.reduce(function(a,t){return a+n(t.r)},0)/pn:NaN,gap=pp-pa,
+      cut=pn>=15&&gap>0?Math.min(0.4,gap*pn/(pn+50)):0;
+  LRN.c={C:C,dup:dup,all:agg(C),by:B,pred:{n:pn,p:pp,a:pa,gap:gap},cut:+cut.toFixed(2),eras:{old:agg(C.filter(function(t){return !t.auto.std})),std:agg(C.filter(function(t){return t.auto.std}))}};LRN.at=Date.now();return LRN.c}
+function lrnMute(sid,tf){var B=lrnStats().by,r=null;[B[sid+'|*'],B[sid+'|'+tf]].forEach(function(g){if(r||!g||g.n<LRN_MIN||!(g.avg<LRN_BAD))return;var until=g.last+LRN_WAIT;if(Date.now()<until)r={g:g,until:until}});return r}
+function lrnName(id){var b=BT.find(function(x){return x.id===id});return b?b.t:id}
+function lrnRender(){var el=$('#lrnBody');if(!el)return;var L=lrnStats(),A=L.all,E=L.eras,P=L.pred;
+  if(!A.n){el.innerHTML='<p class="muted" style="margin:0">Δεν υπάρχουν ακόμα κλειστές αυτόματες συναλλαγές για να μάθω.</p>';return}
+  var row=function(g,extra){return '<li><b>'+esc(lrnName(g.id))+'</b> <span class="muted">'+esc(g.tf==='*'?'όλα τα timeframes':g.tf==='?'?'χωρίς timeframe':g.tf)+'</span> · '+g.n+' θέσεις · '+Math.round(g.wr*100)+'% · <b class="'+cls(g.avg)+'">'+fR(g.avg)+'</b> μέσο'+(extra||'')+'</li>'};
+  var K=Object.keys(L.by).map(function(k){return L.by[k]}),now=Date.now();
+  var muted=K.filter(function(g){return g.n>=LRN_MIN&&g.avg<LRN_BAD}).sort(function(a,b){return a.avg-b.avg});
+  var good=K.filter(function(g){return g.n>=5&&g.avg>=0.2}).sort(function(a,b){return b.sum-a.sum}).slice(0,5);
+  var watch=K.filter(function(g){return g.n>=4&&g.n<LRN_MIN&&g.avg<LRN_BAD}).sort(function(a,b){return a.avg-b.avg}).slice(0,5);
+  var eraTx=function(k,nm){var x=E[k];return x.n?'<div><span>'+nm+'</span><b class="'+cls(x.avg)+'">'+fR(x.avg)+'</b><small>'+x.n+' θέσεις · '+Math.round(x.wr*100)+'%</small></div>':''};
+  el.innerHTML='<div class="lrn-k"><div><span>Μοναδικά σήματα</span><b>'+A.n+'</b><small>'+(L.dup?L.dup+' διπλά από άλλα προφίλ δεν μετρήθηκαν':'χωρίς διπλά')+'</small></div>'+
+    '<div><span>Επιτυχία</span><b>'+Math.round(A.wr*100)+'%</b><small>σύνολο <b class="'+cls(A.sum)+'">'+fR(A.sum)+'</b></small></div>'+
+    '<div><span>Πρόβλεψη → πράξη</span><b>'+fR(P.p)+' → <span class="'+cls(P.a)+'">'+fR(P.a)+'</span></b><small>'+P.n+' θέσεις με πρόβλεψη</small></div>'+
+    '<div><span>Διόρθωση πρόβλεψης</span><b class="'+(L.cut?'neg':'')+'">'+(L.cut?'−'+fmt(L.cut,2)+'R':'καμία')+'</b><small>'+(L.cut?'αφαιρείται από κάθε backtest πριν μπει':'θέλει ≥15 θέσεις και υπερεκτίμηση')+'</small></div>'+eraTx('old','Πριν το ενιαίο μοτίβο')+eraTx('std','Με ενιαίο μοτίβο (TP 2% · SL 1%)')+'</div>'+
+    (muted.length?'<h4 class="lrn-h">🚫 Σε παύση</h4><ul class="lrn-l">'+muted.map(function(g){var u=g.last+LRN_WAIT;return row(g,' · '+(now<u?'ξαναδοκιμή '+new Date(u).toLocaleString('el-GR',{weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}):'<b>επιτρέπεται 1 δοκιμή τώρα</b>'))}).join('')+'</ul>':'')+
+    (watch.length?'<h4 class="lrn-h">⚠️ Υπό παρακολούθηση (λίγες θέσεις ακόμα)</h4><ul class="lrn-l">'+watch.map(function(g){return row(g,' · παύση αν φτάσει '+LRN_MIN+' θέσεις με μέσο κάτω από '+fR(LRN_BAD))}).join('')+'</ul>':'')+
+    (good.length?'<h4 class="lrn-h">✅ Δουλεύουν</h4><ul class="lrn-l">'+good.map(function(g){return row(g,' · σύνολο '+fR(g.sum))}).join('')+'</ul>':'')+
+    '<p class="muted lrn-n">Κανόνες: κάθε σήμα μετράει μία φορά · στρατηγική (συνολικά ή σε ένα timeframe) με ≥'+LRN_MIN+' πραγματικές θέσεις (οι '+LRN_WIN+' πιο πρόσφατες) και μέσο κάτω από '+fR(LRN_BAD)+' σταματά για 72 ώρες και μετά παίζει ξανά μία φορά για δοκιμή · η διόρθωση πρόβλεψης είναι η διαφορά backtest–πράξης, μικρότερη όσο λιγότερα τα δεδομένα (έως 0,4R).</p>'}
 function apBlock(it,ctx){var P=apProt(),x=it.x,d=x.d,coin=it.coin,now=Date.now(),sid=sessOf(now);
   if(P.news){var nb=nwBlockNow();if(nb)return nb+' (αναμονή από 30′ πριν ως 1 ώρα μετά)'}
   if(!(x.test.avgR>=P.minEdge))return 'μέσο '+fR(x.test.avgR)+' σε νέα δεδομένα, κάτω από το ελάχιστο '+fR(P.minEdge);
+  var LS=lrnStats();if(LS.cut>0&&!(x.test.avgR-LS.cut>=P.minEdge))return 'μέσο '+fR(x.test.avgR)+' σε νέα δεδομένα, αλλά οι πραγματικές βγαίνουν χειρότερες από το backtest· με τη διόρθωση (−'+fmt(LS.cut,2)+'R) μένει '+fR(x.test.avgR-LS.cut)+', κάτω από το '+fR(P.minEdge);
+  var MU=lrnMute(x.id,it.tf);if(MU)return 'σε παύση από τα πραγματικά αποτελέσματα: «'+lrnName(x.id)+'» '+(MU.g.tf==='*'?'(όλα τα timeframes)':MU.g.tf)+' έχει '+fR(MU.g.avg)+' μέσο σε '+MU.g.n+' θέσεις · ξαναδοκιμή '+new Date(MU.until).toLocaleString('el-GR',{weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false});
   if(P.sess==='active'&&!(sid==='lon'||sid==='ovl'||sid==='ny'))return 'τώρα είναι '+sessName(sid)+': ανοίγω μόνο σε Λονδίνο / Νέα Υόρκη';
   if(P.sess==='smart'){var ss=apSessStats(x)[sid];if(ss&&ss.n>=6&&ss.avg<0)return 'στη συνεδρία '+sessName(sid)+' αυτή η στρατηγική χάνει ('+fR(ss.avg)+' σε '+ss.n+')';if(sid==='wkd'&&(!ss||ss.n<6))return 'Σαββατοκύριακο με χαμηλή ρευστότητα και χωρίς αρκετά δεδομένα για αυτή την ώρα'}
   if(P.mtf&&it.gHi&&it.gHi.kind==='trend'&&it.gHi.dir===-d)return 'το μεγαλύτερο timeframe ('+(it.tf==='1h'?'4h':'1D')+') έχει τάση αντίθετη';
@@ -5570,7 +5607,7 @@ function pxHtml(){var st=AP.state||{},c=AP.cfg||AP_DEF,L=dmOf(PROF).filter(funct
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-apnow]');if(t){AP.nowTab=t.getAttribute('data-apnow');try{apRender()}catch(x){}}});
 document.addEventListener('toggle',function(e){var d=e.target;if(d&&d.getAttribute&&d.getAttribute('data-apnc')){AP.nowOpen=AP.nowOpen||{};AP.nowOpen[d.getAttribute('data-apnc')]=d.open}},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pxcfg]');if(b){var c=$('#apCard');if(c)c.scrollIntoView({block:'start',behavior:'smooth'})}});
-function renderDemo(){if(!$('#dmAcct'))return;try{apfRender()}catch(e){}
+function renderDemo(){if(!$('#dmAcct'))return;try{apfRender()}catch(e){}try{lrnRender()}catch(e){}
   var w=$('#dm-who'),us=dmUsers();if(!DM.who||us.indexOf(DM.who)<0)DM.who=S.uid;
   w.innerHTML=us.map(function(u){return '<option value="'+esc(u)+'"'+(u===DM.who?' selected':'')+'>'+esc(u===S.uid?'Ο δικός μου':name(u))+'</option>'}).join('');
   dmTechOpts();renderDmAcct();try{renderPf()}catch(e){console.error(e)}renderDmOpen();renderDmProf();renderDmHist();renderDmCalc();try{apRender()}catch(e){}
