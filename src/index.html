@@ -7351,7 +7351,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=272,VERS={sub:null,t:null};
+var APP_VER=273,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -10315,6 +10315,14 @@ document.addEventListener('click',function(e){var t=e.target.closest&&e.target.c
   else if(t.hasAttribute('data-cnundo'))cnSetProp(t.getAttribute('data-cnundo'),{status:'pending'});
   else if(t.hasAttribute('data-cnnote')){var id=t.getAttribute('data-cnnote'),b=t.closest('.cnbtn');if(b.querySelector('textarea'))return;b.insertAdjacentHTML('afterend','<div class="cnbtn"><textarea rows="2" style="width:100%" placeholder="Τι να αλλάξει στην πρόταση; π.χ. «ναι, αλλά μόνο για BTC και ETH»"></textarea><button type="button" class="btn small primary" data-cnnotego="'+esc(id)+'">✅ Εγκρίνω με αυτή την αλλαγή</button></div>');b.nextElementSibling.querySelector('textarea').focus()}});
 document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-cnnotego]');if(!t)return;var v=String(t.parentNode.querySelector('textarea').value||'').trim();cnSetProp(t.getAttribute('data-cnnotego'),{status:'approved',note:v})});
+/* ανάλυση όλων των κλειστών αυτόματων demo ανά στρατηγική, νόμισμα, timeframe και συνεδρία (για τον Καθηγητή/Συμβούλιο) */
+function brBreak(){var L=(S.demo||[]).filter(function(t){return t.src==='auto'&&dmCounts(t)});
+  var keyF={strategy:function(t){var a=t.auto||{},b=BT.find(function(x){return x.id===a.strat});return b?(b.t||b.name||a.strat):(a.strat||'?')},coin:function(t){return String(t.symbol||'?').replace(/(USDT|USDC|USD)$/,'')},timeframe:function(t){return (t.auto&&t.auto.tf)||'?'},session:function(t){var id=(t.auto&&t.auto.sess)||sessOf(t.at||0);var s=SESS.find(function(x){return x.id===id});return s?s.t:id}};
+  var out={what:'Όλες οι κλειστές αυτόματες demo, σπασμένες ανά στρατηγική, νόμισμα, timeframe και συνεδρία (ώρα ανοίγματος). n = θέσεις, winRate = ποσοστό κερδισμένων, totalR/avgR = R μετά από έξοδα όπου μετρήθηκαν, fees_R = σύνολο εξόδων σε R (fees_n = σε πόσες μετρήθηκαν έξοδα, οι παλιές πριν το v265 δεν έχουν). reliable = true όταν n ≥ 10.',closed:L.length};
+  Object.keys(keyF).forEach(function(k){var g={};L.forEach(function(t){var x=keyF[k](t);(g[x]=g[x]||[]).push(t)});
+    out['by_'+k]=Object.keys(g).map(function(x){var a=g[x],rs=a.map(function(t){return n(t.r)}),w=rs.filter(function(r){return r>0}).length,fe=a.filter(function(t){return t.net&&isFinite(n(t.feeR))});
+      return {key:x,n:a.length,winRate:brR(w/a.length*100,0),totalR:brR(sum(rs)),avgR:brR(sum(rs)/a.length),fees_R:fe.length?brR(sum(fe.map(function(t){return n(t.feeR)}))):null,fees_n:fe.length,reliable:a.length>=10}}).sort(function(a,b){return b.n-a.n||a.totalR-b.totalR})});
+  return out}
 function brAuto(t){var a=t.auto||{},bt=BT.find(function(x){return x.id===a.strat});return {id:t.id,profile:apfTagName(t),exit_management:mgTxt(t,true),stop_moved_to:t.curStop!=null?t.curStop:null,owner:t.by===S.uid?'me':name(t.by),symbol:t.symbol,dir:t.dir,order:t.ord,opened:new Date(t.at||0).toISOString(),entry:t.entry,stop:t.stop,target:t.target,leverage:t.lev,margin:t.margin,status:t.status,R:dmCounts(t)?brR(t.r):null,R_now:brR(n(t.curR)),last_price:t.lastPx||null,closed:t.exitAt?new Date(t.exitAt).toISOString():null,
   strategy:t.title,strategy_rule:bt?bt.rule:null,timeframe:a.tf||null,market_regime_at_entry:a.regime||null,session_at_entry:a.sess?sessInfo(a.sess).t:null,target_R:a.X||null,backtest_trades:a.n||null,backtest_avg_R:a.avgR,unseen_avg_R:a.testR,unseen_trades:a.testN,
   grade:a.grade===2?'strong (auto-opened)':a.grade===1?'proposal approved by user':null,approved_manually:!!a.manual,reasoning:String(t.notes||'').replace(/^🤖\s*/,'').slice(0,500)}}
@@ -10328,6 +10336,7 @@ function brCtx(){var mine=apMine?apMine():[],P=AP.cfg?apProt():null,day=(S.aplog
       profiles_performance:apfRows().map(function(r){return {profile:r.name,closed:r.st.n,open:r.st.open,winRate:brR(r.st.wr),totalR:brR(r.st.sumR),avgR:brR(r.st.avgR),maxDD_R:brR(r.st.dd)}}),
       exit_management:AP.cfg?mgTxt(AP.cfg,true):null,strategies_allowed:AP.cfg?APF_ST[AP.cfg.strats||'all']:null,
       session_now:sessName(sessOf(Date.now())),open_auto_demos:(S.demo||[]).filter(function(t){return t.src==='auto'&&!dmClosed(t)}).map(brAuto).slice(0,6),
+      closed_auto_breakdown:(function(){try{return brBreak()}catch(e){return null}})(),
       closed_auto:{n:(S.demo||[]).filter(function(t){return t.src==='auto'&&dmCounts(t)}).length,total_R:brR(sum((S.demo||[]).filter(function(t){return t.src==='auto'&&dmCounts(t)}).map(function(t){return n(t.r)})))},
       today_log:day.map(function(d){return {who:d.by===S.uid?'me':name(d.by),scans:d.scans,opened:d.opened,proposals:d.props,blocked_by_protections:d.blocked,last_events:(d.ev||[]).slice(0,8).map(function(e){return (e.c?e.c+': ':'')+e.m})}}),
       watching_now:(AP.watch||[]).slice(0,10).map(function(w){return {coin:w.coin,tf:w.tf,market:w.mk,best_strategy:w.name,dir:w.dir>0?'long':w.dir<0?'short':null,unseen_R:brR(w.testR),signal_now:w.sig,blocked:w.block||null,best_session:w.bestSess?sessInfo(w.bestSess.id).t:null}})},
