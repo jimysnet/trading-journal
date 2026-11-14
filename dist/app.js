@@ -2992,11 +2992,14 @@ function ccTfFor(first){var span=Date.now()-first,L=['1m','5m','15m','30m','1h',
 /* shared candle cache: members with the Crypto.com connector save candles to the db so invited guests (no connectors) can train too */
 var SHB={idx:null,saved:{},mem:{},q:Promise.resolve(),seeding:false};
 function shbKey(inst,tf){return safeSeg(inst+'__'+tf)}
-function shbLoadIdx(force){if(!S.db)return Promise.resolve({});if(SHB.idx&&!force)return Promise.resolve(SHB.idx);return S.db.collection('bars').doc('_index').get().then(function(sn){SHB.idx=(sn.exists&&sn.data()&&sn.data().k)||{};return SHB.idx}).catch(function(){SHB.idx=SHB.idx||{};return SHB.idx})}
-function shbSave(inst,tf,bars,cap){if(!S.db||S.canWrite===false||!S.uid||S.uid==='me')return;var k=shbKey(inst,tf),now=Date.now();if(SHB.saved[k]&&now-SHB.saved[k]<20*60000)return;
+/* Μόνο τα νομίσματα που παίζουμε μπαίνουν στο κοινό αρχείο κεριών (π.χ. το PAXG, token χρυσού, είχε μπει από ένα άνοιγμα γραφήματος και φαινόταν χωρίς λόγο) */
+function arcCoinOk(c){c=String(c||'').toUpperCase().split('_')[0].replace(/(USDT|USDC|USD)$/,'');if(!c)return false;try{return !!((typeof CGID!=='undefined'&&CGID[c])||(typeof TOP10!=='undefined'&&TOP10.indexOf(c)>=0)||(typeof TTL!=='undefined'&&TTL.coins.indexOf(c)>=0))}catch(e){return true}}
+function arcIdxClean(k){var o={};Object.keys(k||{}).forEach(function(x){var e=k[x];if(arcCoinOk((e&&e.inst)||x.split('__')[0]))o[x]=e});return o}
+function shbLoadIdx(force){if(!S.db)return Promise.resolve({});if(SHB.idx&&!force)return Promise.resolve(SHB.idx);return S.db.collection('bars').doc('_index').get().then(function(sn){SHB.idx=arcIdxClean((sn.exists&&sn.data()&&sn.data().k)||{});return SHB.idx}).catch(function(){SHB.idx=SHB.idx||{};return SHB.idx})}
+function shbSave(inst,tf,bars,cap){if(!S.db||S.canWrite===false||!S.uid||S.uid==='me'||!arcCoinOk(inst))return;var k=shbKey(inst,tf),now=Date.now();if(SHB.saved[k]&&now-SHB.saved[k]<20*60000)return;
   var B=bars.filter(function(b){return !b.approx&&isFinite(b.o)&&isFinite(b.c)}).slice(-(cap||1200));if(B.length<30)return;SHB.saved[k]=now;try{arcAdd(String(inst).split('_')[0],tf,B,/_USDT$/.test(inst)?'Crypto.com':'Gemini')}catch(x){}
   var d={inst:inst,tf:tf,at:now,n:B.length,b:B.map(function(b){return [b.t,+b.o,+b.h,+b.l,+b.c,+(b.v||0)]})};
-  SHB.q=SHB.q.then(function(){return S.db.collection('bars').doc(k).set(d)}).then(function(){return shbLoadIdx(true)}).then(function(idx){var o=JSON.parse(JSON.stringify(idx||{}));o[k]={inst:inst,tf:tf,at:now,n:B.length};SHB.idx=o;return S.db.collection('bars').doc('_index').set({k:o,at:now})}).catch(function(){})}
+  SHB.q=SHB.q.then(function(){return S.db.collection('bars').doc(k).set(d)}).then(function(){return shbLoadIdx(true)}).then(function(idx){var o=arcIdxClean(JSON.parse(JSON.stringify(idx||{})));o[k]={inst:inst,tf:tf,at:now,n:B.length};SHB.idx=o;return S.db.collection('bars').doc('_index').set({k:o,at:now})}).catch(function(){})}
 function shbGet(base,tf){if(!S.db)return Promise.reject({code:'no_shared'});var cands=[base+'_USDT',base+'_USD'];
   var tryI=function(i){if(i>=cands.length)return Promise.reject({code:'no_shared'});var k=shbKey(cands[i],tf),m=SHB.mem[k];if(m&&Date.now()-m.got<300000)return Promise.resolve(m.r);
     return S.db.collection('bars').doc(k).get().then(function(sn){if(!sn.exists)return tryI(i+1);var d=sn.data()||{},bars=(d.b||[]).map(function(a){return {t:a[0],o:a[1],h:a[2],l:a[3],c:a[4],v:a[5]}});if(bars.length<10)return tryI(i+1);var r={inst:d.inst||cands[i],bars:bars,shared:true,at:d.at};SHB.mem[k]={got:Date.now(),r:r};return r})};
@@ -3042,8 +3045,8 @@ function arcMo(t){var d=new Date(t);return d.getUTCFullYear()+'-'+String(d.getUT
 function arcK(coin,tf){return safeSeg(coin+'__'+tf)}
 function arcDoc(coin,tf,mo){return safeSeg(coin+'__'+tf+'__'+mo)}
 function arcCan(){return !!(S.db&&S.canWrite!==false&&S.uid&&S.uid!=='me'&&qCanSave())}
-function arcSub(){if(!S.db||ARC.sub)return;ARC.sub=1;try{ARC.sub=S.db.collection('barsarc').doc('_index').onSnapshot(function(sn){var k=JSON.parse(JSON.stringify((sn.exists&&sn.data()&&sn.data().k)||{}));if(ARC.pendIdx)Object.keys(ARC.pendIdx).forEach(function(x){k[x]=ARC.pendIdx[x]});ARC.idx=k;arcPanel();if(!ARC.rxDone){ARC.rxDone=1;setTimeout(arcReindex,4000)}},function(){ARC.idx=ARC.idx||{};arcPanel()})}catch(e){}}
-function arcIdx(){if(!S.db)return Promise.resolve({});if(ARC.idx)return Promise.resolve(ARC.idx);return S.db.collection('barsarc').doc('_index').get().then(function(sn){ARC.idx=ARC.idx||(sn.exists&&sn.data()&&sn.data().k)||{};return ARC.idx}).catch(function(){ARC.idx=ARC.idx||{};return ARC.idx})}
+function arcSub(){if(!S.db||ARC.sub)return;ARC.sub=1;try{ARC.sub=S.db.collection('barsarc').doc('_index').onSnapshot(function(sn){var k=arcIdxClean(JSON.parse(JSON.stringify((sn.exists&&sn.data()&&sn.data().k)||{})));if(ARC.pendIdx)Object.keys(ARC.pendIdx).forEach(function(x){k[x]=ARC.pendIdx[x]});ARC.idx=k;arcPanel();if(!ARC.rxDone){ARC.rxDone=1;setTimeout(arcReindex,4000)}},function(){ARC.idx=ARC.idx||{};arcPanel()})}catch(e){}}
+function arcIdx(){if(!S.db)return Promise.resolve({});if(ARC.idx)return Promise.resolve(ARC.idx);return S.db.collection('barsarc').doc('_index').get().then(function(sn){ARC.idx=ARC.idx||arcIdxClean((sn.exists&&sn.data()&&sn.data().k)||{});return ARC.idx}).catch(function(){ARC.idx=ARC.idx||{};return ARC.idx})}
 function arcGaps(f,l,n,ms){return Math.max(0,Math.round((l-f)/ms)+1-n)}
 /* κλήσεις στη βάση για το αρχείο: μία-μία, με μικρή απόσταση, και αν η βάση πει «πιο αργά» (resource_exhausted) ή «προσωρινά» (unavailable) ξαναδοκιμάζει μόνη της */
 function arcSleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
@@ -3051,7 +3054,7 @@ function arcCall(fn,tries){tries=tries||0;var gap=Math.max(0,(ARC.lastCall||0)+3
   if((c==='resource_exhausted'||c==='unavailable')&&tries<5){var w=[3000,8000,15000,30000,60000][tries];ARC.err={code:c,at:Date.now(),retry:w};arcPanel();return arcSleep(w).then(function(){return arcCall(fn,tries+1)})}
   ARC.err={code:c,at:Date.now(),msg:String((e&&e.message)||'').slice(0,160)};arcPanel();throw e})}
 /* προσθήκη κεριών: γράφει μόνο τους μήνες που έχουν πραγματικά κάτι καινούργιο· κρατά στη μνήμη ό,τι έχει διαβάσει για να μην ξαναδιαβάζει */
-function arcAdd(coin,tf,bars,src){coin=String(coin||'').toUpperCase();if(!arcCan()||ARC.tfs.indexOf(tf)<0||!coin||!bars||!bars.length)return Promise.resolve(0);var ms=ARC.ms[tf],now=Date.now();
+function arcAdd(coin,tf,bars,src){coin=String(coin||'').toUpperCase();if(!arcCoinOk(coin)||!arcCan()||ARC.tfs.indexOf(tf)<0||!coin||!bars||!bars.length)return Promise.resolve(0);var ms=ARC.ms[tf],now=Date.now();
   var B=bars.filter(function(b){return b&&!b.approx&&isFinite(b.t)&&isFinite(+b.o)&&isFinite(+b.h)&&isFinite(+b.l)&&isFinite(+b.c)&&+b.c>0&&+b.h>=+b.l&&b.t%60000===0&&b.t+ms<=now+30000});if(!B.length)return Promise.resolve(0);
   var added=0;ARC.q=ARC.q.then(function(){return arcIdx()}).then(function(idx){var key=arcK(coin,tf),E=(ARC.pendIdx&&ARC.pendIdx[key])||idx[key]||{},MO=E.mo||{},g={};
     B.forEach(function(b){var m=arcMo(b.t);(g[m]=g[m]||[]).push(b)});
@@ -3080,7 +3083,7 @@ function arcReindex(force){if(ARC.rxBusy)return Promise.resolve();if(!arcCan()){
   return chain.then(function(){ARC.rxBusy=false;var n0=Object.keys(found).length;if(n0){ARC.pendIdx=Object.assign(ARC.pendIdx||{},found);var K=Object.assign({},ARC.idx||{},found);ARC.idx=K;arcIdxFlush(true)}ARC.bfMsg=n0?'Βρέθηκαν και καταχωρήθηκαν '+n0+' σειρές κεριών που ήταν ήδη αποθηκευμένες.':'';try{localStorage.setItem('tj-arcrx2','1')}catch(e){}arcPanel()})}
 /* το ευρετήριο γράφεται μαζεμένα (μία φορά ανά λίγα δευτερόλεπτα), όχι μετά από κάθε προσθήκη */
 function arcIdxFlush(force){clearTimeout(ARC.ixT);ARC.ixT=setTimeout(function(){var P=ARC.pendIdx;if(!P||!Object.keys(P).length)return;ARC.pendIdx={};
-  arcCall(function(){return S.db.collection('barsarc').doc('_index').get()}).then(function(sn){var k=JSON.parse(JSON.stringify((sn.exists&&sn.data()&&sn.data().k)||{}));Object.keys(P).forEach(function(x){var o=k[x],n2=P[x];if(o&&o.mo){n2.mo=Object.assign({},o.mo,n2.mo);var L=Object.keys(n2.mo).sort();n2.from=n2.mo[L[0]].f;n2.to=n2.mo[L[L.length-1]].l;n2.n=L.reduce(function(s,m){return s+n2.mo[m].n},0);n2.gaps=L.reduce(function(s,m){return s+(n2.mo[m].g||0)},0)}k[x]=n2});
+  arcCall(function(){return S.db.collection('barsarc').doc('_index').get()}).then(function(sn){var k=arcIdxClean(JSON.parse(JSON.stringify((sn.exists&&sn.data()&&sn.data().k)||{})));Object.keys(P).forEach(function(x){var o=k[x],n2=P[x];if(o&&o.mo){n2.mo=Object.assign({},o.mo,n2.mo);var L=Object.keys(n2.mo).sort();n2.from=n2.mo[L[0]].f;n2.to=n2.mo[L[L.length-1]].l;n2.n=L.reduce(function(s,m){return s+n2.mo[m].n},0);n2.gaps=L.reduce(function(s,m){return s+(n2.mo[m].g||0)},0)}k[x]=n2});k=arcIdxClean(k);
     return arcCall(function(){return S.db.collection('barsarc').doc('_index').set({k:k,at:Date.now()})}).then(function(){ARC.idx=k;arcPanel()})}).catch(function(){ARC.pendIdx=Object.assign(P,ARC.pendIdx||{});setTimeout(function(){arcIdxFlush()},20000)})},force?0:2500)}
 /* ανάγνωση: όλοι οι μήνες από μια ημερομηνία και μετά (οι παλιοί μήνες μένουν στη μνήμη, ο τρέχων ανανεώνεται) */
 function arcLoad(coin,tf,since){if(!S.db)return Promise.resolve([]);return arcIdx().then(function(idx){var e=idx[arcK(coin,tf)];if(!e||!e.mo)return [];var cut=since?arcMo(since):'',cm=arcMo(Date.now());
@@ -3328,7 +3331,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=273,VERS={sub:null,t:null};
+var APP_VER=274,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
