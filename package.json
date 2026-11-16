@@ -1,0 +1,10 @@
+{
+  "name": "trading-journal",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Ημερολόγιο Συναλλαγών — έκδοση Vercel (σελίδα + API)",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "jose": "^5.9.6"
+  }
+}

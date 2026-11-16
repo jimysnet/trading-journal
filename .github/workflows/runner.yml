@@ -1,0 +1,38 @@
+# 🤖 Ο «φύλακας»: κρατά τη σελίδα ανοιχτή 24/7 (βάρδιες ~5,7 ωρών, νέα βάρδια κάθε 6 ώρες)
+# ώστε τα αυτόματα demo (Αυτόματος, Turtle, έλεγχοι SL/TP) να τρέχουν χωρίς να ανοίγει κανείς σελίδα.
+# Χρειάζεται στα Settings → Secrets and variables → Actions του repo:
+#   TJ_URL           π.χ. https://trading-journal.vercel.app
+#   TJ_BOT_EMAIL     email του λογαριασμού bot στο Firebase
+#   TJ_BOT_PASSWORD  κωδικός του bot
+name: runner
+on:
+  schedule:
+    - cron: '2 */6 * * *'
+  workflow_dispatch: {}
+concurrency:
+  group: runner
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: runner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Εγκατάσταση
+        working-directory: runner
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Βάρδια
+        working-directory: runner
+        env:
+          TJ_URL: ${{ secrets.TJ_URL }}
+          TJ_BOT_EMAIL: ${{ secrets.TJ_BOT_EMAIL }}
+          TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
+          RUN_MINUTES: '350'
+        run: node run.mjs

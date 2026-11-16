@@ -1,0 +1,26 @@
+rules_version = '2';
+// Κανόνες για το Firestore της εφαρμογής.
+// Διαβάζουν και γράφουν ΜΟΝΟ τα μέλη της παρέας και ο λογαριασμός του bot.
+// Βάλε στη λίστα τα δικά σας email (όπως φαίνονται στο Firebase → Authentication → Users).
+// Αυτό το αρχείο επικολλάται στο Firebase Console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function member() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() in [
+          'μελος1@example.com',
+          'μελος2@example.com',
+          'bot@example.com'
+        ];
+    }
+    // Ο καθένας βλέπει το δικό του προφίλ ακόμα κι αν δεν είναι (ακόμα) μέλος, για να ξέρει η σελίδα ποιος είναι.
+    match /users/{uid} {
+      allow read: if member() || (request.auth != null && request.auth.uid == uid);
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+    match /{document=**} {
+      allow read, write: if member();
+    }
+  }
+}
