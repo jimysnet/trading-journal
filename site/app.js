@@ -26,7 +26,9 @@ function avg(a){return a.length?a.reduce(function(s,x){return s+x},0)/a.length:N
 function sum(a){return a.reduce(function(s,x){return s+x},0)}
 var toastT;function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3200)}
 function store(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
-function name(uid){if(!uid)return '–';if(uid==='prof')return 'Καθηγητής (αυτόματος)';if(S.names[uid])return S.names[uid];return uid===S.uid?'Εγώ':'Συνεργάτης'}
+function name(uid){if(!uid)return '–';if(uid==='prof')return 'Καθηγητής (αυτόματος)';if(S.names[uid])return S.names[uid];nameAsk(uid);return uid===S.uid?'Εγώ':'Συνεργάτης'}
+/* όνομα που δεν το ξέρουμε ακόμα (π.χ. ο φύλακας που τρέχει τα bot): το ζητάω μία φορά */
+var NASK={};function nameAsk(uid){if(NASK[uid]||!S.user||!S.user.profiles||uid==='me')return;NASK[uid]=1;setTimeout(function(){S.user.profiles([uid]).then(function(ps){var nm=ps&&ps[uid]&&ps[uid].name;if(nm){S.names[uid]=nm;render()}}).catch(function(){})},50)}
 function stratName(id){if(id==='_off')return 'Εκτός πλάνου';var s=S.strategies.find(function(x){return x.id===id});return s?s.name:'Χωρίς στρατηγική'}
 function mine(t){return t.by===S.uid}
 
@@ -3331,7 +3333,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=275,VERS={sub:null,t:null};
+var APP_VER=276,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6419,7 +6421,7 @@ function pAddImgs(files){
 function micIcon(){return '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2z"/></svg>'}
 function pAsk(q,byVoice){
   q=String(q||'').trim();var imgs=PCH.imgs.slice();if(!q&&imgs.length)q=LANG_RU()?'Проанализируй этот график и предложи технику из Компаса.':'Ανάλυσε αυτό το γράφημα και πρότεινέ μου τεχνική από τον Μπούσουλα.';if(!q||PCH.busy)return;
-  if(!S.sample){$('#pNote').textContent='Η συζήτηση με τον Claude δεν είναι διαθέσιμη σε αυτή την προβολή. Άνοιξε τη σελίδα μέσα από το claude.ai.';return}
+  if(!S.sample){$('#pNote').textContent=window.claude&&window.claude.vercel?'Ο Καθηγητής δεν έχει ακόμα «μυαλό» εδώ: χρειάζεται το ANTHROPIC_API_KEY στις ρυθμίσεις του Vercel.':'Η συζήτηση με τον Claude δεν είναι διαθέσιμη σε αυτή την προβολή. Άνοιξε τη σελίδα μέσα από το claude.ai.';return}
   PCH.lastVoice=!!byVoice;PCH.lastQ=q;$$('.prof-svg').forEach(function(x){x.classList.add('think')});PCH.liveTop=0;PCH.msgs.push({role:'user',content:q.slice(0,2000),thumbs:imgs.map(function(x){return x.thumb})});PCH.imgs=[];PCH.busy=true;P3D.think=true;pchSave();renderChat();profMood('wow');
   var ru=LANG_RU();
   var pre='Είσαι ο «Καθηγητής»: κορυφαίος αναλυτής αγορών και προπονητής trading με δεκαετίες εμπειρίας σε μετοχές, crypto, δείκτες (GER40) και futures. Μιλάς σε μια παρέα φίλων που κρατούν κοινό ημερολόγιο συναλλαγών και χρησιμοποιούν τον «Μπούσουλα», το εγχειρίδιο της σελίδας. '+
