@@ -47,6 +47,26 @@
     });
   });
 
+  /* ---------- μόνο μέλη: όποιος δεν είναι στη λίστα των κανόνων βλέπει κλειδαριά και η σελίδα δεν φορτώνει ---------- */
+  var memberP = authP.then(function (u) {
+    return appP.then(function (a) {
+      return a.fs.collection('meta').doc('wcheck_' + u.uid).set({ at: Date.now() }).then(function () { return true }, function (e) { log('member check', e && e.code); return false });
+    }).then(function (ok) {
+      if (ok) return u;
+      showLock(u); return new Promise(function () {});
+    });
+  });
+  function showLock(u) {
+    var go = function () {
+      css(); var d = document.createElement('div'); d.id = 'tj-login';
+      d.innerHTML = '<div class="bx"><h2>🔒 Δεν έχεις πρόσβαση</h2><p>Είσαι συνδεδεμένος ως <b></b>, αλλά αυτό το email δεν είναι στα μέλη της παρέας.</p><p>Ζήτα από τον διαχειριστή να το προσθέσει (Firebase → Firestore → Rules), ή μπες με άλλο λογαριασμό.</p><button type="button" data-o>Αποσύνδεση</button></div>';
+      d.querySelector('b').textContent = u.email || u.uid;
+      d.querySelector('[data-o]').onclick = function () { firebase.auth().signOut().then(function () { location.reload() }) };
+      document.body.appendChild(d);
+    };
+    if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+  }
+
   /* ---------- οθόνη σύνδεσης ---------- */
   var LG = null;
   function css() {
@@ -269,13 +289,70 @@
     use: function (name) {
       if (cache[name]) return cache[name];
       var p;
-      if (name === 'db') p = authP.then(function () { return appP }).then(function (a) { return new DB(a.fs) });
-      else if (name === 'user') p = authP.then(function (u) { return appP.then(function (a) { return user(a, u) }) });
-      else if (name === 'sample') p = authP.then(function () { return cfgP }).then(function (c) { return c && c.ai ? sampleApi() : null });
+      if (name === 'db') p = memberP.then(function () { return appP }).then(function (a) { return new DB(a.fs) });
+      else if (name === 'user') p = memberP.then(function (u) { return appP.then(function (a) { return user(a, u) }) });
+      else if (name === 'sample') p = memberP.then(function () { return cfgP }).then(function (c) { return c && c.ai ? sampleApi() : null });
       else if (name === 'mcp') p = Promise.resolve(mcpApi());
       else p = Promise.reject({ code: 'not_granted' });
       cache[name] = p; return p;
     }
   };
+  /* ---------- μεταφορά δεδομένων από το claude.ai (άνοιξε τη σελίδα με ?import=1) ---------- */
+  if (Q.get('import') === '1') memberP.then(function (u) { appP.then(function (a) { importUI(a, u) }) });
+  function importUI(a, me) {
+    css();
+    var st = document.createElement('style');
+    st.textContent = '#tj-imp{position:fixed;inset:0;z-index:99999;background:rgba(8,16,16,.8);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow:auto;font-family:system-ui,sans-serif}#tj-imp .bx{background:#fff;color:#10201f;border-radius:14px;max-width:620px;width:100%;padding:20px;margin:24px 0}#tj-imp h2{margin:0 0 8px}#tj-imp p,#tj-imp li{font-size:.92rem;line-height:1.45;color:#334}#tj-imp select,#tj-imp input[type=file]{width:100%;padding:8px;border-radius:8px;border:1px solid #cfdcda;margin:4px 0 10px;font-size:.95rem}#tj-imp .m{border:1px solid #e1ebea;border-radius:10px;padding:10px;margin:8px 0}#tj-imp .m small{color:#667}#tj-imp button{padding:11px 16px;border-radius:10px;border:0;background:#0d6b66;color:#fff;font-weight:600;font-size:1rem;cursor:pointer}#tj-imp button[disabled]{opacity:.5}#tj-imp .bar{height:10px;background:#e6efee;border-radius:6px;overflow:hidden;margin:10px 0}#tj-imp .bar i{display:block;height:100%;width:0;background:#0d6b66}#tj-imp label.c{display:flex;gap:8px;align-items:center;font-size:.92rem;margin:6px 0}';
+    document.head.appendChild(st);
+    var d = document.createElement('div'); d.id = 'tj-imp';
+    d.innerHTML = '<div class="bx"><h2>📦 Μεταφορά δεδομένων από το claude.ai</h2><p>Διάλεξε το αρχείο <b>trading-journal-export.json</b>. Μετά δείξε ποιος είναι ποιος, για να πάνε οι συναλλαγές, η προπόνηση και τα μηνύματα στον σωστό λογαριασμό.</p><input type="file" accept=".json,application/json" data-f><div data-step></div><div class="bar" hidden><i></i></div><p data-msg></p></div>';
+    document.body.appendChild(d);
+    var $s = d.querySelector('[data-step]'), msg = d.querySelector('[data-msg]'), bar = d.querySelector('.bar'), fill = bar.querySelector('i');
+    d.querySelector('[data-f]').onchange = function (e) {
+      var f = e.target.files[0]; if (!f) return; msg.textContent = 'Διαβάζω το αρχείο…';
+      var r = new FileReader(); r.onload = function () {
+        var X; try { X = JSON.parse(r.result) } catch (err) { msg.textContent = 'Το αρχείο δεν διαβάζεται (' + err.message + ').'; return }
+        if (!X || !X.cols || !X.members) { msg.textContent = 'Δεν είναι αρχείο εξαγωγής του ημερολογίου.'; return }
+        a.fs.collection('users').get().then(function (qs) {
+          var U = []; qs.forEach(function (x) { var v = x.data() || {}; if (!v.bot) U.push({ id: x.id, name: v.name || x.id }) });
+          var opts = '<option value="">— κράτα το όπως είναι (δεν έχει μπει ακόμα) —</option>' + U.map(function (x) { return '<option value="' + x.id + '">' + x.name.replace(/</g, '&lt;') + (x.id === me.uid ? ' (εσύ)' : '') + '</option>' }).join('');
+          var n = 0; Object.keys(X.cols).forEach(function (c) { n += Object.keys(X.cols[c]).length });
+          $s.innerHTML = '<p><b>' + n + '</b> εγγραφές σε ' + Object.keys(X.cols).length + ' κατηγορίες. Για κάθε μέλος του claude.ai, διάλεξε τον λογαριασμό του εδώ (πρέπει να έχει συνδεθεί μία φορά για να εμφανίζεται):</p>' +
+            Object.keys(X.members).map(function (k) { var m = X.members[k], o = m.owns || {}; return '<div class="m"><b>' + (m.label || k) + '</b><br><small>' + Object.keys(o).map(function (c) { return c + ': ' + o[c] }).join(' · ') + '</small><select data-u="' + k + '">' + opts + '</select></div>' }).join('') +
+            '<label class="c"><input type="checkbox" data-bars checked> Μαζί και το ιστορικό κεριών (≈1.300 εγγραφές· χρειάζεται για Turtle και backtest)</label>' +
+            '<button type="button" data-go>Μεταφορά</button>';
+          $s.querySelector('[data-go]').onclick = function () { var any = [].some.call($s.querySelectorAll('select[data-u]'), function (x) { return x.value }); if (!any && !confirm('Δεν διάλεξες κανέναν λογαριασμό: οι εγγραφές θα μείνουν στα παλιά ονόματα. Συνέχεια;')) return; run(X, this) };
+        }).catch(function (err) { msg.textContent = 'Δεν διάβασα τους χρήστες: ' + (err && err.code) });
+      };
+      r.readAsText(f);
+    };
+    function run(X, btn) {
+      var map = [];
+      $s.querySelectorAll('select[data-u]').forEach(function (sel) { if (sel.value) { var o = sel.getAttribute('data-u'); map.push([o, sel.value]); map.push([o.replace(/_/g, ''), sel.value.replace(/[^A-Za-z0-9]/g, '')]) } });
+      var bars = $s.querySelector('[data-bars]').checked;
+      var fix = function (str) { map.forEach(function (p) { str = str.split(p[0]).join(p[1]) }); return str };
+      var jobs = [];
+      Object.keys(X.cols).forEach(function (c) {
+        if (!bars && (c === 'bars' || c === 'barsarc')) return;
+        var col = fix(c), docs = X.cols[c];
+        Object.keys(docs).forEach(function (id) { jobs.push([col, fix(id), JSON.parse(fix(JSON.stringify(docs[id])))]) });
+      });
+      /* ο φύλακας θα ξαναπάρει τη σκυτάλη μόνος του: δεν φέρνω τον παλιό «τρέχει από» */
+      jobs.forEach(function (j) { if (j[0] === 'apstate' && j[2]) { delete j[2].runner; delete j[2].tab; j[2].at = 0 } });
+      btn.disabled = true; bar.hidden = false; var done = 0, fail = 0, i = 0;
+      var step = function () {
+        if (i >= jobs.length) { msg.innerHTML = '✅ Τέλος: ' + done + ' εγγραφές' + (fail ? ', ' + fail + ' απέτυχαν' : '') + '. <a href="/">Άνοιξε το ημερολόγιο</a>'; return }
+        var b = a.fs.batch(), part = [], sz = 0;
+        while (i + part.length < jobs.length && part.length < 200) { var nx = jobs[i + part.length], l = JSON.stringify(nx[2]).length; if (part.length && sz + l > 3e6) break; part.push(nx); sz += l }
+        part.forEach(function (j) { b.set(a.fs.collection(j[0]).doc(j[1]), enc(j[2])) });
+        b.commit().then(function () { done += part.length }, function (err) {
+          log('batch', err && err.code);
+          return Promise.all(part.map(function (j) { return a.fs.collection(j[0]).doc(j[1]).set(enc(j[2])).then(function () { done++ }, function (e2) { fail++; log('doc', j[0], j[1], e2 && e2.code) }) }));
+        }).then(function () { i += part.length; fill.style.width = Math.round(i / jobs.length * 100) + '%'; msg.textContent = 'Γράφω… ' + i + ' / ' + jobs.length; setTimeout(step, 300) });
+      };
+      step();
+    }
+  }
+
   window.TJ = { authP: authP, appP: appP, bot: !!BOT, runner: Q.get('runner') === '1' };
 })();
