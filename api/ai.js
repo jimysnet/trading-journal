@@ -14,8 +14,11 @@ async function who(req) {
   const { payload } = await jwtVerify(t, JWKS, { issuer: `https://securetoken.google.com/${pid}`, audience: pid });
   const allow = String(process.env.ALLOWED_EMAILS || '').toLowerCase().split(/[\s,;]+/).filter(Boolean);
   const em = String(payload.email || '').toLowerCase();
-  if (allow.length && !allow.includes(em)) throw { code: 'not_granted', status: 403 };
-  return { uid: payload.sub, email: em };
+  if (allow.includes(em)) return { uid: payload.sub, email: em };
+  /* αλλιώς: είναι εγκεκριμένο μέλος; (members/{uid} στο Firestore, με το δικό του token — οι κανόνες του επιτρέπουν να το διαβάσει) */
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/members/${encodeURIComponent(payload.sub)}`, { headers: { authorization: 'Bearer ' + t } }).catch(() => null);
+  if (r && r.ok) return { uid: payload.sub, email: em };
+  throw { code: 'not_granted', status: 403 };
 }
 
 const MODELS = {

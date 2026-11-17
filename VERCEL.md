@@ -18,7 +18,8 @@
 1. Μπες στο <https://console.firebase.google.com> → **Create a project** (π.χ. `trading-journal`). Το Google Analytics δεν χρειάζεται.
 2. **Build → Firestore Database → Create database** → *Production mode* → τοποθεσία `europe-west` (π.χ. Φρανκφούρτη).
 3. **Firestore → Rules**: σβήσε ό,τι έχει και επικόλλησε το [`firebase/firestore.rules`](firebase/firestore.rules).
-   Στη λίστα βάλε **τα email όλων των μελών** και το email του bot (βήμα 5). → **Publish**.
+   Στο `admin()` βάλε τα email των **διαχειριστών** και στο `bot()` το email του bot (βήμα 5). → **Publish**.
+   Τα υπόλοιπα μέλη **δεν** μπαίνουν στους κανόνες: γράφονται μόνα τους και τα εγκρίνει διαχειριστής από τη σελίδα (λογαριασμός → 👥 Μέλη & αιτήματα).
 4. **Build → Authentication → Get started** → στο *Sign-in method* ενεργοποίησε **Google** και **Email/Password**.
 5. **Authentication → Users → Add user**: φτιάξε τον λογαριασμό του bot, π.χ. `bot@trading-journal.app` με δυνατό κωδικό.
    (Δεν χρειάζεται να είναι αληθινό email.)

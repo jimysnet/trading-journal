@@ -47,24 +47,84 @@
     });
   });
 
-  /* ---------- μόνο μέλη: όποιος δεν είναι στη λίστα των κανόνων βλέπει κλειδαριά και η σελίδα δεν φορτώνει ---------- */
+  /* ---------- μόνο μέλη, με έγκριση ----------
+     Όποιος έχει τη διεύθυνση γράφεται (Google ή email). Αν δεν είναι ακόμα μέλος, στέλνει αίτημα (requests/{uid})
+     και περιμένει. Οι διαχειριστές (λίστα στους κανόνες του Firestore) βλέπουν τα αιτήματα και πατούν Έγκριση,
+     που γράφει members/{uid}. Οι κανόνες του Firestore είναι αυτοί που πραγματικά κλειδώνουν τα δεδομένα. */
+  var ADMIN = false;
   var memberP = authP.then(function (u) {
     return appP.then(function (a) {
-      return a.fs.collection('meta').doc('wcheck_' + u.uid).set({ at: Date.now() }).then(function () { return true }, function (e) { log('member check', e && e.code); return false });
+      return a.fs.collection('meta').doc('wcheck_' + u.uid).set({ at: Date.now() }).then(function () { return true }, function (e) { log('member check', e && e.code); return false })
+        .then(function (ok) {
+          if (!ok) return false;
+          /* είμαι διαχειριστής; (μόνο αυτοί μπορούν να διαβάσουν τα αιτήματα) */
+          return a.fs.collection('requests').limit(1).get().then(function () {
+            ADMIN = true;
+            /* ο διαχειριστής γράφεται και ο ίδιος στα μέλη, για να τον αναγνωρίζει και ο Καθηγητής (/api/ai) */
+            return a.fs.collection('members').doc(u.uid).set({ email: (u.email || '').toLowerCase(), name: u.displayName || '', role: 'admin', at: Date.now() }, { merge: true }).catch(function () {}).then(function () { return true });
+          }, function () { return true });
+        });
     }).then(function (ok) {
       if (ok) return u;
-      showLock(u); return new Promise(function () {});
+      return appP.then(function (a) { waitApproval(a, u) }).then(function () { return new Promise(function () {}) });
     });
   });
-  function showLock(u) {
+  function boxUI(html) {
+    var d = document.getElementById('tj-login'); css();
+    if (!d) { d = document.createElement('div'); d.id = 'tj-login'; document.body.appendChild(d) }
+    d.innerHTML = '<div class="bx">' + html + '<button type="button" class="alt" data-o>Αποσύνδεση</button></div>';
+    d.querySelector('[data-o]').onclick = function () { firebase.auth().signOut().then(function () { location.href = location.pathname }) };
+    return d;
+  }
+  function waitApproval(a, u) {
     var go = function () {
-      css(); var d = document.createElement('div'); d.id = 'tj-login';
-      d.innerHTML = '<div class="bx"><h2>🔒 Δεν έχεις πρόσβαση</h2><p>Είσαι συνδεδεμένος ως <b></b>, αλλά αυτό το email δεν είναι στα μέλη της παρέας.</p><p>Ζήτα από τον διαχειριστή να το προσθέσει (Firebase → Firestore → Rules), ή μπες με άλλο λογαριασμό.</p><button type="button" data-o>Αποσύνδεση</button></div>';
-      d.querySelector('b').textContent = u.email || u.uid;
-      d.querySelector('[data-o]').onclick = function () { firebase.auth().signOut().then(function () { location.reload() }) };
-      document.body.appendChild(d);
+      var em = (u.email || '').toLowerCase();
+      if (u.providerData && u.providerData.some(function (p) { return p && p.providerId === 'password' }) && !u.emailVerified) {
+        var d0 = boxUI('<h2>📧 Επιβεβαίωσε το email σου</h2><p>Σου στείλαμε μήνυμα στο <b></b>. Πάτα τον σύνδεσμο και μετά <b>Συνέχεια</b>.</p><button type="button" data-c>Συνέχεια</button><button type="button" class="alt" data-r>Στείλε ξανά το μήνυμα</button><div class="err" data-x></div>');
+        d0.querySelector('b').textContent = em;
+        d0.querySelector('[data-c]').onclick = function () { u.reload().then(function () { if (firebase.auth().currentUser.emailVerified) location.reload(); else d0.querySelector('[data-x]').textContent = 'Δεν έχει επιβεβαιωθεί ακόμα.' }) };
+        d0.querySelector('[data-r]').onclick = function () { u.sendEmailVerification().then(function () { d0.querySelector('[data-x]').textContent = 'Στάλθηκε ξανά.' }, function (e) { d0.querySelector('[data-x]').textContent = trErr(e) }) };
+        if (!sessionStorage.getItem('tj-ver-sent')) { try { sessionStorage.setItem('tj-ver-sent', '1') } catch (e) {} u.sendEmailVerification().catch(function () {}) }
+        return;
+      }
+      var req = a.fs.collection('requests').doc(u.uid);
+      var d = boxUI('<h2>⏳ Περιμένεις έγκριση</h2><p>Συνδέθηκες ως <b></b>. Στάλθηκε αίτημα στους διαχειριστές της παρέας· μόλις σε εγκρίνουν, η σελίδα θα ανοίξει μόνη της.</p><div class="err" data-x></div>');
+      d.querySelector('b').textContent = em || u.uid;
+      req.get().then(function (sn) {
+        var x = sn.exists ? sn.data() : null;
+        if (x && x.status === 'rejected') { d.querySelector('h2').textContent = '🚫 Το αίτημα δεν εγκρίθηκε'; d.querySelector('p').textContent = 'Οι διαχειριστές δεν ενέκριναν το ' + (em || 'αίτημα') + '. Αν είναι λάθος, μίλα τους.'; return }
+        if (!x) return req.set({ email: em, name: u.displayName || (em.split('@')[0]) || '', photo: u.photoURL || '', at: Date.now() });
+      }).catch(function (e) { d.querySelector('[data-x]').textContent = 'Δεν στάλθηκε το αίτημα (' + (e && e.code) + ').' });
+      a.fs.collection('members').doc(u.uid).onSnapshot(function (sn) { if (sn.exists) location.reload() }, function () {});
     };
     if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+  }
+
+  /* ---------- διαχείριση μελών (μόνο για διαχειριστές) ---------- */
+  function adminUI(a, me, host) {
+    var REQ = [], MEM = [], badge = document.createElement('button');
+    badge.type = 'button'; badge.id = 'tj-req'; badge.hidden = true;
+    badge.style.cssText = 'margin-left:6px;border:0;border-radius:999px;background:#c2410c;color:#fff;font:inherit;font-size:.78rem;font-weight:700;padding:4px 10px;cursor:pointer';
+    host.appendChild(badge);
+    var draw = function () { badge.hidden = !REQ.length; badge.textContent = '👥 ' + REQ.length + (REQ.length === 1 ? ' αίτημα' : ' αιτήματα'); var pn = document.getElementById('tj-mem'); if (pn) panel() };
+    a.fs.collection('requests').onSnapshot(function (qs) { REQ = []; qs.forEach(function (d) { var x = d.data() || {}; if (x.status !== 'rejected') REQ.push(Object.assign({ id: d.id }, x)) }); draw() }, function () {});
+    a.fs.collection('members').onSnapshot(function (qs) { MEM = []; qs.forEach(function (d) { MEM.push(Object.assign({ id: d.id }, d.data() || {})) }); draw() }, function () {});
+    var esc = function (t) { return String(t || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] }) };
+    function panel() {
+      var d = document.getElementById('tj-mem');
+      if (!d) { d = document.createElement('div'); d.id = 'tj-mem'; document.body.appendChild(d) }
+      var st = '#tj-mem{position:fixed;inset:0;z-index:99998;background:rgba(8,16,16,.7);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow:auto;font-family:system-ui,sans-serif}#tj-mem .bx{background:#fff;color:#10201f;border-radius:14px;max-width:560px;width:100%;padding:18px;margin:30px 0}#tj-mem h2{margin:0 0 6px;font-size:1.15rem}#tj-mem h3{margin:14px 0 6px;font-size:.95rem}#tj-mem .r{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #e1ebea;border-radius:10px;margin:6px 0}#tj-mem .r div{flex:1;min-width:0}#tj-mem .r small{display:block;color:#667;overflow:hidden;text-overflow:ellipsis}#tj-mem button{border:0;border-radius:8px;padding:7px 10px;font:inherit;font-size:.85rem;cursor:pointer}#tj-mem .ok{background:#0d6b66;color:#fff}#tj-mem .no{background:#fdecec;color:#a52a2a}#tj-mem .x{float:right;background:#eef3f2}#tj-mem p{color:#556;font-size:.88rem}';
+      d.innerHTML = '<style>' + st + '</style><div class="bx"><button type="button" class="x" data-close>✕</button><h2>👥 Μέλη της παρέας</h2><p>Όποιος έχει τη διεύθυνση μπορεί να γραφτεί· μπαίνει μόνο όταν τον εγκρίνει διαχειριστής.</p>' +
+        '<h3>Αιτήματα (' + REQ.length + ')</h3>' + (REQ.length ? REQ.map(function (r) { return '<div class="r"><div><b>' + esc(r.name || r.email) + '</b><small>' + esc(r.email) + ' · ' + new Date(r.at || 0).toLocaleString('el-GR') + '</small></div><button type="button" class="ok" data-ok="' + esc(r.id) + '">✅ Έγκριση</button><button type="button" class="no" data-no="' + esc(r.id) + '">❌</button></div>' }).join('') : '<p>Κανένα αίτημα.</p>') +
+        '<h3>Μέλη (' + MEM.length + ')</h3>' + MEM.map(function (m) { return '<div class="r"><div><b>' + esc(m.name || m.email) + (m.role === 'admin' ? ' · διαχειριστής' : '') + (m.id === me.uid ? ' (εσύ)' : '') + '</b><small>' + esc(m.email) + '</small></div>' + (m.role === 'admin' ? '' : '<button type="button" class="no" data-rm="' + esc(m.id) + '">Αφαίρεση</button>') + '</div>' }).join('') + '</div>';
+      d.querySelector('[data-close]').onclick = function () { d.remove() };
+      d.onclick = function (e) { if (e.target === d) d.remove() };
+      d.querySelectorAll('[data-ok]').forEach(function (b) { b.onclick = function () { var r = REQ.find(function (x) { return x.id === b.getAttribute('data-ok') }); if (!r) return; b.disabled = true; a.fs.collection('members').doc(r.id).set({ email: r.email || '', name: r.name || '', role: 'member', at: Date.now(), by: me.uid }).then(function () { return a.fs.collection('requests').doc(r.id).delete() }).catch(function (e) { alert('Δεν έγινε: ' + (e && e.code)) }) } });
+      d.querySelectorAll('[data-no]').forEach(function (b) { b.onclick = function () { if (!confirm('Απόρριψη του αιτήματος;')) return; a.fs.collection('requests').doc(b.getAttribute('data-no')).set({ status: 'rejected', at: Date.now() }, { merge: true }).catch(function (e) { alert('Δεν έγινε: ' + (e && e.code)) }) } });
+      d.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { var m = MEM.find(function (x) { return x.id === b.getAttribute('data-rm') }); if (!m || !confirm('Να αφαιρεθεί το ' + (m.email || m.name) + ' από την παρέα;')) return; a.fs.collection('members').doc(m.id).delete().catch(function (e) { alert('Δεν έγινε: ' + (e && e.code)) }) } });
+    }
+    badge.onclick = panel;
+    return panel;
   }
 
   /* ---------- οθόνη σύνδεσης ---------- */
@@ -99,7 +159,7 @@
       };
       var ep = function () { return [LG.querySelector('[data-e]').value.trim(), LG.querySelector('[data-p]').value] };
       LG.querySelector('[data-l]').onclick = function () { var v = ep(); auth.signInWithEmailAndPassword(v[0], v[1]).catch(err) };
-      LG.querySelector('[data-r]').onclick = function () { var v = ep(); auth.createUserWithEmailAndPassword(v[0], v[1]).catch(err) };
+      LG.querySelector('[data-r]').onclick = function () { var v = ep(); auth.createUserWithEmailAndPassword(v[0], v[1]).then(function (c) { try { sessionStorage.setItem('tj-ver-sent', '1') } catch (e) {} return c.user.sendEmailVerification() }).catch(err) };
     };
     if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
   }
@@ -391,6 +451,7 @@
       var out = function () { firebase.auth().signOut().then(function () { location.href = location.pathname }) };
       w.querySelector('[data-out]').onclick = function () { if (confirm('Αποσύνδεση από ' + (u.email || 'αυτόν τον λογαριασμό') + ';')) out() };
       w.querySelector('[data-sw]').onclick = out;
+      if (ADMIN) appP.then(function (ap) { var open = adminUI(ap, u, w.parentNode || w); var mb = document.createElement('button'); mb.type = 'button'; mb.textContent = '👥 Μέλη & αιτήματα'; mb.onclick = function () { menu.hidden = true; open() }; menu.insertBefore(mb, menu.querySelector('[data-sw]')) });
       var who = document.getElementById('whoami');
       if (who && who.parentNode === host) host.insertBefore(w, who.nextSibling); else host.appendChild(w);
     };

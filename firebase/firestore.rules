@@ -1,26 +1,42 @@
 rules_version = '2';
-// Κανόνες για το Firestore της εφαρμογής.
-// Διαβάζουν και γράφουν ΜΟΝΟ τα μέλη της παρέας και ο λογαριασμός του bot.
-// Βάλε στη λίστα τα δικά σας email (όπως φαίνονται στο Firebase → Authentication → Users).
-// Αυτό το αρχείο επικολλάται στο Firebase Console → Firestore Database → Rules → Publish.
+// Κανόνες για το Firestore της εφαρμογής — εγγραφή με έγκριση.
+//  • Διαχειριστές: τα email στη λίστα admin() (επιβεβαιωμένα). Βλέπουν τα αιτήματα και εγκρίνουν μέλη.
+//  • Μέλη: όσοι έχουν έγγραφο members/{uid} (το γράφει ο διαχειριστής με «Έγκριση»).
+//  • Bot: το email του λογαριασμού του φύλακα, στη λίστα bot().
+//  • Όλοι οι άλλοι: μπορούν μόνο να στείλουν αίτημα (requests/{uid}) και να δουν αν εγκρίθηκαν.
+// Επικόλληση στο Firebase Console → Firestore Database → Rules → Publish.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function email() { return request.auth.token.email != null ? request.auth.token.email.lower() : ''; }
+    function admin() {
+      return signedIn() && request.auth.token.email_verified == true
+        && email() in ['admin1@example.com', 'admin2@example.com'];
+    }
+    function bot() { return signedIn() && email() in ['bot@example.com']; }
     function member() {
-      return request.auth != null
-        && request.auth.token.email != null
-        && request.auth.token.email.lower() in [
-          'μελος1@example.com',
-          'μελος2@example.com',
-          'bot@example.com'
-        ];
+      return admin() || bot()
+        || (signedIn() && exists(/databases/$(database)/documents/members/$(request.auth.uid)));
     }
-    // Ο καθένας βλέπει το δικό του προφίλ ακόμα κι αν δεν είναι (ακόμα) μέλος, για να ξέρει η σελίδα ποιος είναι.
+
+    match /members/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || member());
+      allow write: if admin();
+    }
+    match /requests/{uid} {
+      allow read: if admin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if admin()
+        || (signedIn() && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['email', 'name', 'photo', 'at']));
+      allow delete: if admin() || (signedIn() && request.auth.uid == uid);
+    }
     match /users/{uid} {
-      allow read: if member() || (request.auth != null && request.auth.uid == uid);
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read: if member() || (signedIn() && request.auth.uid == uid);
+      allow write: if signedIn() && request.auth.uid == uid;
     }
-    match /{document=**} {
-      allow read, write: if member();
+    // Όλα τα υπόλοιπα (συναλλαγές, bot, chat, κεριά…): μόνο μέλη.
+    match /{col}/{rest=**} {
+      allow read, write: if member() && !(col in ['members', 'requests', 'users']);
     }
   }
 }
