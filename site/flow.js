@@ -79,7 +79,7 @@
       var px = m.mid0 || 1; m.bucket = nice(px * 2e-4); if (m.tick && m.bucket < m.tick) m.bucket = m.tick; m.dec = pdec(Math.min(m.bucket, m.tick || m.bucket));
       m.heat.half = Math.ceil(px * 0.04 / m.bucket);
       if (m.snap) bookSnap(m.snap);
-      return loadBars().then(function () { connect(); backfill(); loadOI(); idbLoad() })
+      return loadBars().then(function () { connect(); backfill(); loadOI(); idbLoad(); OPT.lv = null; if (CFG.sh.opt) optLevels(); if (CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && !W.__E9.mpRows() && W.__E9.mp() } catch (x) { } } })
     }).catch(function (e) { if (m === M) { m.err = LX('Δεν ήρθαν δεδομένα από το Binance (') + (e && e.status || LX('δίκτυο')) + ').'; renderHead() } });
   }
   function stop() { if (M) { M.dead = true; try { M.ws && M.ws.close() } catch (e) { } clearTimeout(M.rt); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
@@ -671,7 +671,7 @@
     '#flowRoot table.opt{width:100%;border-collapse:collapse;font-size:.8rem}#flowRoot table.opt th,#flowRoot table.opt td{padding:.3rem .45rem;border-bottom:1px solid var(--fln);text-align:right}#flowRoot table.opt th:first-child,#flowRoot table.opt td:first-child{text-align:left}#flowRoot table.opt th{color:var(--fmu);font-size:.72rem}' +
     '#flowRoot .ffs{position:absolute;right:82px;bottom:8px;z-index:3;width:2.3rem;height:2.1rem;border-radius:8px;border:1px solid #2f8fe8!important;background:rgba(14,20,27,.9)!important;color:#fff!important;font-size:1.15rem;font-weight:800;cursor:pointer}' +
     '#flowRoot .fw.ffull{position:fixed;inset:0;z-index:2147483000;border-radius:0;display:flex;flex-direction:column;overflow:auto}#flowRoot .fw.ffull>[data-fv="chart"]{flex:1;display:flex;flex-direction:column;min-height:0}#flowRoot .fw.ffull>[data-fv="chart"][hidden]{display:none}#flowRoot .fw.ffull .fgrid{flex:1;min-height:0}#flowRoot .fw.ffull .fmain,#flowRoot .fw.ffull .fside{height:auto;min-height:0}#flowRoot .fw.ffull .fleg,#flowRoot .fw.ffull .fnote{display:none}' +
-    '#flowRoot .ftoast{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;background:#ffd166;color:#111;font-weight:800;padding:.4rem .8rem;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.5)}#flowRoot .fw{position:relative}#flowRoot .fflash{animation:fflash 1.2s ease 2}@keyframes fflash{0%,100%{background:transparent}50%{background:rgba(255,209,102,.25)}}' +
+    '#flowRoot .fcnt{font-weight:800;opacity:.75;margin-left:.15rem}#flowRoot .ftg.na{opacity:.45!important;text-decoration:line-through}#flowRoot .ftoast{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;background:#ffd166;color:#111;font-weight:800;padding:.4rem .8rem;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.5)}#flowRoot .fw{position:relative}#flowRoot .fflash{animation:fflash 1.2s ease 2}@keyframes fflash{0%,100%{background:transparent}50%{background:rgba(255,209,102,.25)}}' +
     '#flowRoot .fal{display:grid!important;grid-template-columns:1.6em 1fr auto auto!important;align-items:center;cursor:default!important}#flowRoot .fal .fbtn{padding:.1rem .45rem;font-size:.72rem}#flowRoot .fchk{display:block;padding:.5rem .6rem;font-size:.76rem;color:var(--fmu);border-bottom:1px solid var(--fln)}#flowRoot .fchk select{padding:.1rem .3rem}' +
     '#flowRoot .fhelp{position:absolute;inset:0;z-index:20;background:rgba(5,8,11,.82);display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow:auto}#flowRoot .fhb{background:#0e141b;border:1px solid #2a3a4a;border-radius:14px;max-width:980px;width:100%;padding:.8rem 1rem}#flowRoot .fhh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;font-size:1.05rem}#flowRoot .fhg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.6rem}#flowRoot .fhg>div{background:#0a1016;border:1px solid #1d2935;border-radius:10px;padding:.5rem .65rem}#flowRoot .fhg b{color:#fff}#flowRoot .fhg p{margin:.25rem 0 0;font-size:.8rem;line-height:1.45;color:#a9b8c6}' +
     '@media (max-width:900px){#flowRoot .fw.ffull .fmain{height:75vh;flex:none}#flowRoot .fgrid{grid-template-columns:1fr}#flowRoot .fmain{height:68vh;border-right:0;border-bottom:1px solid var(--fln)}#flowRoot .fside{height:auto}#flowRoot .fdom{height:360px;flex:none}#flowRoot .flist{max-height:320px}#flowRoot .fzm{right:80px}}';
@@ -680,7 +680,7 @@
   function shell() {
     if (!D.getElementById('flowCss')) { var st = D.createElement('style'); st.id = 'flowCss'; st.textContent = CSS; D.head.appendChild(st) }
     var seg = function (name, opts, cur) { return '<span class="fseg" data-fseg="' + name + '">' + opts.map(function (o) { return '<button data-v="' + o[0] + '"' + (String(cur) === String(o[0]) ? ' class="on"' : '') + ' title="' + esc(o[2] || '') + '">' + esc(o[1]) + '</button>' }).join('') + '</span>' };
-    var tg = function (k, l, t) { return '<button class="ftg' + (CFG.sh[k] ? ' on' : '') + '" data-fsh="' + k + '" title="' + esc(t) + '">' + esc(l) + '</button>' };
+    var tg = function (k, l, t) { return '<button class="ftg' + (CFG.sh[k] ? ' on' : '') + '" data-fsh="' + k + '" data-tip="' + esc(t) + '" title="' + esc(t) + '">' + esc(l) + '<b class="fcnt" data-fc="' + k + '"></b></button>' };
     var sb = function (k, l) { return '<button class="ftg' + (CFG.sub[k] ? ' on' : '') + '" data-fsub="' + k + '">' + esc(l) + '</button>' };
     ROOT.innerHTML = '<div class="fw">' +
       '<div class="fbar">' + seg('view', [['chart', '📊 Order Flow'], ['opt', '🧬 Options X-Ray']], CFG.view) + ' ' + seg('lang', [['el', '🇬🇷 EL'], ['en', '🇬🇧 EN']], CFG.lang) + ' <button class="fbtn" data-fhelp>' + T('❓ Οδηγός', '❓ Guide') + '</button>' +
@@ -707,7 +707,26 @@
     bindChart(); renderHead(); renderSide(true)
   }
 
+  /* τι δείχνει κάθε κουμπί αυτή τη στιγμή: πλήθος, ή γιατί δεν έχει τι να δείξει */
+  function mpRow() { try { var rows = W.__E9 && W.__E9.mpRows && W.__E9.mpRows(); return rows && rows.find(function (x) { return x.coin === M.sym && x.P }) } catch (e) { return null } }
+  function avail(k) {
+    if (!M) return ''; var th = bigTh();
+    if (k === 'liq') return M.venue !== 'f' ? T('Οι ρευστοποιήσεις υπάρχουν μόνο στα Futures.', 'Liquidations exist only on Futures.') : !M.liq.length ? T('Ενεργό. Καμία ρευστοποίηση στο ', 'On. No liquidation on ') + M.sym + T(' από τότε που άνοιξε η καρτέλα. Θα εμφανιστούν ◆ μόλις γίνουν.', ' since the tab opened. ◆ will appear as they happen.') : '';
+    if (k === 'ice') return !M.ice.length ? T('Ενεργό. Κανένα iceberg ακόμα στο ', 'On. No iceberg yet on ') + M.sym + T('. Ψάχνει συνέχεια· θα εμφανιστεί ⊟ μόλις βρεθεί.', '. It keeps scanning; ⊟ appears when one is found.') : '';
+    if (k === 'sw') return !M.sw.length ? T('Ενεργό. Κανένα sweep ακόμα στο ', 'On. No sweep yet on ') + M.sym + '.' : '';
+    if (k === 'big') return !M.big.some(function (o) { return o.usd >= th }) ? T('Ενεργό. Καμία εντολή ≥ ', 'On. No order ≥ ') + usd(th) + T(' ακόμα. Μίκρυνε το όριο «Big trade ≥ $».', ' yet. Lower the "Big trade ≥ $" threshold.') : '';
+    if (k === 'mlv') return !mpRow() ? T('Τα επίπεδα M/POC υπάρχουν μόνο για τα νομίσματα του πίνακα «Market Profile μήνα» (καρτέλα Αγορές). Το ', 'Monthly M/POC levels exist only for coins in the "Monthly Market Profile" table (Markets tab). ') + M.sym + T(' δεν είναι εκεί.', ' is not there.') : '';
+    if (k === 'opt') return (M.sym !== 'BTC' && M.sym !== 'ETH') ? T('Τα επίπεδα options υπάρχουν μόνο για BTC και ETH (Deribit).', 'Options levels exist only for BTC and ETH (Deribit).') : !OPT.lv ? T('Φορτώνω τα options από το Deribit…', 'Loading options from Deribit…') : '';
+    if (k === 'heat') return M.heat.cols.length < 3 ? T('Ενεργό. Το heatmap μόλις ξεκίνησε να καταγράφει· θα φαίνεται σε λίγα δευτερόλεπτα στη δεξιά άκρη.', 'On. The heatmap just started recording; it will show at the right edge in a few seconds.') : '';
+    return ''
+  }
+  function counts() {
+    if (!ROOT || !M) return; var th = bigTh(), C2 = { big: M.big.filter(function (o) { return o.usd >= th }).length, sw: M.sw.length, ice: M.ice.length, liq: M.venue === 'f' ? M.liq.length : null };
+    ROOT.querySelectorAll('.fcnt').forEach(function (b) { var k = b.getAttribute('data-fc'), v = C2[k], na = (k === 'mlv' && !mpRow()) || (k === 'opt' && M.sym !== 'BTC' && M.sym !== 'ETH') || (k === 'liq' && M.venue !== 'f'); b.textContent = v != null ? ' ' + v : na ? ' –' : ''; b.parentNode.classList.toggle('na', !!na); b.parentNode.title = (na ? avail(k) + ' · ' : '') + (b.parentNode.getAttribute('data-tip') || '') })
+  }
+  function toast(msg) { var tt = D.getElementById('fToast'); if (!tt || !msg) return; tt.textContent = msg; tt.hidden = false; clearTimeout(tt._t); tt._t = setTimeout(function () { tt.hidden = true }, 6000) }
   function renderHead() {
+    counts();
     var el = D.getElementById('fHead'); if (!el || !M) return;
     var t = M.t24 || {}, ch = +t.priceChangePercent, px = M.last, mk = M.mark, oi = M.oi.length ? M.oi[M.oi.length - 1].v : NaN, oi1 = NaN;
     if (M.oi.length > 2) { var tt = Date.now() - 36e5, o0 = M.oi.find(function (o) { return o.t >= tt }); if (o0) oi1 = (oi / o0.v - 1) * 100 }
@@ -774,7 +793,7 @@
       if (sg === 'lang') { reshell(); return }
       if (sg === 'venue' || sg === 'tf') { if (sg === 'tf' && M && M.venue === CFG.venue && M.sym === CFG.sym) { switchTf() } else start(); return }
       DIRTY = true; return }
-    if (t.hasAttribute('data-fsh')) { var k = t.getAttribute('data-fsh'); CFG.sh[k] = CFG.sh[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sh[k]); saveCfg(); if (k === 'opt' && CFG.sh.opt) optLevels(); DIRTY = true; return }
+    if (t.hasAttribute('data-fsh')) { var k = t.getAttribute('data-fsh'); CFG.sh[k] = CFG.sh[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sh[k]); saveCfg(); if (k === 'opt' && CFG.sh.opt) optLevels(); if (k === 'mlv' && CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && W.__E9.mp() } catch (x) { } } if (CFG.sh[k]) toast(avail(k)); else toast(T('Κρυμμένο: ', 'Hidden: ') + t.textContent.replace(/\s*[\d–]+$/, '')); DIRTY = true; return }
     if (t.hasAttribute('data-fsub')) { k = t.getAttribute('data-fsub'); CFG.sub[k] = CFG.sub[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sub[k]); saveCfg(); DIRTY = true; return }
     if (t.hasAttribute('data-fz')) { var z = t.getAttribute('data-fz'); if (z === '+') zoomX(1.35); else if (z === '-') zoomX(1 / 1.35); else if (z === 'y') { V.yAuto = true; DIRTY = true } else { V.off = 0; V.yAuto = true; V.bw = CFG.mode === 'candle' ? 8 : 12; DIRTY = true } return }
     if (t.hasAttribute('data-fside')) { SIDE = t.getAttribute('data-fside'); ROOT.querySelectorAll('[data-fside]').forEach(function (b) { b.classList.toggle('on', b === t) }); renderSide(true); return }
