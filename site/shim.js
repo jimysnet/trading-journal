@@ -336,6 +336,14 @@
     if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
   });
 
+  /* κείμενα της σελίδας που αναφέρονται στο claude.ai → σωστή πηγή στο Vercel */
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('p,small,span,div').forEach(function (el) {
+      if (el.children.length === 0 && /μέσω των συνδέσεων του κάθε μέλους στο claude\.ai/.test(el.textContent))
+        el.textContent = el.textContent.replace(/Κεριά crypto από Crypto\.com και τιμές από CoinGecko, μέσω των συνδέσεων του κάθε μέλους στο claude\.ai\./, 'Κεριά crypto από Crypto.com (ό,τι λείπει από Binance/OKX) και τιμές από CoinGecko. Ενημερώνονται μόνα τους από τον φύλακα.');
+    });
+  });
+
   /* ---------- window.claude ---------- */
   var cache = {};
   window.claude = {
