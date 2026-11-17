@@ -12,6 +12,9 @@
 
   var BOT = window.__TJ_BOT || null; /* ο αυτόματος «φύλακας» (GitHub Actions) περνάει εδώ τα στοιχεία του */
   var Q = new URLSearchParams(location.search);
+  /* μέχρι να επιβεβαιωθεί εγκεκριμένο μέλος, η σελίδα μένει κρυμμένη πίσω από μαύρη οθόνη */
+  if (!BOT) { try { document.documentElement.classList.add('tj-lock'); var lk = document.createElement('style'); lk.id = 'tj-lock-css'; lk.textContent = 'html.tj-lock body>*:not(#tj-login):not(#tj-msg){visibility:hidden!important}html.tj-lock,html.tj-lock body{background:#000!important}'; (document.head || document.documentElement).appendChild(lk) } catch (e) {} }
+  function unlock() { try { document.documentElement.classList.remove('tj-lock') } catch (e) {} }
   var log = function () { try { console.log.apply(console, ['[tj]'].concat([].slice.call(arguments))) } catch (e) {} };
 
   /* ---------- ρυθμίσεις & Firebase ---------- */
@@ -23,6 +26,8 @@
     try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}) } catch (e) {}
     var fs = firebase.firestore();
     try { fs.settings({ ignoreUndefinedProperties: true, merge: true }) } catch (e) {}
+    /* τοπικό αντίγραφο της βάσης στον browser: σε κάθε ξαναφόρτωμα διαβάζονται μόνο όσα άλλαξαν (λιγότερες αναγνώσεις στο Firebase) */
+    try { fs.enablePersistence({ synchronizeTabs: true }).catch(function () {}) } catch (e) {}
     return { cfg: c, fs: fs, auth: firebase.auth() };
   });
   appP.catch(function (e) { showMsg('⚠️ Η σελίδα δεν έχει ρυθμιστεί ακόμα: ' + ((e && e.message) || e)) });
@@ -73,7 +78,7 @@
   function boxUI(html) {
     var d = document.getElementById('tj-login'); css();
     if (!d) { d = document.createElement('div'); d.id = 'tj-login'; document.body.appendChild(d) }
-    d.innerHTML = '<div class="bx">' + html + '<button type="button" class="alt" data-o>Αποσύνδεση</button></div>';
+    d.innerHTML = tjBg('PENDING APPROVAL') + '<div class="bx">' + html + '<button type="button" class="alt" data-o>Αποσύνδεση</button></div>';
     d.querySelector('[data-o]').onclick = function () { firebase.auth().signOut().then(function () { location.href = location.pathname }) };
     return d;
   }
@@ -81,7 +86,7 @@
     var go = function () {
       var em = (u.email || '').toLowerCase();
       if (u.providerData && u.providerData.some(function (p) { return p && p.providerId === 'password' }) && !u.emailVerified) {
-        var d0 = boxUI('<h2>📧 Συνδέθηκες! Ένα βήμα ακόμα: επιβεβαίωσε το email σου</h2><p>Σου στείλαμε μήνυμα στο <b></b> (από noreply@…firebaseapp.com). <b>Κοίτα και στα Ανεπιθύμητα / Junk</b>, εκεί πάει συχνά στο Hotmail/Outlook. Πάτα τον σύνδεσμο του μηνύματος και η σελίδα θα ανοίξει μόνη της.</p><button type="button" data-c>Συνέχεια</button><button type="button" class="alt" data-r>Στείλε ξανά το μήνυμα</button><div class="err" data-x></div>');
+        var d0 = boxUI('<span class="tjst c">📧 ΕΠΙΒΕΒΑΙΩΣΗ EMAIL</span><h2>Ένα βήμα ακόμα: επιβεβαίωσε το email σου</h2><p>Σου στείλαμε μήνυμα στο <b></b> (από noreply@…firebaseapp.com). <b>Κοίτα και στα Ανεπιθύμητα / Junk</b>, εκεί πάει συχνά στο Hotmail/Outlook. Πάτα τον σύνδεσμο του μηνύματος και η σελίδα θα ανοίξει μόνη της.</p><button type="button" data-c>Συνέχεια</button><button type="button" class="alt" data-r>Στείλε ξανά το μήνυμα</button><div class="err" data-x></div>');
         d0.querySelector('b').textContent = em;
         var poll = setInterval(function () { var cu = firebase.auth().currentUser; if (!cu) { clearInterval(poll); return } cu.reload().then(function () { if (firebase.auth().currentUser && firebase.auth().currentUser.emailVerified) { clearInterval(poll); firebase.auth().currentUser.getIdToken(true).then(function () { location.reload() }) } }).catch(function () {}) }, 4000);
         d0.querySelector('[data-c]').onclick = function () { u.reload().then(function () { if (firebase.auth().currentUser.emailVerified) firebase.auth().currentUser.getIdToken(true).then(function () { location.reload() }); else d0.querySelector('[data-x]').textContent = 'Δεν έχει επιβεβαιωθεί ακόμα.' }) };
@@ -90,11 +95,11 @@
         return;
       }
       var req = a.fs.collection('requests').doc(u.uid);
-      var d = boxUI('<h2>✅ Συνδέθηκες · ⏳ περιμένεις έγκριση</h2><p>Είσαι μέσα ως <b></b>. Στάλθηκε αίτημα στους διαχειριστές της παρέας (στη σελίδα τους εμφανίζεται «👥 αιτήματα»)· μόλις πατήσουν Έγκριση, η σελίδα θα ανοίξει μόνη της. Δεν χρειάζεται να ξανασυνδεθείς.</p><div class="err" data-x></div>');
+      var d = boxUI('<span class="tjst a">⏳ ΑΝΑΜΟΝΗ ΕΓΚΡΙΣΗΣ</span><h2>Δεν έχεις ακόμα πρόσβαση</h2><p>Λογαριασμός: <b></b><br>Η πρόσβαση ανοίγει <b>μόνο</b> όταν σε εγκρίνει ο Δημήτρης ή ο Νίκος. Το αίτημά σου στάλθηκε· μόλις εγκριθεί, η σελίδα ανοίγει μόνη της, χωρίς να ξανασυνδεθείς.</p><div class="err" data-x></div>');
       d.querySelector('b').textContent = em || u.uid;
       req.get().then(function (sn) {
         var x = sn.exists ? sn.data() : null;
-        if (x && x.status === 'rejected') { d.querySelector('h2').textContent = '🚫 Το αίτημα δεν εγκρίθηκε'; d.querySelector('p').textContent = 'Οι διαχειριστές δεν ενέκριναν το ' + (em || 'αίτημα') + '. Αν είναι λάθος, μίλα τους.'; return }
+        if (x && x.status === 'rejected') { d.querySelector('h2').textContent = '🚫 Το αίτημα δεν εγκρίθηκε'; var st0 = d.querySelector('.tjst'); if (st0) { st0.className = 'tjst r'; st0.textContent = '⛔ ACCESS DENIED' } d.querySelector('p').textContent = 'Οι διαχειριστές δεν ενέκριναν το ' + (em || 'αίτημα') + '. Αν είναι λάθος, μίλα τους.'; return }
         if (!x) return req.set({ email: em, name: u.displayName || (em.split('@')[0]) || '', photo: u.photoURL || '', at: Date.now() });
       }).catch(function (e) { d.querySelector('[data-x]').textContent = 'Δεν στάλθηκε το αίτημα (' + (e && e.code) + ').' });
       a.fs.collection('members').doc(u.uid).onSnapshot(function (sn) { if (sn.exists) location.reload() }, function () {});
@@ -134,22 +139,36 @@
   function css() {
     if (document.getElementById('tj-login-css')) return;
     var s = document.createElement('style'); s.id = 'tj-login-css';
-    s.textContent = '#tj-login{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,16,16,.72);padding:16px;font-family:system-ui,sans-serif}' +
-      '#tj-login .bx{background:#fff;color:#10201f;border-radius:14px;max-width:360px;width:100%;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.35)}' +
-      '#tj-login h2{margin:0 0 6px;font-size:1.25rem}#tj-login p{margin:0 0 14px;color:#556665;font-size:.92rem;line-height:1.4}' +
-      '#tj-login button{width:100%;padding:11px;border-radius:10px;border:1px solid #d2dedc;background:#0d6b66;color:#fff;font-size:1rem;font-weight:600;cursor:pointer;margin-top:6px}' +
-      '#tj-login button.alt{background:#fff;color:#10201f}#tj-login input{width:100%;box-sizing:border-box;padding:10px;border-radius:9px;border:1px solid #d2dedc;margin-top:6px;font-size:1rem}' +
-      '#tj-login .err{color:#c43d3d;font-size:.88rem;margin-top:8px;min-height:1em}#tj-login hr{border:0;border-top:1px solid #e2eceb;margin:14px 0}' +
+    s.textContent = '#tj-login{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:#000;padding:16px;font-family:system-ui,sans-serif;overflow:hidden;color:#cfe9ff}' +
+      '#tj-login .tjbg{position:absolute;inset:0;pointer-events:none;overflow:hidden}' +
+      '#tj-login .tjgrid{position:absolute;left:-50%;right:-50%;bottom:-10%;height:70%;background-image:linear-gradient(rgba(255,40,60,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(255,40,60,.35) 1px,transparent 1px);background-size:60px 60px;transform:perspective(420px) rotateX(62deg);transform-origin:center top;animation:tjgrid 3.5s linear infinite;mask-image:linear-gradient(to top,#000 10%,transparent 90%);-webkit-mask-image:linear-gradient(to top,#000 10%,transparent 90%)}' +
+      '@keyframes tjgrid{to{background-position:0 60px}}' +
+      '#tj-login .tjrows{position:absolute;inset:-10% -10%;display:flex;flex-direction:column;justify-content:space-around;transform:rotate(-8deg);opacity:.16}' +
+      '#tj-login .tjrows div{white-space:nowrap;font:800 clamp(16px,3vw,30px)/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.25em;color:#ff2846;animation:tjscroll 28s linear infinite}#tj-login .tjrows div:nth-child(2n){animation-direction:reverse;color:#00e5ff;opacity:.7}' +
+      '@keyframes tjscroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}' +
+      '#tj-login .tj403{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font:900 clamp(140px,30vw,380px)/1 ui-monospace,Menlo,Consolas,monospace;color:transparent;-webkit-text-stroke:2px rgba(255,40,60,.5);text-shadow:0 0 40px rgba(255,40,60,.35);animation:tjglitch 4s infinite steps(1)}' +
+      '#tj-login .tj403::after{content:attr(data-t);position:absolute;left:0;top:0;-webkit-text-stroke:2px rgba(0,229,255,.45);clip-path:inset(40% 0 45% 0);transform:translateX(6px);animation:tjglitch2 2.7s infinite steps(1)}' +
+      '@keyframes tjglitch{0%,92%,100%{transform:translate(-50%,-50%)}93%{transform:translate(-49%,-51%) skewX(6deg)}95%{transform:translate(-51%,-49%)}}@keyframes tjglitch2{0%,88%,100%{clip-path:inset(40% 0 45% 0)}90%{clip-path:inset(10% 0 70% 0);transform:translateX(-8px)}94%{clip-path:inset(70% 0 10% 0)}}' +
+      '#tj-login .tjscan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px);animation:tjflick 6s infinite}@keyframes tjflick{0%,97%,100%{opacity:1}98%{opacity:.6}}' +
+      '#tj-login .tjvig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.9) 85%)}' +
+      '#tj-login .bx{position:relative;z-index:2;background:rgba(4,10,16,.86);color:#d7ecff;border:1px solid rgba(0,229,255,.45);border-radius:14px;max-width:380px;width:100%;padding:22px;box-shadow:0 0 0 1px rgba(255,40,60,.15),0 0 40px rgba(0,229,255,.18),inset 0 0 30px rgba(0,229,255,.06);backdrop-filter:blur(6px)}' +
+      '#tj-login .bx::before{content:"// SECURE TERMINAL · AUTH REQUIRED";display:block;font:700 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#ff4d63;margin-bottom:10px}' +
+      '#tj-login .tjst{display:inline-block;font:800 .72rem ui-monospace,Menlo,monospace;letter-spacing:.12em;padding:3px 8px;border-radius:6px;margin-bottom:8px;border:1px solid currentColor}#tj-login .tjst.r{color:#ff4d63}#tj-login .tjst.a{color:#ffc443}#tj-login .tjst.c{color:#00e5ff}' +
+      '#tj-login h2{margin:0 0 6px;font-size:1.25rem;color:#fff}#tj-login p{margin:0 0 14px;color:#8fb3c9;font-size:.92rem;line-height:1.45}#tj-login p b{color:#fff}' +
+      '#tj-login button{width:100%;padding:11px;border-radius:10px;border:1px solid rgba(0,229,255,.6);background:linear-gradient(180deg,#0a8fa6,#06606f);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 0 16px rgba(0,229,255,.25)}' +
+      '#tj-login button.alt{background:transparent;color:#bfe9ff;border-color:rgba(191,233,255,.3);box-shadow:none}#tj-login input{width:100%;box-sizing:border-box;padding:10px;border-radius:9px;border:1px solid rgba(0,229,255,.3);background:#02070b;color:#e6f6ff;margin-top:6px;font-size:1rem}' +
+      '#tj-login .err{color:#ff6b7d;font-size:.88rem;margin-top:8px;min-height:1em}#tj-login hr{border:0;border-top:1px solid rgba(0,229,255,.18);margin:14px 0}' +
       '#tj-msg{position:fixed;left:12px;right:12px;bottom:12px;z-index:99998;background:#9a5a12;color:#fff;padding:10px 12px;border-radius:10px;font:14px system-ui}';
     document.head.appendChild(s);
   }
+  function tjBg(word) { var row = Array(8).join('ACCESS DENIED · 403 FORBIDDEN · ΑΠΑΓΟΡΕΥΕΤΑΙ Η ΠΡΟΣΒΑΣΗ · ' + (word || 'UNAUTHORIZED') + ' · '); var rows = ''; for (var i = 0; i < 9; i++) rows += '<div>' + row + row + '</div>'; return '<div class="tjbg"><div class="tjrows">' + rows + '</div><div class="tj403" data-t="403">403</div><div class="tjgrid"></div><div class="tjscan"></div><div class="tjvig"></div></div>' }
   function showMsg(t) { var go = function () { css(); var m = document.getElementById('tj-msg'); if (!m) { m = document.createElement('div'); m.id = 'tj-msg'; document.body.appendChild(m) } m.textContent = t }; if (document.body) go(); else document.addEventListener('DOMContentLoaded', go) }
   function hideLogin() { if (LG) { LG.remove(); LG = null } }
   function showLogin(auth) {
     var go = function () {
       if (LG) return; css();
       LG = document.createElement('div'); LG.id = 'tj-login';
-      LG.innerHTML = '<div class="bx"><h2>📒 Ημερολόγιο Συναλλαγών</h2><p>Συνδέσου για να μπεις στο κοινό ημερολόγιο της παρέας.</p>' +
+      LG.innerHTML = tjBg() + '<div class="bx"><span class="tjst r">⛔ ΠΕΡΙΟΡΙΣΜΕΝΗ ΠΡΟΣΒΑΣΗ</span><h2>📒 Ημερολόγιο Συναλλαγών</h2><p>Ιδιωτικός χώρος. Μπαίνουν μόνο μέλη που έχουν <b>εγκριθεί από τους διαχειριστές</b>. Συνδέσου ή φτιάξε λογαριασμό για να στείλεις αίτημα.</p>' +
         '<button type="button" data-g>Σύνδεση με Google</button><hr>' +
         '<input type="email" placeholder="email" autocomplete="username" data-e><input type="password" placeholder="κωδικός" autocomplete="current-password" data-p>' +
         '<button type="button" class="alt" data-l>Σύνδεση με email</button><button type="button" class="alt" data-r>Νέος λογαριασμός με email</button><div class="err" data-x></div></div>';
@@ -423,7 +442,7 @@
     }
   };
   /* ---------- λογαριασμός: ποιος είναι συνδεδεμένος + αποσύνδεση ---------- */
-  if (!BOT) memberP.then(function (u) { acctUI(u) });
+  if (!BOT) memberP.then(function (u) { unlock(); acctUI(u) });
   function acctUI(u) {
     var put = function () {
       var host = document.querySelector('header.top .brand') || document.body;

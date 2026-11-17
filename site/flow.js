@@ -79,7 +79,7 @@
       var px = m.mid0 || 1; m.bucket = nice(px * 2e-4); if (m.tick && m.bucket < m.tick) m.bucket = m.tick; m.dec = pdec(Math.min(m.bucket, m.tick || m.bucket));
       m.heat.half = Math.ceil(px * 0.04 / m.bucket);
       if (m.snap) bookSnap(m.snap);
-      return loadBars().then(function () { connect(); backfill(); loadOI(); idbLoad(); OPT.lv = null; if (CFG.sh.opt) optLevels(); if (CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && !W.__E9.mpRows() && W.__E9.mp() } catch (x) { } } })
+      return loadBars().then(function () { connect(); backfill(); bigHist(); loadOI(); idbLoad(); OPT.lv = null; if (CFG.sh.opt) optLevels(); if (CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && !W.__E9.mpRows() && W.__E9.mp() } catch (x) { } } })
     }).catch(function (e) { if (m === M) { m.err = LX('Δεν ήρθαν δεδομένα από το Binance (') + (e && e.status || LX('δίκτυο')) + ').'; renderHead() } });
   }
   function stop() { if (M) { M.dead = true; (M.wss || []).forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); clearTimeout(M.rt); clearInterval(M.wd); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
@@ -209,7 +209,7 @@
     var m = M; m.sizes.push(g.usd); if (m.sizes.length > 4000) m.sizes.splice(0, 1000);
     if (m.sizes.length % 500 === 0 && m.sizes.length >= 1500) { var s = m.sizes.slice().sort(function (a, b) { return a - b }), nv = s[Math.floor(s.length * 0.995)]; m.bigAuto = m.bigAuto ? m.bigAuto * 0.8 + nv * 0.2 : nv }
     var th = bigTh(), o = { t: g.T, s: g.s, q: g.q, usd: g.usd, p: g.usd / g.q, pmin: g.pmin, pmax: g.pmax, n: g.n };
-    if (g.usd >= th) { m.big.push(o); if (m.big.length > 9000) { m.big.sort(function (a, b) { return a.t - b.t }); m.big.splice(0, m.big.length - 7000) } var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
+    if (g.usd >= th) { m.big.push(o); if (m.big.length > 60000) { m.big.sort(function (a, b) { return a.t - b.t }); m.big.splice(0, m.big.length - 50000) } var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
     if (g.live && CFG.al.big && g.usd >= th * (CFG.al.bigx || 3)) fire((g.s ? '🟢 ' : '🔴 ') + T('Μεγάλη ', 'Big ') + (g.s ? T('αγορά ', 'buy ') : T('πώληση ', 'sell ')) + usd(g.usd) + ' @ ' + (g.usd / g.q).toFixed(m.dec), 1)
     var lv = Math.round((g.pmax - g.pmin) / (m.tick || m.bucket)) + 1;
     if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; m.sw.push(o); if (m.sw.length > 3000) { m.sw.sort(function (a, b) { return a.t - b.t }); m.sw.splice(0, m.sw.length - 2000) } }
@@ -750,6 +750,7 @@
       it(LX('Βιβλίο ±1%'), isFinite(imb) ? (imb >= 0 ? LX('αγοραστές +') : LX('πωλητές ')) + Math.abs(imb).toFixed(0) + '%' : '–', imb >= 0 ? 'pos' : 'neg') +
       it(T('Ταχύτητα', 'Speed'), (function () { var now = Math.floor(Date.now() / 1000), c = 0; M.tps.forEach(function (x) { if (x[0] > now - 10 && x[0] <= now) c += x[1] }); return (c / 10).toFixed(1) + T('/δευτ.', '/s') })()) +
       it('Big ≥', usd(bigTh()) + (CFG.big ? '' : LX(' (αυτ.)'))) +
+      (M.bhFrom ? it(T('Ιστορικό Big από', 'Big history since'), dm(M.bhFrom) + ' (' + fv(M.bhN) + ')') : '') +
       it(LX('Footprint από'), isFinite(M.fpFrom) ? dm(M.fpFrom) + ' ' + hm(M.fpFrom) : '–') +
       (M.err ? '<span class="neg">' + esc(M.err) + '</span>' : M.status ? '<span><small>' + esc(M.status) + '</small></span>' : '')
   }
@@ -900,7 +901,49 @@
     if (CFG.view === 'chart') { if ((DIRTY && !PAUSE) || V.drag || V.mx >= 0) { DIRTY = false; try { draw() } catch (e) { console.error(e) } } if (!PAUSE && now - lastDom > 220) { lastDom = now; try { drawDom() } catch (e) { } } if (now - lastHead > 1000) { lastHead = now; renderHead(); if (SIDE === 'tape' && !PAUSE) renderSide() } }
     RAF = setTimeout(function () { requestAnimationFrame(loop) }, 66)
   }
+  /* ======================= Ιστορικό Big Trades =======================
+     Ο «φύλακας» (GitHub, 24/7) μαζεύει τις μεγάλες εντολές των Futures για όλα τα νομίσματα του αρχείου
+     και τις γράφει στη βάση σε ένα έγγραφο ανά νόμισμα ανά μέρα (bigtr/BTCUSDT_20261117).
+     Όταν ανοίγεις το διάγραμμα, φορτώνονται μαζί με τα κεριά, για όσες μέρες καλύπτουν. */
+  function fsdb() { try { return W.firebase && firebase.apps && firebase.apps.length ? firebase.firestore() : null } catch (e) { return null } }
+  function dayKey(t) { var d = new Date(t); return d.getUTCFullYear() + ('0' + (d.getUTCMonth() + 1)).slice(-2) + ('0' + d.getUTCDate()).slice(-2) }
+  function bigHist() {
+    var m = M, db = fsdb(); if (!db || m.venue !== 'f' || !m.bars.length) return;
+    var t0 = Math.max(m.bars[0].t, Date.now() - 45 * 864e5), keys = []; for (var t = Math.floor(t0 / 864e5) * 864e5; t <= Date.now(); t += 864e5) keys.push(m.pair + '_' + dayKey(t));
+    var seen = {}; m.big.forEach(function (o) { seen[o.t + '|' + o.s] = 1 });
+    Promise.all(keys.map(function (k) { return db.collection('bigtr').doc(k).get().then(function (sn) { return sn.exists ? sn.data() : null }).catch(function () { return null }) })).then(function (docs) {
+      if (m !== M) return; var n = 0, from = Infinity;
+      docs.forEach(function (d) { if (!d || !d.t) return; for (var i = 0; i < d.t.length; i++) { var key = d.t[i] + '|' + d.s[i]; if (seen[key]) continue; seen[key] = 1; var p = d.p[i], q = d.q[i]; m.big.push({ t: d.t[i], s: d.s[i], q: q, usd: p * q, p: p, pmin: p, pmax: p, n: 1, h: 1 }); n++; if (d.t[i] < from) from = d.t[i] } });
+      if (n) { m.big.sort(function (a, b) { return a.t - b.t }); m.bhFrom = from; m.bhN = n; DIRTY = true; renderHead(); renderSide(true) }
+    })
+  }
+  /* ο συλλέκτης (τρέχει μόνο στον φύλακα): μία σύνδεση WebSocket για όλα τα νομίσματα */
+  var COL = null;
+  function collect(coins) {
+    var db = fsdb(); if (!db || COL) return; COL = { b: {}, th: {}, g: {}, dirty: {}, ws: null, try: 0 };
+    var pairs = coins.map(function (c) { return String(c).toUpperCase().replace(/USDT$/, '') + 'USDT' });
+    var buf = function (pair, day) { var k = pair + '_' + day, B = COL.b[k]; if (!B) { B = COL.b[k] = { pair: pair, day: day, t: [], p: [], q: [], s: [], loaded: false }; db.collection('bigtr').doc(k).get().then(function (sn) { var d = sn.exists ? sn.data() : null; if (d && d.t) { var have = {}; B.t.forEach(function (t, i) { have[t + '|' + B.s[i]] = 1 }); for (var i = 0; i < d.t.length; i++) if (!have[d.t[i] + '|' + d.s[i]]) { B.t.push(d.t[i]); B.p.push(d.p[i]); B.q.push(d.q[i]); B.s.push(d.s[i]) } } B.loaded = true }).catch(function () { B.loaded = true }) } return B };
+    // όριο ανά νόμισμα: από τον όγκο 24 ωρών (≈ το κορυφαίο 0,5-1% των εντολών), τουλάχιστον $10k
+    var ths = function () { pairs.forEach(function (pr) { bn('f', '/fapi/v1/ticker/24hr', 'symbol=' + pr).then(function (t) { COL.th[pr] = Math.max(10000, (+t.quoteVolume || 0) / 150000) }).catch(function () { }) }) };
+    ths(); setInterval(ths, 6 * 36e5);
+    var flush = function (g) { var th = COL.th[g.pair] || 25000; if (g.usd < th) return; var day = dayKey(g.T), B = buf(g.pair, day); if (B.t.length >= 15000) return; B.t.push(g.T); B.p.push(+(g.usd / g.q).toPrecision(8)); B.q.push(+g.q.toPrecision(8)); B.s.push(g.s); COL.dirty[g.pair + '_' + day] = 1 };
+    var open = function () {
+      var url = FWS.mk + pairs.map(function (p) { return p.toLowerCase() + '@aggTrade' }).join('/'), ws; try { ws = new WebSocket(url) } catch (e) { return retry() } COL.ws = ws;
+      ws.onopen = function () { COL.try = 0 };
+      ws.onmessage = function (ev) { var j; try { j = JSON.parse(ev.data) } catch (e) { return } var d = j.data || j; if (d.e !== 'aggTrade') return; var pr = d.s, T = +d.T, side = d.m ? 0 : 1, p = +d.p, q = +d.q, g = COL.g[pr];
+        if (g && g.T === T && g.s === side) { g.q += q; g.usd += p * q } else { if (g) flush(g); COL.g[pr] = { pair: pr, T: T, s: side, q: q, usd: p * q } } };
+      ws.onclose = function () { retry() }; ws.onerror = function () { try { ws.close() } catch (e) { } };
+    };
+    var retry = function () { COL.try++; setTimeout(open, Math.min(30000, 2000 * COL.try)) };
+    open();
+    // κάθε 10′: γράφει όσα έγγραφα άλλαξαν (ένα ανά νόμισμα ανά μέρα)
+    setInterval(function () { Object.keys(COL.g).forEach(function (k) { var g = COL.g[k]; if (g && Date.now() - g.T > 2000) { flush(g); COL.g[k] = null } });
+      Object.keys(COL.dirty).forEach(function (k) { var B = COL.b[k]; if (!B || !B.loaded) return; delete COL.dirty[k]; db.collection('bigtr').doc(k).set({ v: 1, pair: B.pair, day: B.day, th: Math.round(COL.th[B.pair] || 0), n: B.t.length, at: Date.now(), t: B.t, p: B.p, q: B.q, s: B.s }).catch(function () { COL.dirty[k] = 1 }) });
+      Object.keys(COL.b).forEach(function (k) { if (COL.b[k].day < dayKey(Date.now() - 2 * 864e5)) delete COL.b[k] }) }, 10 * 6e4);
+    return true
+  }
   W.FLOW = {
+    collect: collect, _col: function () { return COL },
     show: function () {
       ROOT = D.getElementById('flowRoot'); if (!ROOT) return; VIS = true; clearTimeout(HIDE_T);
       if (!ROOT.firstChild) { shell(); D.addEventListener('click', onClick); D.addEventListener('change', onChange); D.addEventListener('fullscreenchange', onFsChange); D.addEventListener('webkitfullscreenchange', onFsChange); D.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var fw = ROOT && ROOT.querySelector('.fw.ffull'); if (fw && !(D.fullscreenElement || D.webkitFullscreenElement)) fullTog() } }); W.addEventListener('resize', function () { DIRTY = true; if (CFG.view === 'opt') optRender() }) }

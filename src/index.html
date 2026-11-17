@@ -4173,7 +4173,7 @@ function subscribe(){
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
   db.collection('class').onSnapshot(function(s){S.cls={};s.docs.forEach(function(d){S.cls[d.id]=d.data()});if(!CLS.dirty){var m0=S.cls[clsId()];CLS.me=m0?JSON.parse(JSON.stringify(m0)):null}renderProfIfClass()},onErr);
   db.collection('confirms').orderBy('at','desc').limit(300).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
-  arcSub();verSub();setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
+  arcSub();verSub();if(window.__TJ_BOT)setTimeout(flowCollect,30000);setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
   /* το αρχείο κεριών ανανεώνεται μόνο του κάθε ώρα (όσο είναι ανοιχτή η σελίδα, π.χ. από τον φύλακα) */
   setInterval(function(){try{arcBackfill()}catch(e){}},60*6e4);
   db.collection('chatrx').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.chatrx=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(grpIsOpen()&&GRP.view==='chat')renderGroup()},function(){});
@@ -11312,6 +11312,8 @@ function showTab(t,keepHash){
   if(t==='stats')setTimeout(function(){try{saInit();saRender();saMaybeRun()}catch(e){console.error(e)}},50);
   if(jump)setTimeout(function(){var a=$('#'+jump);if(a)a.scrollIntoView({block:'start'})},120);else if(!keepHash)window.scrollTo(0,0);
 }
+/* ο φύλακας μαζεύει 24/7 το ιστορικό των Big Trades (Futures) για όλα τα νομίσματα του αρχείου */
+function flowCollect(){var go=function(){try{window.FLOW.collect(arcCoins())}catch(e){console.error(e)}};if(window.FLOW){go();return}var sc=document.createElement('script');sc.src='flow.js?v='+APP_VER;sc.onload=go;document.head.appendChild(sc)}
 /* 🔬 Order Flow: το πρόγραμμα φορτώνεται μόνο όταν ανοίξει η καρτέλα (flow.js) */
 function flowShow(){if(window.FLOW){window.FLOW.show();return}var r=$('#flowRoot');if(r&&!r.firstChild)r.innerHTML='<p class="muted" style="padding:1rem">⏳ Φορτώνω το Order Flow…</p>';
   var sc=document.createElement('script');sc.src='flow.js?v='+APP_VER;sc.onload=function(){if(window.FLOW){if(r)r.innerHTML='';window.FLOW.show()}};sc.onerror=function(){if(r)r.innerHTML='<p class="muted" style="padding:1rem">Το Order Flow υπάρχει μόνο στη σελίδα του Vercel.</p>'};document.head.appendChild(sc)}
