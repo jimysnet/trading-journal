@@ -3335,7 +3335,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=280,VERS={sub:null,t:null};
+var APP_VER=281,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3988,18 +3988,44 @@ function otLoad(k,sym,tf){var o=OTC[k]||{};o.busy=true;OTC[k]=o;var base=dmSym(s
     var fresh=L.length&&Date.now()-L[L.length-1].t<(CC_TFMS[tf]||36e5)*6;
     if(L.length>=10&&fresh){o.src='';return L}
     return otCg(base,tf).then(function(G){G=ok(G);if(G.length>=10){o.src='CoinGecko';return G}o.src=L.length>=10?'παλιά κεριά':'';return L})
-  }).then(function(L){o.bars=L.slice(-96);o.err=o.bars.length<10}).catch(function(){o.err=true}).then(function(){o.busy=false;o.at=Date.now();if(Object.keys(DM.ox||{}).some(function(i){return DM.ox[i]}))renderDmOpen()})}
-function otChartHtml(t){var tf=otTf(t),k=dmSym(t.symbol)+'|'+tf,C=OTC[k];
+  }).then(function(L){o.bars=L.slice(-700);o.err=o.bars.length<10}).catch(function(){o.err=true}).then(function(){o.busy=false;o.at=Date.now();if(Object.keys(DM.ox||{}).some(function(i){return DM.ox[i]}))renderDmOpen()})}
+/* 🐢 Turtle: η «έξοδος» (κανάλι 20 ημερών) παίζει τον ρόλο του take profit — τη δείχνω στο διάγραμμα */
+var OTX={};
+function otTtlExit(t){var sym=dmSym(t.symbol),k=sym+'|'+(t.dir==='short'?'s':'l'),o=OTX[k];if(o&&Date.now()-o.at<36e5)return o.v;if(o&&o.busy)return o?o.v:NaN;
+  OTX[k]={at:Date.now(),busy:true,v:o?o.v:NaN};
+  histBars(sym,'1D',40).then(function(r){var B=(r&&r.bars?r.bars:r||[]).filter(function(b){return !b.approx&&isFinite(b.h)&&isFinite(b.l)}),day=Math.floor(Date.now()/864e5)*864e5;B=B.filter(function(b){return b.t<day}).slice(-20);
+    var v=B.length>=10?(t.dir==='short'?Math.max.apply(null,B.map(function(b){return b.h})):Math.min.apply(null,B.map(function(b){return b.l}))):NaN;OTX[k]={at:Date.now(),v:v};if(isFinite(v))otRedrawAll()}).catch(function(){OTX[k]={at:Date.now(),v:NaN}});
+  return o?o.v:NaN}
+/* 🔍 ζουμ/μετακίνηση στα διαγράμματα των εντολών: ροδέλα = ζουμ, σύρσιμο = μετακίνηση, διπλό κλικ/⟲ = αρχική προβολή */
+var OTV={},OTT={};
+function otView(id,len){var v=OTV[id]||{n:90,off:0};v.n=Math.max(20,Math.min(Math.max(20,len),v.n));v.off=Math.max(0,Math.min(Math.max(0,len-v.n),v.off));OTV[id]=v;return v}
+function otRedraw(id){var t=OTT[id];if(!t)return;var tf=otTf(t),C=OTC[dmSym(t.symbol)+'|'+tf];if(!C||!C.bars||!C.bars.length)return;document.querySelectorAll('.otcb[data-oid="'+id+'"]').forEach(function(el){el.innerHTML=otSvg(t,C.bars,tf)})}
+function otRedrawAll(){Object.keys(OTT).forEach(otRedraw)}
+function otZoom(id,f,fx){var t=OTT[id];if(!t)return;var C=OTC[dmSym(t.symbol)+'|'+otTf(t)];if(!C||!C.bars)return;var len=C.bars.length+1,v=otView(id,len),n0=v.n;
+  if(fx==null)fx=1;var right=(1-fx)*n0;v.n=Math.round(n0*f);v=otView(id,len);v.off=Math.round(v.off+right-(1-fx)*v.n);otView(id,len);otRedraw(id)}
+(function(){var D=null,P={};
+  document.addEventListener('wheel',function(e){var el=e.target.closest&&e.target.closest('.otcb');if(!el)return;e.preventDefault();var r=el.getBoundingClientRect(),fx=Math.min(1,Math.max(0,(e.clientX-r.left)/(r.width*(566/640))));otZoom(el.getAttribute('data-oid'),e.deltaY<0?0.8:1.25,fx)},{passive:false});
+  document.addEventListener('pointerdown',function(e){var el=e.target.closest&&e.target.closest('.otcb');if(!el)return;P[e.pointerId]={x:e.clientX,y:e.clientY};var id=el.getAttribute('data-oid'),t=OTT[id];if(!t)return;var C=OTC[dmSym(t.symbol)+'|'+otTf(t)];if(!C||!C.bars)return;var v=otView(id,C.bars.length+1);
+    D={el:el,id:id,x:e.clientX,off:v.off,n:v.n,w:el.getBoundingClientRect().width*(566/640),len:C.bars.length+1,pd:null};el.classList.add('drag');try{el.setPointerCapture(e.pointerId)}catch(x){}});
+  document.addEventListener('pointermove',function(e){if(!D)return;if(P[e.pointerId])P[e.pointerId]={x:e.clientX,y:e.clientY};var ks=Object.keys(P);
+    if(ks.length>=2){var a=P[ks[0]],b=P[ks[1]],d=Math.hypot(a.x-b.x,a.y-b.y);if(D.pd){var f=D.pd/d;if(Math.abs(f-1)>0.04){otZoom(D.id,f,null);D.pd=d}}else D.pd=d;return}
+    var bars=(e.clientX-D.x)/D.w*(D.n+6),v=OTV[D.id];if(!v)return;v.off=Math.round(D.off+bars);otView(D.id,D.len);otRedraw(D.id)});
+  var up=function(e){delete P[e.pointerId];if(D&&!Object.keys(P).length){D.el.classList.remove('drag');D=null}};document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up);
+  document.addEventListener('dblclick',function(e){var el=e.target.closest&&e.target.closest('.otcb');if(!el)return;delete OTV[el.getAttribute('data-oid')];otRedraw(el.getAttribute('data-oid'))});
+  document.addEventListener('click',function(e){var z=e.target.closest&&e.target.closest('[data-otz]');if(!z)return;var id=z.getAttribute('data-oid'),a=z.getAttribute('data-otz');if(a==='r'){delete OTV[id];otRedraw(id)}else otZoom(id,a==='+'?0.7:1.45,null)});
+})();
+function otChartHtml(t){var tf=otTf(t),k=dmSym(t.symbol)+'|'+tf,C=OTC[k];OTT[t.id]=t;
   if(!C||(!C.busy&&Date.now()-(C.at||0)>(tf==='15m'?12e4:3e5)))otLoad(k,t.symbol,tf);C=OTC[k];
   var tabs='<div class="otcf" role="group" aria-label="Χρονικό πλαίσιο">'+OT_TFS.map(function(x){return '<button type="button" data-otf="'+esc(t.id)+'" data-tf="'+x+'" aria-pressed="'+(x===tf)+'">'+x+'</button>'}).join('')+'</div>';
   var b=String(t.symbol||'').replace(/(USDT|USDC|USD|PERP)$/,'');
-  var body=C.bars&&C.bars.length?otSvg(t,C.bars,tf):'<div class="otce">'+(C.err&&!C.busy?'<div>Δεν βρέθηκαν κεριά για '+esc(b)+' '+tf+' (ούτε στο αρχείο, ούτε στο Crypto.com, ούτε στο CoinGecko).<br><button type="button" class="btn small" data-otre="'+esc(k)+'" style="margin-top:.5rem">↻ Ξαναδοκίμασε</button></div>':'Φορτώνει κεριά…')+'</div>';
-  return '<div class="otc"><div class="otch"><b>'+symIcon(b,16)+' '+esc(b)+'/USDT · '+tf+(C.src&&C.bars&&C.bars.length?' <small class="mu" style="font-weight:400;color:var(--muted)">· '+esc(C.src)+'</small>':'')+'</b>'+tabs+'</div>'+body+'</div>'}
+  var body=C.bars&&C.bars.length?'<div class="otcb" data-oid="'+esc(t.id)+'" title="Ροδέλα ή τσίμπημα: ζουμ · σύρσιμο: μετακίνηση · διπλό κλικ: αρχική προβολή">'+otSvg(t,C.bars,tf)+'</div>':'<div class="otce">'+(C.err&&!C.busy?'<div>Δεν βρέθηκαν κεριά για '+esc(b)+' '+tf+' (ούτε στο αρχείο, ούτε στο Crypto.com, ούτε στο CoinGecko).<br><button type="button" class="btn small" data-otre="'+esc(k)+'" style="margin-top:.5rem">↻ Ξαναδοκίμασε</button></div>':'Φορτώνει κεριά…')+'</div>';
+  return '<div class="otc"><div class="otch"><b>'+symIcon(b,16)+' '+esc(b)+'/USDT · '+tf+(C.src&&C.bars&&C.bars.length?' <small class="mu" style="font-weight:400;color:var(--muted)">· '+esc(C.src)+'</small>':'')+'</b><span style="display:inline-flex;align-items:center">'+tabs+'<span class="otcz"><button type="button" data-otz="-" data-oid="'+esc(t.id)+'" title="Ξεζούμ">−</button><button type="button" data-otz="+" data-oid="'+esc(t.id)+'" title="Ζουμ">+</button><button type="button" data-otz="r" data-oid="'+esc(t.id)+'" title="Αρχική προβολή">⟲</button></span></span></div>'+body+'</div>'}
 function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l,c:b.c}}),lp=livePx(t.symbol),ms=CC_TFMS[tf]||36e5,last=B[B.length-1];
   if(isFinite(lp)&&last){if(Date.now()-last.t<ms){last.c=lp;last.h=Math.max(last.h,lp);last.l=Math.min(last.l,lp)}else B.push({t:last.t+ms,o:last.c,h:Math.max(last.c,lp),l:Math.min(last.c,lp),c:lp})}
-  B=B.slice(-90);var W=640,H=300,R=74,T=10,Bm=22,pw=W-R,ph=H-T-Bm,N=B.length,bw=pw/(N+6);
+  var V=otView(t.id,B.length);B=B.slice(Math.max(0,B.length-V.off-V.n),B.length-V.off);var W=640,H=300,R=74,T=10,Bm=22,pw=W-R,ph=H-T-Bm,N=B.length,bw=pw/(N+6);
   var e=n(t.entry),st=n(t.stop),cs=t.curStop!=null?n(t.curStop):NaN,tg=n(t.target),pend=dmIsPend(t);
-  var lo=Infinity,hi=-Infinity;B.forEach(function(b){if(b.l<lo)lo=b.l;if(b.h>hi)hi=b.h});[e,st,tg,cs].forEach(function(v){if(isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}});
+  var isT=(t.mgmt==='ttl'||/^ttl/.test((t.auto&&t.auto.strat)||'')),tx=isT&&!isFinite(tg)?otTtlExit(t):NaN;
+  var lo=Infinity,hi=-Infinity;B.forEach(function(b){if(b.l<lo)lo=b.l;if(b.h>hi)hi=b.h});[e,st,tg,cs,tx].forEach(function(v){if(isFinite(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}});
   var pad=(hi-lo)*.06||hi*.01;lo-=pad;hi+=pad;
   var Y=function(p){return T+(hi-p)/(hi-lo)*ph},X=function(i){return (i+.5)*bw},f=function(v){return v.toFixed(1)};
   var ei=-1;if(t.at){for(var i=0;i<N;i++){if(B[i].t<=t.at)ei=i}if(t.at<B[0].t)ei=0}var zx=ei>=0?X(ei):0;
@@ -4008,13 +4034,15 @@ function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l
   var stp=pcNice((hi-lo)/5);for(var g=Math.ceil(lo/stp)*stp;g<hi;g+=stp){var gy=Y(g);s+='<line class="otg" x1="0" x2="'+pw+'" y1="'+f(gy)+'" y2="'+f(gy)+'"/><text class="otax" x="'+(pw+6)+'" y="'+f(gy+3.5)+'">'+esc(dmPx(g))+'</text>'}
   /* ζώνες κέρδους/ζημιάς από την είσοδο και μετά */
   if(isFinite(e)&&isFinite(tg))s+='<rect class="otzw" x="'+f(zx)+'" width="'+f(pw-zx)+'" y="'+f(Math.min(Y(e),Y(tg)))+'" height="'+f(Math.abs(Y(tg)-Y(e)))+'"/>';
+  /* χωρίς TP (π.χ. Turtle): πράσινη ζώνη από την είσοδο ως την τιμή τώρα, όταν είμαστε σε κέρδος */
+  else if(isFinite(e)&&isFinite(lp)&&(t.dir==='short'?lp<e:lp>e))s+='<rect class="otzw" x="'+f(zx)+'" width="'+f(pw-zx)+'" y="'+f(Math.min(Y(e),Y(lp)))+'" height="'+f(Math.abs(Y(lp)-Y(e)))+'"/>';
   if(isFinite(e)&&isFinite(st))s+='<rect class="otzl" x="'+f(zx)+'" width="'+f(pw-zx)+'" y="'+f(Math.min(Y(e),Y(st)))+'" height="'+f(Math.abs(Y(st)-Y(e)))+'"/>';
   if(ei>=0)s+='<line class="otev" x1="'+f(zx)+'" x2="'+f(zx)+'" y1="'+T+'" y2="'+(T+ph)+'"/>';
   /* κεριά */
   var cw=Math.max(1,bw*.64);B.forEach(function(b,i){var up=b.c>=b.o,x=X(i),y1=Y(Math.max(b.o,b.c)),y2=Y(Math.min(b.o,b.c));s+='<g class="'+(up?'otu':'otd')+'"><line x1="'+f(x)+'" x2="'+f(x)+'" y1="'+f(Y(b.h))+'" y2="'+f(Y(b.l))+'"/><rect x="'+f(x-cw/2)+'" y="'+f(y1)+'" width="'+f(cw)+'" height="'+f(Math.max(1,y2-y1))+'"/></g>'});
   /* γραμμές επιπέδων με ετικέτες δεξιά */
   var tags=[];var lvl=function(v,c,lab,dash){if(!isFinite(v))return;var y=Y(v);s+='<line class="otl '+c+'" x1="0" x2="'+pw+'" y1="'+f(y)+'" y2="'+f(y)+'"'+(dash?' stroke-dasharray="5 4"':'')+'/>';tags.push({y:y,c:c,t:lab+' '+dmPx(v)})};
-  lvl(tg,'tp','TP');lvl(st,'sl',isFinite(cs)&&cs!==st?'SL αρχ.':'SL',isFinite(cs)&&cs!==st);if(isFinite(cs)&&cs!==st)lvl(cs,'sl','🔒 SL');lvl(e,'en',pend?'Είσοδος (αναμονή)':'Είσοδος',pend);
+  lvl(tg,'tp','TP');if(isFinite(tx))lvl(tx,(t.dir==='short'?tx<e:tx>e)?'tp':'en','Έξοδος 20ημ',true);lvl(st,'sl',isFinite(cs)&&cs!==st?'SL αρχ.':'SL',isFinite(cs)&&cs!==st);if(isFinite(cs)&&cs!==st)lvl(cs,'sl','🔒 SL');lvl(e,'en',pend?'Είσοδος (αναμονή)':'Είσοδος',pend);
   if(isFinite(lp))lvl(lp,'nw','Τώρα',true);
   /* ετικέτες χωρίς επικάλυψη */
   tags.sort(function(a,b){return a.y-b.y});for(var j=1;j<tags.length;j++)if(tags[j].y-tags[j-1].y<15)tags[j].y=tags[j-1].y+15;for(j=tags.length-2;j>=0;j--)if(tags[j].y>H-Bm-6-(tags.length-1-j)*15)tags[j].y=Math.min(tags[j].y,tags[j+1].y-15);
@@ -4022,7 +4050,7 @@ function otSvg(t,B0,tf){var B=B0.map(function(b){return {t:b.t,o:b.o,h:b.h,l:b.l
   /* άξονας χρόνου */
   var every=Math.max(1,Math.round(N/6));for(var q=0;q<N;q+=every){var d=new Date(B[q].t),p2=function(x){return String(x).padStart(2,'0')};s+='<text class="otax" x="'+f(X(q))+'" y="'+(H-6)+'" text-anchor="middle">'+(ms>=144e5||q===0?p2(d.getDate())+'/'+p2(d.getMonth()+1)+' ':'')+p2(d.getHours())+':'+p2(d.getMinutes())+'</text>'}
   s+='</svg>';
-  var leg='<div class="otlg"><span class="tp">━ TP '+dmPx(tg)+'</span><span class="en">━ Είσοδος '+dmPx(e)+'</span><span class="sl">━ SL '+dmPx(isFinite(cs)?cs:st)+'</span>'+(isFinite(lp)?'<span class="nw">┅ Τώρα '+dmPx(lp)+'</span>':'')+(ei>=0?'<span class="mu">┆ ώρα εισόδου</span>':'')+'</div>';
+  var leg='<div class="otlg">'+(isFinite(tg)?'<span class="tp">━ TP '+dmPx(tg)+'</span>':(isFinite(tx)?'<span class="tp">┅ Έξοδος 20ημ '+dmPx(tx)+'</span>':''))+'<span class="en">━ Είσοδος '+dmPx(e)+'</span><span class="sl">━ SL '+dmPx(isFinite(cs)?cs:st)+'</span>'+(isFinite(lp)?'<span class="nw">┅ Τώρα '+dmPx(lp)+'</span>':'')+(ei>=0?'<span class="mu">┆ ώρα εισόδου</span>':'')+'</div>';
   return s+leg}
 document.addEventListener('click',function(e){var r=e.target.closest&&e.target.closest('[data-otre]');if(r){e.stopPropagation();var K=r.getAttribute('data-otre'),o=OTC[K];if(o&&!o.busy){o.err=false;otLoad(K,K.split('|')[0],K.split('|')[1]);renderDmOpen()}return}},true);
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-otf]');if(!b)return;e.stopPropagation();DM.otf=DM.otf||{};DM.otf[b.getAttribute('data-otf')]=b.getAttribute('data-tf');renderDmOpen()},true);
