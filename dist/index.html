@@ -1597,6 +1597,20 @@ section[data-panel=today]{gap:1rem}
 .antabs button span{font-size:1.05rem}
 .antabs button:hover{color:var(--fg);background:var(--sunk)}
 .antabs button.on{color:var(--fg);background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 80%,#fff 20%),var(--sunk));box-shadow:0 3px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 0 var(--accent)}
+.revroot{display:flex;flex-direction:column;gap:1rem}
+.rvtbl td{vertical-align:top}
+.rvchip{border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:999px;padding:.22rem .6rem;font:inherit;font-size:.78rem;cursor:pointer;margin:.15rem .2rem .15rem 0;opacity:.7}
+.rvchip.on{opacity:1;color:var(--fg);font-weight:700}.rvchip.on.sev3{background:color-mix(in srgb,var(--loss) 22%,var(--sunk));border-color:var(--loss)}.rvchip.on.sev2{background:color-mix(in srgb,var(--mark) 22%,var(--sunk));border-color:var(--mark)}.rvchip.on.sev1{background:color-mix(in srgb,var(--accent) 18%,var(--sunk));border-color:var(--accent)}
+.rvrow{border:1px solid var(--line);border-left:4px solid var(--gain);border-radius:10px;margin:.35rem 0;background:var(--surface)}.rvrow.warn{border-left-color:var(--mark)}.rvrow.bad{border-left-color:var(--loss)}
+.rvrow>summary{cursor:pointer;padding:.45rem .6rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;list-style:none}.rvrow>summary::-webkit-details-marker{display:none}
+.rvrow .rvd{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.82rem}.rvrow .rvic{margin-left:auto;letter-spacing:.1rem}
+.rvbody{padding:.2rem .7rem .7rem;display:flex;flex-direction:column;gap:.5rem}.rvfacts{font-size:.82rem;color:var(--muted)}.rvnote{font-size:.84rem;background:var(--sunk);border-radius:8px;padding:.4rem .55rem;white-space:pre-wrap}
+.rvwhy{margin:0;padding-left:1.1rem;font-size:.84rem;display:flex;flex-direction:column;gap:.25rem}.rvwhy i{color:var(--accent);font-style:normal}
+.rvout{white-space:pre-wrap;font-size:.9rem;line-height:1.5;background:var(--sunk);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:.6rem .75rem;margin:.5rem 0}
+.rvsum{border-top:1px solid var(--line);padding:.35rem 0}.rvsum>summary{cursor:pointer;font-size:.86rem}
+.rvpaste{margin:.4rem 0}.rvpaste>summary{cursor:pointer;font-size:.84rem;color:var(--muted)}.rvpaste textarea{width:100%;margin:.4rem 0}
+.rvles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}.rvles li{border-left:3px solid var(--accent);padding:.2rem .6rem;background:var(--sunk);border-radius:6px}
+#impCard.drag{outline:3px dashed var(--accent);outline-offset:3px}
 .angrp{display:flex;flex-direction:column;gap:1rem;min-width:0}.angrp[hidden]{display:none}
 .angrp>.anh{margin-top:.2rem}.angrp>.anh h2{font-size:1.15rem}
 .angrp #kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
@@ -1934,6 +1948,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΣΥΝΑΛΛΑΓΕΣ -->
   <section data-panel="trades" hidden>
+    <div class="card hint" id="impMoved"><span class="muted">📥 Η εισαγωγή CSV από το TradingView είναι πλέον στις <b>Αναλύσεις → 🧑‍🏫 Απολογισμός</b>, μαζί με τον έλεγχο λαθών.</span><button class="btn small" type="button" id="goRevImp">Άνοιγμα</button></div>
     <details class="card imp" id="impCard">
       <summary>Εισαγωγή από TradingView (CSV)</summary>
       <div class="impbody">
@@ -2021,7 +2036,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΑΝΑΛΥΣΕΙΣ -->
   <section data-panel="stats" hidden>
-    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
+    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="rev"><span>🧑‍🏫</span>Απολογισμός</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
     <div class="angrp" data-angrp="perf">
     <div id="anPerf" class="anh"><h2>📊 Η απόδοσή μας</h2><span class="muted">πραγματικές συναλλαγές της ομάδας (με τα φίλτρα πάνω)</span></div>
     <div class="kpis" id="kpis"></div>
@@ -2059,6 +2074,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
       </div>
     </div>
     </div>
+    <div class="angrp" data-angrp="rev" hidden><div id="revRoot" class="revroot"></div></div>
     <div class="angrp" data-angrp="ins" hidden>
     <div class="card c3d" id="insAllCard"><h2>💡 Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
     <div class="card c3d" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>

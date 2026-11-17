@@ -1597,6 +1597,20 @@ section[data-panel=today]{gap:1rem}
 .antabs button span{font-size:1.05rem}
 .antabs button:hover{color:var(--fg);background:var(--sunk)}
 .antabs button.on{color:var(--fg);background:linear-gradient(180deg,color-mix(in srgb,var(--sunk) 80%,#fff 20%),var(--sunk));box-shadow:0 3px 0 color-mix(in srgb,var(--sunk) 55%,#000 45%),inset 0 1px 0 rgba(255,255,255,.1),inset 0 -2px 0 var(--accent)}
+.revroot{display:flex;flex-direction:column;gap:1rem}
+.rvtbl td{vertical-align:top}
+.rvchip{border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:999px;padding:.22rem .6rem;font:inherit;font-size:.78rem;cursor:pointer;margin:.15rem .2rem .15rem 0;opacity:.7}
+.rvchip.on{opacity:1;color:var(--fg);font-weight:700}.rvchip.on.sev3{background:color-mix(in srgb,var(--loss) 22%,var(--sunk));border-color:var(--loss)}.rvchip.on.sev2{background:color-mix(in srgb,var(--mark) 22%,var(--sunk));border-color:var(--mark)}.rvchip.on.sev1{background:color-mix(in srgb,var(--accent) 18%,var(--sunk));border-color:var(--accent)}
+.rvrow{border:1px solid var(--line);border-left:4px solid var(--gain);border-radius:10px;margin:.35rem 0;background:var(--surface)}.rvrow.warn{border-left-color:var(--mark)}.rvrow.bad{border-left-color:var(--loss)}
+.rvrow>summary{cursor:pointer;padding:.45rem .6rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;list-style:none}.rvrow>summary::-webkit-details-marker{display:none}
+.rvrow .rvd{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.82rem}.rvrow .rvic{margin-left:auto;letter-spacing:.1rem}
+.rvbody{padding:.2rem .7rem .7rem;display:flex;flex-direction:column;gap:.5rem}.rvfacts{font-size:.82rem;color:var(--muted)}.rvnote{font-size:.84rem;background:var(--sunk);border-radius:8px;padding:.4rem .55rem;white-space:pre-wrap}
+.rvwhy{margin:0;padding-left:1.1rem;font-size:.84rem;display:flex;flex-direction:column;gap:.25rem}.rvwhy i{color:var(--accent);font-style:normal}
+.rvout{white-space:pre-wrap;font-size:.9rem;line-height:1.5;background:var(--sunk);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:.6rem .75rem;margin:.5rem 0}
+.rvsum{border-top:1px solid var(--line);padding:.35rem 0}.rvsum>summary{cursor:pointer;font-size:.86rem}
+.rvpaste{margin:.4rem 0}.rvpaste>summary{cursor:pointer;font-size:.84rem;color:var(--muted)}.rvpaste textarea{width:100%;margin:.4rem 0}
+.rvles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem}.rvles li{border-left:3px solid var(--accent);padding:.2rem .6rem;background:var(--sunk);border-radius:6px}
+#impCard.drag{outline:3px dashed var(--accent);outline-offset:3px}
 .angrp{display:flex;flex-direction:column;gap:1rem;min-width:0}.angrp[hidden]{display:none}
 .angrp>.anh{margin-top:.2rem}.angrp>.anh h2{font-size:1.15rem}
 .angrp #kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem}
@@ -1934,6 +1948,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΣΥΝΑΛΛΑΓΕΣ -->
   <section data-panel="trades" hidden>
+    <div class="card hint" id="impMoved"><span class="muted">📥 Η εισαγωγή CSV από το TradingView είναι πλέον στις <b>Αναλύσεις → 🧑‍🏫 Απολογισμός</b>, μαζί με τον έλεγχο λαθών.</span><button class="btn small" type="button" id="goRevImp">Άνοιγμα</button></div>
     <details class="card imp" id="impCard">
       <summary>Εισαγωγή από TradingView (CSV)</summary>
       <div class="impbody">
@@ -2021,7 +2036,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΑΝΑΛΥΣΕΙΣ -->
   <section data-panel="stats" hidden>
-    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
+    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="rev"><span>🧑‍🏫</span>Απολογισμός</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
     <div class="angrp" data-angrp="perf">
     <div id="anPerf" class="anh"><h2>📊 Η απόδοσή μας</h2><span class="muted">πραγματικές συναλλαγές της ομάδας (με τα φίλτρα πάνω)</span></div>
     <div class="kpis" id="kpis"></div>
@@ -2059,6 +2074,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
       </div>
     </div>
     </div>
+    <div class="angrp" data-angrp="rev" hidden><div id="revRoot" class="revroot"></div></div>
     <div class="angrp" data-angrp="ins" hidden>
     <div class="card c3d" id="insAllCard"><h2>💡 Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
     <div class="card c3d" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>
@@ -4074,7 +4090,7 @@ var DEF={risk:1,target:2,dayLoss:2,maxTrades:3,estR:true,estR2:false,maxDD:10};
 var S={db:null,user:null,sample:null,uid:null,canWrite:true,live:false,names:{},avs:{},
   trades:[],strategies:[],checkins:[],accounts:{},goals:{},quiz:[],chat:[],confirms:[],demo:[],demoacct:{},drawings:[],files:[],settings:Object.assign({},DEF),
   filter:{who:'all',market:'all',strategy:'all',period:'all',acct:'all',tag:'all'}};
-var LOCAL={trades:{},strategies:{},checkins:{},accounts:{},goals:{},quiz:{},chat:{},confirms:{},demo:{},demoacct:{},drawings:{},files:{},settings:{}};
+var LOCAL={reviews:{},trades:{},strategies:{},checkins:{},accounts:{},goals:{},quiz:{},chat:{},confirms:{},demo:{},demoacct:{},drawings:{},files:{},settings:{}};
 
 /* ---------- helpers ---------- */
 function n(v){var x=parseFloat(String(v).replace(',','.'));return isFinite(x)?x:NaN}
@@ -4142,6 +4158,7 @@ function syncLocal(coll){
 function subscribe(){
   var db=S.db, onErr=function(e){if(!e)return;if(e.code==='revoked')notice('Η πρόσβαση στα δεδομένα άλλαξε. Ανανέωσε τη σελίδα.');else notice('Πρόβλημα σύνδεσης με την αποθήκευση. Ανανέωσε τη σελίδα. ('+(e.code||'error')+')')};
   subscribeTrades(db,onErr);
+  db.collection('reviews').orderBy('at','desc').limit(800).onSnapshot(function(s){S.reviews=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});try{revRender()}catch(e){}},function(){});
   db.collection('strategies').onSnapshot(function(s){S.strategies=s.docs.map(function(d){return Object.assign({id:d.id},d.data())}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','el')});qRun('all',render)},onErr);
   db.collection('checkins').orderBy('date','desc').limit(400).onSnapshot(function(s){S.checkins=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});fillCheckin();try{renderCiHist()}catch(e){}},onErr);
   db.collection('accounts').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.accounts=o;fillAccount();qRun('all',render)},onErr);
@@ -4321,7 +4338,7 @@ function renderInsights(el,items,max){
 var RQ={};function qRun(k,fn){if(RQ[k])return;var sec=document.querySelector('section[data-panel=demo]'),hid=k==='demo'&&!(typeof STN!=='undefined'&&STN.on)&&sec&&sec.hidden;RQ[k]=setTimeout(function(){RQ[k]=0;try{fn()}catch(e){console.error(e)}},hid?4000:250)}
 function qFlush(k,fn){if(RQ[k]){clearTimeout(RQ[k]);RQ[k]=0;try{fn()}catch(e){console.error(e)}}}
 function render(){try{var hs=$('section[data-panel=history]');if(hs&&!hs.hidden){clearTimeout(HI.rt);HI.rt=setTimeout(hiRender,150)}}catch(e){}try{renderCiHist()}catch(e){}try{symListFill()}catch(e){}
-  estimateR();updatePlaybook(true);syncManual();renderWho();renderFilters();renderStrategySelects();renderToday();renderTrades();renderStrategies();renderStats();updateCalc();explainParams();renderProf();renderConfirms();renderDemo();
+  estimateR();updatePlaybook(true);syncManual();renderWho();renderFilters();renderStrategySelects();renderToday();renderTrades();renderStrategies();renderStats();updateCalc();explainParams();renderProf();renderConfirms();renderDemo();try{revRender()}catch(e){console.error(e)}
 }
 function renderWho(){
   var t=S.db?(S.live?'Κοινό ημερολόγιο · συνδεδεμένος ως '+name(S.uid):'Σύνδεση…'):'Τοπική λειτουργία';
@@ -7454,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=292,VERS={sub:null,t:null};
+var APP_VER=293,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -10901,6 +10918,189 @@ function saveAccount(ev){
   var b=$('#a-save');b.disabled=true;
   put('accounts',safeSeg(S.uid||'me'),{balance:v,by:S.uid,updatedAt:new Date().toISOString()}).then(function(){aDirty=false;toast('Το υπόλοιπο αποθηκεύτηκε')}).catch(function(e){toast(writeErr(e))}).then(function(){b.disabled=false;applyWriteState()});
 }
+
+/* ---------- 🧑‍🏫 Απολογισμός: αυτόματος έλεγχος λαθών, ημερολόγιο μαθημάτων και ο Καθηγητής ---------- */
+var REV={draft:{},who:'me',per:'90',only:false,open:{},busy:{},sumBusy:false,lim:40};
+var REVM=[
+ {id:'nostop',t:'Χωρίς stop',ic:'🛑',sev:3,why:'Χωρίς stop δεν ξέρεις πόσα ρισκάρεις. Μία κακή κίνηση μπορεί να σβήσει κέρδη εβδομάδων.',fix:'Το stop μπαίνει ως εντολή στο ανταλλακτήριο πριν πατήσεις «αγορά». Στο σημείο όπου η ιδέα ακυρώνεται, όχι εκεί που «αντέχεις».'},
+ {id:'bigloss',t:'Έχασε πάνω από 1R',ic:'📉',sev:3,why:'Η απώλεια ξεπέρασε το σχέδιο: το stop μετακινήθηκε, δεν μπήκε ποτέ ή έγινε μεγάλο slippage.',fix:'Το stop δεν μετακινείται ποτέ προς τα πίσω. Αν η αγορά έχει απότομες κινήσεις, μικραίνεις τη θέση αντί να ανοίγεις το stop.'},
+ {id:'risk',t:'Ρίσκο πάνω από τον κανόνα',ic:'⚖️',sev:2,why:'Ρίσκαρες περισσότερο από το ποσοστό που ορίσαμε στους Κανόνες ρίσκου.',fix:'Υπολόγισε το μέγεθος θέσης με τον υπολογιστή της σελίδας πριν μπεις. Ίδιο ρίσκο σε κάθε συναλλαγή.'},
+ {id:'rules',t:'Δεν τήρησε τους κανόνες',ic:'📋',sev:3,why:'Εσύ ο ίδιος σημείωσες ότι δεν ακολούθησες το πλάνο.',fix:'Πριν την είσοδο, πέρνα τη λίστα κανόνων της στρατηγικής. Αν λείπει έστω ένας, δεν μπαίνεις.'},
+ {id:'offplan',t:'Εκτός πλάνου',ic:'🎲',sev:2,why:'Συναλλαγή χωρίς στρατηγική: δεν μπορεί να μετρηθεί ούτε να βελτιωθεί.',fix:'Κάθε συναλλαγή ανήκει σε μία στρατηγική με γραμμένους κανόνες. Αν δεν ταιριάζει σε καμία, δεν τη παίζεις.'},
+ {id:'revenge',t:'Συναλλαγή εκδίκησης',ic:'😤',sev:3,why:'Μπήκες σε λιγότερο από 1 ώρα μετά από χαμένη συναλλαγή. Συνήθως είναι προσπάθεια «να τα πάρω πίσω».',fix:'Μετά από απώλεια: 30-60 λεπτά διάλειμμα και γράψε τι έγινε στο ημερολόγιο πριν την επόμενη.'},
+ {id:'overtrade',t:'Πάνω από το όριο συναλλαγών',ic:'🔁',sev:2,why:'Ξεπέρασες τις συναλλαγές της ημέρας που ορίσαμε.',fix:'Το όριο υπάρχει για να μην κυνηγάς. Όταν το φτάσεις, κλείνεις τα γραφήματα για σήμερα.'},
+ {id:'afterlimit',t:'Μετά το όριο απώλειας',ic:'🚫',sev:3,why:'Η μέρα είχε ήδη φτάσει το όριο απώλειας και συνέχισες.',fix:'Στο όριο απώλειας της ημέρας σταματάς. Το «κλείδωμα» της σελίδας είναι εκεί για αυτό.'},
+ {id:'earlycut',t:'Έκλεισε το κέρδος νωρίς',ic:'✂️',sev:1,why:'Η τιμή πήγε τουλάχιστον 1R πιο πέρα από εκεί που έκλεισες. Μικρά κέρδη χαλάνε το μέσο R.',fix:'Αποφάσισε την έξοδο πριν μπεις (στόχος ή trailing stop) και μην την αλλάζεις από φόβο.'},
+ {id:'gaveback',t:'Έδωσε πίσω κέρδος',ic:'↩️',sev:2,why:'Η συναλλαγή έφτασε +1R ή περισσότερο αλλά έκλεισε χωρίς κέρδος.',fix:'Στο +1R μετέφερε το stop στο σημείο εισόδου (break-even) ή κλείσε μέρος της θέσης.'},
+ {id:'badrr',t:'Κακή αναλογία ρίσκου/κέρδους',ic:'🎯',sev:1,why:'Ο στόχος ήταν λιγότερο από 1,5 φορά το ρίσκο. Θέλεις πολύ υψηλό ποσοστό επιτυχίας για να βγάλεις κέρδος.',fix:'Παίζε setups με στόχο τουλάχιστον 1,5-2R, ή μην μπαίνεις.'},
+ {id:'emo',t:'Κακή ψυχολογία',ic:'🧠',sev:2,why:'Σημείωσες βιασύνη, FOMO, εκδίκηση ή κούραση πριν την είσοδο.',fix:'Αν δεν είσαι ήρεμος, δεν παίζεις. Μικρή βόλτα και ξαναδές το setup.'},
+ {id:'weakstrat',t:'Στρατηγική με αρνητικό αποτέλεσμα',ic:'📊',sev:1,why:'Αυτή η στρατηγική έχει αρνητικό μέσο R στο ιστορικό σας (8+ συναλλαγές).',fix:'Σταμάτα την ή άλλαξέ την (στόχος, φίλτρο τάσης, timeframe) και δοκίμασέ την πρώτα σε backtest ή demo.'},
+ {id:'badtime',t:'Κακή ώρα για εσένα',ic:'🕒',sev:1,why:'Σε αυτή τη συνεδρία (session) έχεις αρνητικό μέσο R στο ιστορικό σου.',fix:'Περιόρισε τις συναλλαγές στις ώρες που σου βγαίνουν καλύτερα (δες «Ανά session»).'}
+];
+var REVMAP={};REVM.forEach(function(m){REVMAP[m.id]=m});
+function revTs(t){var d=t.date||'',tm=t.time||'00:00';var x=new Date(d+'T'+(tm.length===5?tm:'00:00')+':00');return isNaN(x)?NaN:x.getTime()}
+function revList(){
+  var cut=null;if(REV.per!=='all'){var d=new Date();d.setDate(d.getDate()-(+REV.per));cut=d.toISOString().slice(0,10)}
+  return closed(S.trades).filter(function(t){if(cut&&(t.date||'')<cut)return false;if(REV.who==='me')return t.by===S.uid;if(REV.who!=='all')return t.by===REV.who;return true});
+}
+/* εντοπίζει τα λάθη κάθε συναλλαγής από όσα ξέρει η σελίδα (κανόνες ρίσκου, στρατηγικές, ιστορικό του ίδιου ατόμου) */
+function revScan(list){
+  var set=S.settings||DEF,all=closed(S.trades),by={},strat={},sess={},out={};
+  all.forEach(function(t){(by[t.by||'?']=by[t.by||'?']||[]).push(t)});
+  group(all,function(t){return t.strategyId||''}).forEach(function(g){strat[g.key]=g});
+  Object.keys(by).forEach(function(u){sess[u]={};group(by[u],function(t){return sessionOf(t.time)}).forEach(function(g){sess[u][g.key]=g})});
+  var EMO={'Βιαστικός':1,'FOMO':1,'Εκδίκηση':1,'Κουρασμένος':1};
+  list.forEach(function(t){
+    var f=[],seq=by[t.by||'?']||[],i=seq.indexOf(t),r=t.r,e=n(t.entry),s=n(t.stop),tg=n(t.target),lossC=0,missC=0,add=function(id,c){f.push(id);if(!(c<0))return;if(id==='earlycut')missC+=c;else lossC=Math.min(lossC,c)};
+    var stopOk=isFinite(s)&&s!==e&&!t._est;
+    if(!stopOk)add('nostop',r<-1?r+1:0);
+    else if(r<-1.15)add('bigloss',r+1);
+    if(isFinite(n(t.riskPct))&&n(t.riskPct)>n(set.risk)*1.25)add('risk',r<0?r*(1-n(set.risk)/n(t.riskPct)):0);
+    if(t.rules===false)add('rules',r<0?r:0);
+    if(!t.strategyId||t.strategyId==='_off')add('offplan',r<0?r:0);
+    var ts=revTs(t),day=[],dayR=0;
+    for(var j=0;j<i;j++){var p=seq[j];if(p.date===t.date){day.push(p);dayR+=p.r}}
+    var prev=i>0?seq[i-1]:null;
+    if(prev&&prev.r<0&&prev.date===t.date&&isFinite(ts)&&isFinite(revTs(prev))&&ts-revTs(prev)<36e5&&ts>=revTs(prev))add('revenge',r<0?r:0);
+    if(day.length>=n(set.maxTrades))add('overtrade',r<0?r:0);
+    if(dayR<=-n(set.dayLoss))add('afterlimit',r<0?r:0);
+    var mfe=n(t.mfe);
+    if(r>0&&isFinite(mfe)&&mfe>=r+1)add('earlycut',-(mfe-r)*0.5);
+    if(isFinite(mfe)&&mfe>=1&&r<=0)add('gaveback',r);
+    if(stopOk&&isFinite(tg)&&Math.abs(tg-e)/Math.abs(e-s)<1.5)add('badrr',0);
+    if(EMO[t.emotion])add('emo',r<0?r:0);
+    var sg=strat[t.strategyId||''];if(t.strategyId&&t.strategyId!=='_off'&&sg&&sg.n>=8&&sg.avgR<0)add('weakstrat',0);
+    var se=sessionOf(t.time),sv=se&&sess[t.by||'?']&&sess[t.by||'?'][se];if(sv&&sv.n>=6&&sv.avgR<-0.3)add('badtime',0);
+    var rv=revGet(t);if(rv&&Array.isArray(rv.marks))f=rv.marks.slice();
+    /* το κόστος μιας συναλλαγής δεν ξεπερνά την πραγματική της απώλεια (+ το μισό κέρδος που άφησε στο τραπέζι) */
+    var cost=Math.max(lossC,Math.min(0,r))+missC;
+    out[t.id]={f:f,cost:cost};
+  });
+  return out;
+}
+function revKey(t){return (t.id||'')+'_'+safeSeg(S.uid||'me')}
+function revGet(t){var L=S.reviews||[],k=revKey(t),own=L.find(function(x){return x.id===k});return own||L.find(function(x){return x.tid===t.id&&x.kind==='trade'})}
+function revAgg(list,F){
+  var A={};list.forEach(function(t){var x=F[t.id];if(!x)return;x.f.forEach(function(id){var a=A[id]||(A[id]={id:id,n:0,cost:0,r:0});a.n++;a.r+=t.r});});
+  // κόστος: μοιράζουμε το κόστος κάθε συναλλαγής στα λάθη της
+  list.forEach(function(t){var x=F[t.id];if(!x||!x.f.length||!(x.cost<0))return;x.f.forEach(function(id){A[id].cost+=x.cost/x.f.length})});
+  return Object.keys(A).map(function(k){return A[k]}).sort(function(a,b){return a.cost-b.cost||b.n-a.n});
+}
+function revChip(id,on,tid){var m=REVMAP[id];if(!m)return '';return '<button type="button" class="rvchip sev'+m.sev+(on?' on':'')+'"'+(tid?' data-rvmark="'+esc(tid)+'" data-m="'+id+'"':'')+' title="'+esc(m.why)+'">'+m.ic+' '+esc(m.t)+'</button>'}
+function revRender(){
+  var el=$('#revRoot');if(!el||el.closest('[data-angrp]').hidden)return;
+  var list=revList(),F=revScan(list),st=stats(list),agg=revAgg(list,F),withM=list.filter(function(t){return F[t.id].f.length}),serious=list.filter(function(t){return F[t.id].f.some(function(id){return REVMAP[id].sev>=3})});
+  var cost=agg.reduce(function(s,a){return s+a.cost},0),disc=list.length?Math.round(100*(1-serious.length/list.length)):NaN;
+  var who='<select id="rvWho" class="dmsel"><option value="me"'+(REV.who==='me'?' selected':'')+'>Εγώ</option><option value="all"'+(REV.who==='all'?' selected':'')+'>Όλοι</option>'+Object.keys(S.names||{}).filter(function(u){return u!==S.uid}).map(function(u){return '<option value="'+esc(u)+'"'+(REV.who===u?' selected':'')+'>'+esc(name(u))+'</option>'}).join('')+'</select>';
+  var per='<select id="rvPer" class="dmsel">'+[['30','30 μέρες'],['90','90 μέρες'],['365','1 χρόνος'],['all','Όλο το ιστορικό']].map(function(o){return '<option value="'+o[0]+'"'+(REV.per===o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select>';
+  var h='<div class="card c3d"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Απολογισμός &amp; ημερολόγιο λαθών</h2><div class="row" style="gap:.4rem">'+who+per+'</div></div>'+
+   '<p class="muted" style="margin:.3rem 0 .7rem;font-size:.86rem">Η σελίδα ελέγχει κάθε κλειστή συναλλαγή με τους Κανόνες ρίσκου, τις στρατηγικές και το ιστορικό σου, και βρίσκει τα λάθη και πόσο σας κόστισαν σε R. Ο Καθηγητής εξηγεί γιατί έγιναν και τι να αλλάξετε. Ό,τι μαθαίνετε γράφεται στο ημερολόγιο μαθημάτων.</p>'+
+   (list.length?'<div class="kpis">'+kpi('Συναλλαγές',String(list.length),'κλειστές')+kpi('Με λάθος',withM.length+' ('+Math.round(100*withM.length/list.length)+'%)','τουλάχιστον ένα',withM.length?'neg':'pos')+kpi('Κόστος λαθών',fR(cost),'εκτίμηση',cls(cost))+kpi('Αποτέλεσμα',fR(st.totalR),'χωρίς τα λάθη ≈ '+fR(st.totalR-cost),cls(st.totalR))+kpi('Πειθαρχία',isFinite(disc)?disc+'/100':'–','χωρίς σοβαρό λάθος',disc>=80?'pos':disc<60?'neg':'')+'</div>':'<div class="empty">Δεν υπάρχουν κλειστές συναλλαγές σε αυτό το διάστημα. Φόρτωσε CSV από το TradingView πιο κάτω ή γράψε συναλλαγές στο 📝 Συναλλαγές.</div>')+'</div>';
+  // τα λάθη που κοστίζουν
+  if(agg.length)h+='<div class="card c3d"><h2>💸 Τα λάθη που σας κοστίζουν</h2><div class="tw"><table class="tbl rvtbl"><thead><tr><th>Λάθος</th><th>Φορές</th><th>Κόστος</th><th>Αποτέλεσμα αυτών</th><th>Τι να κάνετε</th></tr></thead><tbody>'+
+    agg.map(function(a){var m=REVMAP[a.id];return '<tr><td><b>'+m.ic+' '+esc(m.t)+'</b><div class="muted" style="font-size:.78rem">'+esc(m.why)+'</div></td><td>'+a.n+'</td><td class="'+cls(a.cost)+'">'+(a.cost<0?fR(a.cost):'–')+'</td><td class="'+cls(a.r)+'">'+fR(a.r)+'</td><td style="font-size:.82rem">'+esc(m.fix)+'</td></tr>'}).join('')+'</tbody></table></div>'+
+    '<p class="muted" style="font-size:.76rem;margin:.4rem 0 0">Κόστος = ό,τι χάθηκε εξαιτίας του λάθους (π.χ. η απώλεια πέρα από 1R, η απώλεια συναλλαγής εκτός κανόνων, το μισό από όσο άφησες στο τραπέζι). Όταν μια συναλλαγή έχει πολλά λάθη, το κόστος μοιράζεται.</p></div>';
+  // ο Καθηγητής
+  var sums=(S.reviews||[]).filter(function(x){return x.kind==='sum'}).sort(function(a,b){return (b.at||0)-(a.at||0)});
+  h+='<div class="card c3d" id="rvProf"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Ο Καθηγητής: τι κάναμε λάθος και τι μαθαίνουμε</h2><div class="row" style="gap:.4rem"><button class="btn primary small" type="button" id="rvAsk"'+(REV.sumBusy?' disabled':'')+'>'+(REV.sumBusy?'⏳ Διαβάζει…':'Ζήτα απολογισμό')+'</button><button class="btn small" type="button" id="rvCopy" title="Αντιγράφει όλα τα δεδομένα και την ερώτηση για να τα επικολλήσεις σε συζήτηση στο claude.ai">📋 Για το claude.ai</button></div></div>'+
+   (S.sample?'':'<p class="muted" style="font-size:.82rem;margin:.3rem 0">Ο Καθηγητής-AI της σελίδας χρειάζεται κλειδί Anthropic στο Vercel. Μέχρι τότε: πάτα «📋 Για το claude.ai», επικόλλησε σε μια συζήτηση στο claude.ai με τον λογαριασμό σας και φέρε την απάντηση εδώ.</p>')+
+   '<div id="rvOut" class="rvout"'+(REV.live?'':' hidden')+'>'+esc(REV.live||'')+'</div>'+
+   '<details class="rvpaste"><summary>Επικόλληση απάντησης από το claude.ai</summary><textarea id="rvPaste" rows="5" placeholder="Επικόλλησε εδώ την απάντηση του Claude για να μείνει στο ημερολόγιο"></textarea><button class="btn small" type="button" id="rvPasteSave">💾 Αποθήκευση στο ημερολόγιο</button></details>'+
+   (sums.length?'<h3 style="margin:.8rem 0 .3rem;font-size:.95rem">Προηγούμενοι απολογισμοί</h3>'+sums.slice(0,12).map(function(x,i){return '<details class="rvsum"'+(i===0&&!REV.live?' open':'')+'><summary><b>'+esc(new Date(x.at).toLocaleString('el-GR',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}))+'</b> · '+esc(name(x.by))+' · '+esc(x.scope||'')+'</summary><div class="rvout">'+esc(x.ai||'')+'</div></details>'}).join(''):'')+'</div>';
+  // εισαγωγή CSV
+  h+='<div id="rvImpHost"></div>';
+  // συναλλαγή-συναλλαγή
+  var L=(REV.only?withM:list).slice().reverse();
+  h+='<div class="card c3d"><div class="formhead"><h2 style="margin:0">🔍 Συναλλαγή-συναλλαγή</h2><label class="muted" style="font-size:.85rem"><input type="checkbox" style="width:auto;vertical-align:middle" id="rvOnly"'+(REV.only?' checked':'')+'> μόνο όσες έχουν λάθος</label></div>'+
+   '<p class="muted" style="font-size:.8rem;margin:.3rem 0 .6rem">Άνοιξε μια συναλλαγή: διόρθωσε τα λάθη (πάτα για να τα προσθέσεις ή να τα βγάλεις), γράψε τι έμαθες και ζήτα από τον Καθηγητή να την εξηγήσει με τα κεριά της στιγμής.</p>'+
+   (L.length?L.slice(0,REV.lim).map(function(t){return revRow(t,F[t.id])}).join('')+(L.length>REV.lim?'<button class="btn small" type="button" id="rvMore">Περισσότερες ('+(L.length-REV.lim)+')</button>':''):'<div class="empty">Καμία συναλλαγή.</div>')+'</div>';
+  // ημερολόγιο μαθημάτων
+  var les=(S.reviews||[]).filter(function(x){return x.kind==='trade'&&(x.lesson||'').trim()}).sort(function(a,b){return (b.at||0)-(a.at||0)});
+  h+='<div class="card c3d"><h2>📒 Το ημερολόγιο μαθημάτων μας</h2>'+(les.length?'<ul class="rvles">'+les.slice(0,60).map(function(x){var t=S.trades.find(function(q){return q.id===x.tid});return '<li><div class="muted" style="font-size:.78rem">'+esc(name(x.by))+' · '+(t?esc(dateGr(t.date))+' · '+esc(t.symbol||'')+' '+(t.dir==='short'?'short':'long')+' · <span class="'+cls(t.r)+'">'+fR(t.r)+'</span>':'')+' '+(x.marks||[]).map(function(m){return REVMAP[m]?REVMAP[m].ic:''}).join(' ')+'</div><div>'+esc(x.lesson)+'</div></li>'}).join('')+'</ul>':'<div class="empty">Ακόμα κανένα μάθημα. Άνοιξε μια συναλλαγή πιο πάνω και γράψε τι έμαθες.</div>')+'</div>';
+  var ic0=$('#impCard');if(ic0&&el.contains(ic0)){var pk=$('#impPark');if(!pk){pk=document.createElement('div');pk.id='impPark';pk.hidden=true;document.body.appendChild(pk)}pk.appendChild(ic0)}
+  el.innerHTML=h;
+  // η εισαγωγή CSV ζει εδώ
+  var ic=$('#impCard'),host=$('#rvImpHost');if(ic&&host){host.appendChild(ic);ic.classList.add('c3d');if(!ic._dd){ic._dd=1;['dragover','dragenter'].forEach(function(ev){ic.addEventListener(ev,function(e){e.preventDefault();ic.classList.add('drag')})});ic.addEventListener('dragleave',function(){ic.classList.remove('drag')});ic.addEventListener('drop',function(e){e.preventDefault();ic.classList.remove('drag');var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(!f)return;try{var dt=new DataTransfer();dt.items.add(f);$('#imp-file').files=dt.files;$('#imp-file').dispatchEvent(new Event('change'))}catch(x){}ic.open=true})}var sm=ic.querySelector('summary');if(sm&&!/📥/.test(sm.textContent))sm.textContent='📥 Φόρτωσε CSV από το TradingView (ή σύρε το αρχείο εδώ)'}
+}
+function revRow(t,x){
+  var rv=revGet(t),open=!!REV.open[t.id],f=x?x.f:[];
+  var h='<details class="rvrow'+(f.some(function(id){return REVMAP[id].sev>=3})?' bad':f.length?' warn':' ok')+'" data-rvid="'+esc(t.id)+'"'+(open?' open':'')+'><summary><span class="rvd">'+esc(dateGr(t.date))+' '+esc(t.time||'')+'</span><b>'+esc(t.symbol||'')+'</b> <span class="pill">'+(t.dir==='short'?'short':'long')+'</span> <span class="muted">'+esc(stratName(t.strategyId))+'</span> <b class="'+cls(t.r)+'">'+fR(t.r)+'</b>'+(REV.who!=='me'?' <span class="muted" style="font-size:.78rem">'+esc(name(t.by))+'</span>':'')+'<span class="rvic">'+(f.length?f.map(function(id){return REVMAP[id].ic}).join(''):'✅')+(rv&&rv.lesson?' 📒':'')+(rv&&rv.ai?' 🧑‍🏫':'')+'</span></summary>';
+  if(!open)return h+'</details>';
+  var mine=t.by===S.uid||!S.db;
+  h+='<div class="rvbody"><div class="rvfacts">Είσοδος '+esc(fmt(n(t.entry),6).replace(/,?0+$/,''))+' · Stop '+(isFinite(n(t.stop))?esc(String(t.stop)):'–')+' · Στόχος '+(isFinite(n(t.target))?esc(String(t.target)):'–')+' · Έξοδος '+esc(String(t.exit))+(isFinite(n(t.mfe))?' · MFE '+fR(n(t.mfe)):'')+(t.riskPct!=null?' · Ρίσκο '+fmt(t.riskPct,2)+'%':'')+(t.emotion?' · '+esc(t.emotion):'')+(t.rules===true?' · κανόνες ✓':t.rules===false?' · κανόνες ✗':'')+'</div>'+
+   (t.notes?'<div class="rvnote">'+esc(String(t.notes).slice(0,400))+'</div>':'')+
+   '<div class="rvchips">'+REVM.map(function(m){return revChip(m.id,f.indexOf(m.id)>=0,t.id)}).join('')+'</div>'+
+   (f.length?'<ul class="rvwhy">'+f.map(function(id){var m=REVMAP[id];return '<li><b>'+m.ic+' '+esc(m.t)+':</b> '+esc(m.why)+' <i>→ '+esc(m.fix)+'</i></li>'}).join('')+'</ul>':'<p class="muted" style="font-size:.84rem">✅ Δεν βρέθηκε λάθος. Αν έχασε, ήταν απλώς μέρος του παιχνιδιού: καλή συναλλαγή με κακό αποτέλεσμα.</p>')+
+   '<label class="f full">📒 Τι έμαθα / τι θα κάνω διαφορετικά<textarea data-rvles="'+esc(t.id)+'" rows="3" placeholder="π.χ. Μπήκα πριν κλείσει το κερί. Την επόμενη φορά περιμένω το κλείσιμο.">'+esc(REV.draft[t.id]!=null?REV.draft[t.id]:(rv&&rv.lesson||''))+'</textarea></label>'+
+   '<div class="row" style="gap:.4rem;flex-wrap:wrap"><button class="btn small primary" type="button" data-rvsave="'+esc(t.id)+'">💾 Αποθήκευση</button><button class="btn small" type="button" data-rvai="'+esc(t.id)+'"'+(REV.busy[t.id]?' disabled':'')+'>'+(REV.busy[t.id]?'⏳ Ο Καθηγητής διαβάζει…':'🧑‍🏫 Εξήγησέ μου τη συναλλαγή')+'</button><button class="btn small" type="button" data-rvcopy="'+esc(t.id)+'">📋 Για το claude.ai</button>'+(mine?'':'<span class="muted" style="font-size:.78rem">Η συναλλαγή είναι άλλου μέλους: οι σημειώσεις σου γράφονται ξεχωριστά.</span>')+'</div>'+
+   '<div class="rvout" id="rvAi_'+esc(t.id)+'"'+((rv&&rv.ai)||REV.busy[t.id]?'':' hidden')+'>'+esc(REV.busy[t.id]||(rv&&rv.ai)||'')+'</div></div></details>';
+  return h;
+}
+function revSave(t,patch){
+  var k=revKey(t),cur=(S.reviews||[]).find(function(x){return x.id===k})||{},F=revScan([t])[t.id];
+  patch=patch||{};Object.keys(patch).forEach(function(k){if(patch[k]===undefined)delete patch[k]});
+  var d=Object.assign({kind:'trade',tid:t.id,by:S.uid||'',marks:cur.marks||F.f,lesson:cur.lesson||'',ai:cur.ai||'',at:Date.now()},patch);if(patch.lesson!=null)delete REV.draft[t.id];
+  return put('reviews',k,d);
+}
+/* κεριά γύρω από τη συναλλαγή (από το αρχείο κεριών), για να «δει» ο Καθηγητής τι έγινε */
+function revCtx(t){
+  var ts=revTs(t);if(!isFinite(ts)||t.market==='stock')return Promise.resolve(null);
+  var tf=CC_TFMS[t.tf]?t.tf:'1h',ms=CC_TFMS[tf],days=Math.min(400,Math.max(3,Math.ceil((Date.now()-ts)/864e5)+2));
+  var p=histBars(t.symbol,tf,days).then(function(r){var b=(r&&r.bars)||[],i=b.findIndex(function(x){return x.t+ms>ts});if(i<0)return null;return {tf:tf,bars:b.slice(Math.max(0,i-30),i+16).map(function(x){return [new Date(x.t).toISOString().slice(5,16).replace('T',' '),+x.o.toPrecision(6),+x.h.toPrecision(6),+x.l.toPrecision(6),+x.c.toPrecision(6)]}),entryBar:Math.min(30,i)}}).catch(function(){return null});
+  return Promise.race([p,new Promise(function(ok){setTimeout(function(){ok(null)},6000)})]);
+}
+function revTradePrompt(t,ctx){
+  var F=revScan([t])[t.id],rv=revGet(t),s=S.strategies.find(function(x){return x.id===t.strategyId}),sg=group(S.trades.filter(function(q){return q.strategyId===t.strategyId}),function(){return 'x'})[0];
+  var mp=null;try{var R=window.__E9&&__E9.mpRows&&__E9.mpRows();var base=String(t.symbol||'').replace(/(USDT|USDC|USD|EUR|PERP|\.P)$/,'');var m=R&&R.find(function(x){return x.coin===base&&x.P});if(m)mp={MVAH:m.P.vah,MPOC:m.P.poc,MVAL:m.P.val}}catch(e){}
+  var data={trade:{date:t.date,time:t.time,symbol:t.symbol,market:t.market,dir:t.dir,tf:t.tf,entry:t.entry,stop:t.stop,target:t.target,exit:t.exit,r:t.r,mfeR:t.mfe,riskPct:t.riskPct,rulesFollowed:t.rules,emotion:t.emotion,tags:t.tags,notes:String(t.notes||'').slice(0,800)},
+    detectedMistakes:(rv&&rv.marks||F.f).map(function(id){return REVMAP[id]?REVMAP[id].t:id}),myLesson:rv&&rv.lesson||'',
+    strategy:s?{name:s.name,entry:s.entry,exit:s.exit,tf:s.tf,history:sg?{n:sg.n,winRate:sg.winRate,avgR:sg.avgR}:null}:null,riskRules:S.settings,monthlyMarketProfile:mp,candlesAroundEntry:ctx};
+  return 'Είσαι ο «Καθηγητής», προπονητής trading μιας παρέας που μαθαίνει. Εξήγησε απλά, στα ελληνικά, τι έγινε σε αυτή τη συναλλαγή. Χρησιμοποίησε ΜΟΝΟ τα δεδομένα (τα κεριά είναι [ώρα UTC, open, high, low, close], το κερί εισόδου είναι στη θέση candlesAroundEntry.entryBar). Μη δίνεις σήματα για το μέλλον ούτε επενδυτικές συμβουλές. Σε απλό κείμενο χωρίς markdown, έως 220 λέξεις, με τη σειρά:\n'+
+   '1) Τι έγινε (2-3 προτάσεις: πού μπήκαμε σε σχέση με την κίνηση και τα επίπεδα).\n2) Τι κάναμε λάθος ή σωστά, και γιατί (αν δεν υπάρχει λάθος, πες το καθαρά: μια συναλλαγή με κανόνες που έχασε είναι καλή συναλλαγή).\n3) Τι θα μπορούσαμε να κάνουμε αλλιώς (είσοδος, stop, έξοδος, μέγεθος).\n4) Ένα μάθημα σε μία πρόταση για το ημερολόγιο.\n\nΔΕΔΟΜΕΝΑ (JSON):\n'+JSON.stringify(data);
+}
+function revSumPrompt(){
+  var list=revList(),F=revScan(list),st=stats(list),agg=revAgg(list,F);
+  var les=(S.reviews||[]).filter(function(x){return x.kind==='trade'&&x.lesson}).slice(0,15).map(function(x){return x.lesson});
+  var prev=(S.reviews||[]).filter(function(x){return x.kind==='sum'}).sort(function(a,b){return (b.at||0)-(a.at||0)})[0];
+  var data={period:REV.per==='all'?'όλο το ιστορικό':REV.per+' μέρες',who:REV.who==='me'?name(S.uid):REV.who==='all'?'όλη η παρέα':name(REV.who),riskRules:S.settings,
+    overall:{closed:st.n,winRate:st.winRate,avgR:st.avgR,avgWinR:st.avgWin,avgLossR:st.avgLoss,profitFactor:isFinite(st.pf)?st.pf:null,totalR:st.totalR,maxDrawdownR:st.dd,worstLosingStreak:st.worstStreak},
+    mistakes:agg.map(function(a){return {mistake:REVMAP[a.id].t,times:a.n,costR:+a.cost.toFixed(2),resultOfTheseR:+a.r.toFixed(2)}}),
+    byStrategy:group(list,function(t){return stratName(t.strategyId)}),bySession:group(list,function(t){return sessionOf(t.time)||'—'}),byEmotion:group(list,function(t){return t.emotion||'—'}),byDir:group(list,function(t){return t.dir}),bySymbol:group(list,function(t){return t.symbol}).slice(0,10),
+    strategies:S.strategies.map(function(s){return {name:s.name,tf:s.tf,entry:s.entry,exit:s.exit}}),
+    last30:list.slice(-30).map(function(t){return {date:t.date,time:t.time,sym:t.symbol,dir:t.dir,strategy:stratName(t.strategyId),r:t.r,mfeR:t.mfe,mistakes:F[t.id].f.map(function(id){return REVMAP[id].t})}}),
+    ourLessons:les,previousReview:prev?String(prev.ai||'').slice(0,1200):null};
+  return 'Είσαι ο «Καθηγητής», προπονητής trading μιας παρέας που μαθαίνει (crypto και μετοχές, TradingView). Κάνε απολογισμό ΜΟΝΟ με τα δεδομένα παρακάτω. Μη δίνεις σήματα, τιμές-στόχους ή επενδυτικές συμβουλές. Γράψε στα ελληνικά, απλά, σε απλό κείμενο χωρίς markdown, έως 400 λέξεις, με τους τίτλους:\n'+
+   'ΕΙΚΟΝΑ: τι δείχνουν τα νούμερα (λάβε υπόψη πόσο μικρό είναι το δείγμα).\nΤΑ 3 ΛΑΘΗ ΠΟΥ ΚΟΣΤΙΖΟΥΝ: με αριθμούς (φορές, R), γιατί πιθανότατα γίνονται και πώς φαίνονται στις συναλλαγές.\nΤΙ ΚΑΝΟΥΜΕ ΣΩΣΤΑ: 1-2 πράγματα να κρατήσουμε.\nΚΑΝΟΝΕΣ ΓΙΑ ΤΙΣ ΕΠΟΜΕΝΕΣ 20 ΣΥΝΑΛΛΑΓΕΣ: 2-3 συγκεκριμένοι, μετρήσιμοι κανόνες (το ρίσκο μένει στο '+S.settings.risk+'% ή λιγότερο).\nΤΙ ΝΑ ΜΕΛΕΤΗΣΟΥΜΕ: ένα θέμα θεωρίας που θα βοηθούσε.\n'+
+   (data.previousReview?'Αν υπάρχει previousReview, πες σύντομα αν τα λάθη μειώθηκαν ή επαναλαμβάνονται.\n':'')+'Αν τα δεδομένα δεν αρκούν για κάποιο συμπέρασμα, πες το.\n\nΔΕΔΟΜΕΝΑ (JSON):\n'+JSON.stringify(data);
+}
+function revCopy(txt){var done=function(){toast('Αντιγράφηκε. Επικόλλησέ το σε μια συζήτηση στο claude.ai.')};try{navigator.clipboard.writeText(txt).then(done,function(){revCopyFb(txt);done()})}catch(e){revCopyFb(txt);done()}}
+function revCopyFb(txt){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy')}catch(e){}ta.remove()}
+document.addEventListener('change',function(e){var t=e.target;if(t.id==='rvWho'){REV.who=t.value;revRender()}else if(t.id==='rvPer'){REV.per=t.value;revRender()}else if(t.id==='rvOnly'){REV.only=t.checked;revRender()}});
+document.addEventListener('toggle',function(e){var d=e.target;if(!d||!d.classList||!d.classList.contains('rvrow'))return;var id=d.getAttribute('data-rvid');if(d.open&&!REV.open[id]){REV.open[id]=1;var t=S.trades.find(function(x){return x.id===id});if(t){var F=revScan([t]);d.outerHTML=revRow(t,F[id])}}else if(!d.open)delete REV.open[id]},true);
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('#rvAsk,#rvCopy,#rvPasteSave,#rvMore,[data-rvmark],[data-rvsave],[data-rvai],[data-rvcopy],[data-ang="rev"],#goRevImp');if(!b)return;
+  if(b.getAttribute('data-ang')==='rev'){setTimeout(revRender,0);return}
+  if(b.id==='goRevImp'){showTab('stats');anGo('rev');setTimeout(function(){revRender();var c=$('#impCard');if(c){c.open=true;c.scrollIntoView({behavior:'smooth',block:'start'})}},60);return}
+  if(b.id==='rvMore'){REV.lim+=40;revRender();return}
+  if(b.id==='rvCopy'){revCopy(revSumPrompt());return}
+  if(b.id==='rvPasteSave'){var v=($('#rvPaste').value||'').trim();if(!v)return;put('reviews','sum_'+Date.now()+'_'+safeSeg(S.uid||'me'),{kind:'sum',by:S.uid||'',ai:v.slice(0,12000),scope:(REV.who==='all'?'όλη η παρέα':'')+' · '+(REV.per==='all'?'όλο το ιστορικό':REV.per+' μέρες')+' · claude.ai',at:Date.now()}).then(function(){toast('Μπήκε στο ημερολόγιο');revRender()}).catch(function(x){toast(writeErr(x))});return}
+  if(b.id==='rvAsk'){
+    if(!S.sample){revCopy(revSumPrompt());return}
+    REV.sumBusy=true;REV.live='Ο Καθηγητής διαβάζει όλο το ημερολόγιο…';revRender();var scope=(REV.who==='all'?'όλη η παρέα':REV.who==='me'?name(S.uid):name(REV.who))+' · '+(REV.per==='all'?'όλο το ιστορικό':REV.per+' μέρες');
+    S.sample(revSumPrompt(),{onText:function(u){REV.live=u.text;var o=$('#rvOut');if(o){o.hidden=false;o.textContent=u.text}},modelTier:'complex',cache:false}).then(function(r){REV.live='';return put('reviews','sum_'+Date.now()+'_'+safeSeg(S.uid||'me'),{kind:'sum',by:S.uid||'',ai:String(r.text||'').slice(0,12000),scope:scope,at:Date.now()})})
+     .catch(function(x){REV.live=x&&x.code==='not_granted'?'Ο Καθηγητής-AI δεν είναι ενεργός (χρειάζεται κλειδί Anthropic στο Vercel). Χρησιμοποίησε το «📋 Για το claude.ai».':'Ο απολογισμός δεν ολοκληρώθηκε. Ξαναδοκίμασε σε λίγο.'}).then(function(){REV.sumBusy=false;revRender()});return}
+  var id=b.getAttribute('data-rvmark')||b.getAttribute('data-rvsave')||b.getAttribute('data-rvai')||b.getAttribute('data-rvcopy'),t=S.trades.find(function(x){return x.id===id});if(!t)return;
+  if(b.hasAttribute('data-rvmark')){var rv=revGet(t),marks=(rv&&rv.marks?rv.marks:revScan([t])[t.id].f).slice(),m=b.getAttribute('data-m'),i=marks.indexOf(m);if(i>=0)marks.splice(i,1);else marks.push(m);var les=document.querySelector('[data-rvles="'+id+'"]');revSave(t,{marks:marks,lesson:les?les.value.slice(0,2000):(rv&&rv.lesson||'')}).then(function(){revRender()}).catch(function(x){toast(writeErr(x))});return}
+  if(b.hasAttribute('data-rvsave')){var ta=document.querySelector('[data-rvles="'+id+'"]');revSave(t,{lesson:ta?ta.value.slice(0,2000):''}).then(function(){toast('📒 Αποθηκεύτηκε στο ημερολόγιο μαθημάτων');revRender()}).catch(function(x){toast(writeErr(x))});return}
+  if(b.hasAttribute('data-rvcopy')){b.disabled=true;revCtx(t).then(function(ctx){b.disabled=false;revCopy(revTradePrompt(t,ctx))});return}
+  if(b.hasAttribute('data-rvai')){
+    if(!S.sample){revCtx(t).then(function(ctx){revCopy(revTradePrompt(t,ctx))});return}
+    REV.busy[id]='Ο Καθηγητής κοιτάζει τα κεριά της στιγμής…';revRender();
+    revCtx(t).then(function(ctx){return S.sample(revTradePrompt(t,ctx),{onText:function(u){REV.busy[id]=u.text;var o=document.getElementById('rvAi_'+id);if(o){o.hidden=false;o.textContent=u.text}},modelTier:'default',cache:false})})
+     .then(function(r){delete REV.busy[id];var ta=document.querySelector('[data-rvles="'+id+'"]');return revSave(t,{ai:String(r.text||'').slice(0,6000),lesson:ta?ta.value.slice(0,2000):undefined})})
+     .catch(function(x){REV.busy[id]=x&&x.code==='not_granted'?'Ο Καθηγητής-AI δεν είναι ενεργός. Πάτα «📋 Για το claude.ai».':'Δεν ολοκληρώθηκε. Ξαναδοκίμασε σε λίγο.';setTimeout(function(){delete REV.busy[id]},8000)}).then(function(){revRender()});return}
+});
+document.addEventListener('input',function(e){var id=e.target&&e.target.getAttribute&&e.target.getAttribute('data-rvles');if(id!=null)REV.draft[id]=e.target.value});
 
 /* ---------- AI analyst ---------- */
 var aiCtl=null;

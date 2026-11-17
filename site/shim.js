@@ -463,7 +463,7 @@
   /* ---------- μεταφορά δεδομένων από το claude.ai (άνοιξε τη σελίδα με ?import=1) ---------- */
   if (Q.get('import') === '1') memberP.then(function (u) { appP.then(function (a) { importUI(a, u) }) });
   /* τα κουμπιά «💾 Αντίγραφο ασφαλείας» της σελίδας (Αναλύσεις): Επαναφορά = η μεταφορά παραπάνω, Εξαγωγή = όλη η κοινή βάση σε JSON */
-  var COLS = ['accounts', 'agent', 'apchg', 'aplog', 'approfiles', 'apstate', 'bars', 'barsarc', 'btlab', 'chat', 'chatrx', 'checkins', 'class', 'confirms', 'council', 'demo', 'demoacct', 'drawings', 'files', 'fun', 'genstrats', 'goals', 'news', 'prac', 'props', 'qbank', 'quiz', 'settings', 'strategies', 'trades'];
+  var COLS = ['accounts', 'agent', 'reviews', 'apchg', 'aplog', 'approfiles', 'apstate', 'bars', 'barsarc', 'btlab', 'chat', 'chatrx', 'checkins', 'class', 'confirms', 'council', 'demo', 'demoacct', 'drawings', 'files', 'fun', 'genstrats', 'goals', 'news', 'prac', 'props', 'qbank', 'quiz', 'settings', 'strategies', 'trades'];
   document.addEventListener('click', function (e) {
     var t = e.target && e.target.closest ? e.target.closest('#bkPick,#bkExport') : null;
     if (!t) return;
