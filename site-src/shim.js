@@ -336,6 +336,31 @@
 
   /* ---------- μεταφορά δεδομένων από το claude.ai (άνοιξε τη σελίδα με ?import=1) ---------- */
   if (Q.get('import') === '1') memberP.then(function (u) { appP.then(function (a) { importUI(a, u) }) });
+  /* τα κουμπιά «💾 Αντίγραφο ασφαλείας» της σελίδας (Αναλύσεις): Επαναφορά = η μεταφορά παραπάνω, Εξαγωγή = όλη η κοινή βάση σε JSON */
+  var COLS = ['accounts', 'agent', 'apchg', 'aplog', 'approfiles', 'apstate', 'bars', 'barsarc', 'btlab', 'chat', 'chatrx', 'checkins', 'class', 'confirms', 'council', 'demo', 'demoacct', 'drawings', 'files', 'fun', 'genstrats', 'goals', 'news', 'prac', 'props', 'qbank', 'quiz', 'settings', 'strategies', 'trades'];
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest('#bkPick,#bkExport') : null;
+    if (!t) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    memberP.then(function (u) {
+      return appP.then(function (a) {
+        if (t.id === 'bkPick') { if (!document.getElementById('tj-imp')) importUI(a, u); return }
+        var msg = document.getElementById('bkMsg'), say = function (x) { if (msg) { msg.hidden = false; msg.textContent = x } };
+        var out = { v: 1, source: 'vercel', exportedAt: Date.now(), cols: {}, members: {} }, n = 0;
+        say('Μαζεύω τα δεδομένα…');
+        return COLS.reduce(function (p, c) {
+          return p.then(function () { return a.fs.collection(c).get().then(function (qs) { if (qs.size) { out.cols[c] = {}; qs.forEach(function (d) { out.cols[c][d.id] = dec(d.data()); n++ }) } say('Μαζεύω… ' + n) }, function () {}) });
+        }, Promise.resolve()).then(function () {
+          return a.fs.collection('users').get().then(function (qs) { qs.forEach(function (d) { var v = d.data() || {}; out.members[d.id] = { label: v.name || d.id } }) }, function () {});
+        }).then(function () {
+          var bl = new Blob([JSON.stringify(out)], { type: 'application/json' }), url = URL.createObjectURL(bl), l = document.createElement('a');
+          l.href = url; l.download = 'trading-journal-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(l); l.click(); l.remove();
+          setTimeout(function () { URL.revokeObjectURL(url) }, 5000);
+          say('✅ Κατέβηκε αρχείο με ' + n + ' εγγραφές.');
+        });
+      });
+    });
+  }, true);
   function importUI(a, me) {
     css();
     var st = document.createElement('style');
