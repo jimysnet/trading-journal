@@ -8,7 +8,7 @@ const URL = (process.env.TJ_URL || '').replace(/\/+$/, '');
 const EMAIL = process.env.TJ_BOT_EMAIL || '';
 const PASS = process.env.TJ_BOT_PASSWORD || '';
 const MINUTES = +process.env.RUN_MINUTES || 340;        // λίγο κάτω από τις 6 ώρες του GitHub
-const RELOAD_MIN = +process.env.RELOAD_MINUTES || 120;   // φρέσκια φόρτωση κάθε 2 ώρες (μνήμη, νέα έκδοση)
+const RELOAD_MIN = +process.env.RELOAD_MINUTES || 360;   // μία φόρτωση ανά βάρδια (κάθε φόρτωση = χιλιάδες αναγνώσεις στο Firebase)
 if (!URL || !EMAIL || !PASS) { console.error('Λείπουν TJ_URL / TJ_BOT_EMAIL / TJ_BOT_PASSWORD'); process.exit(1) }
 
 const t0 = Date.now(), end = t0 + MINUTES * 60000;

@@ -4163,16 +4163,16 @@ function subscribe(){
   db.collection('checkins').orderBy('date','desc').limit(400).onSnapshot(function(s){S.checkins=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});fillCheckin();try{renderCiHist()}catch(e){}},onErr);
   db.collection('accounts').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.accounts=o;fillAccount();qRun('all',render)},onErr);
   db.doc('settings/main').onSnapshot(function(s){S.settings=Object.assign({},DEF,s.exists?s.data():{});fillParams();qRun('all',render)},onErr);
-  db.collection('quiz').orderBy('date','desc').limit(1000).onSnapshot(function(s){S.quiz=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderProf();loadNames();profGreet()},onErr);
-  db.collection('demo').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.demo=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});qRun('demo',renderDemo);loadNames()},onErr);
-  db.collection('files').orderBy('at','desc').limit(500).onSnapshot(function(s){S.files=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(grpIsOpen()&&GRP.view==='lib')renderGroup();loadNames()},onErr);
+  db.collection('quiz').orderBy('date','desc').limit(300).onSnapshot(function(s){S.quiz=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderProf();loadNames();profGreet()},onErr);
+  db.collection('demo').orderBy('at','desc').limit(400).onSnapshot(function(s){S.demo=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});qRun('demo',renderDemo);loadNames()},onErr);
+  db.collection('files').orderBy('at','desc').limit(200).onSnapshot(function(s){S.files=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(grpIsOpen()&&GRP.view==='lib')renderGroup();loadNames()},onErr);
   db.collection('drawings').onSnapshot(function(s){S.drawings=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(typeof pcOnDrawSnap==='function')pcOnDrawSnap()},onErr);
   db.collection('demoacct').onSnapshot(function(s){var o={};s.docs.forEach(function(d){o[d.id]=d.data()});S.demoacct=o;qRun('demo',renderDemo)},onErr);
   db.collection('props').onSnapshot(function(s){S.props=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(QZ.tab==='props'&&!$('#profPanel').hidden)renderProps();if(!PP.bf){PP.bf=true;setTimeout(ppBackfill,4000)}},onErr);
   db.collection('qbank').onSnapshot(function(s){S.qb=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});S.qbMap={};S.qb.forEach(function(g){S.qbMap[g.id]=g});if(QZ.tab==='prac'&&!$('#profPanel').hidden&&(!QZ.prac||QZ.prac.ch!=null))renderQPrac()},onErr);
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
   db.collection('class').onSnapshot(function(s){S.cls={};s.docs.forEach(function(d){S.cls[d.id]=d.data()});if(!CLS.dirty){var m0=S.cls[clsId()];CLS.me=m0?JSON.parse(JSON.stringify(m0)):null}renderProfIfClass()},onErr);
-  db.collection('confirms').orderBy('at','desc').limit(1000).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
+  db.collection('confirms').orderBy('at','desc').limit(300).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
   arcSub();verSub();setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
   /* το αρχείο κεριών ανανεώνεται μόνο του κάθε ώρα (όσο είναι ανοιχτή η σελίδα, π.χ. από τον φύλακα) */
   setInterval(function(){try{arcBackfill()}catch(e){}},60*6e4);
@@ -4993,7 +4993,7 @@ function e9Study(){if(E9.busy||!S.db)return Promise.resolve();E9.busy=true;e9Ren
   return chain.then(function(){var doc={at:Date.now(),by:S.uid||'',v:APP_VER,fee:0.1,rows:rows};E9.res=doc;E9.busy=false;e9Render();return put('btlab','ema921',doc).catch(function(){})}).catch(function(){E9.busy=false;e9Render()})}
 function e9Sub(){if(!S.db||E9.sub)return;try{E9.sub=S.db.collection('btlab').doc('ema921').onSnapshot(function(sn){if(sn.exists){E9.res=JSON.parse(JSON.stringify(sn.data()));e9Render()}},function(){})}catch(e){}}
 function e9Auto(){if(!S.db)return;e9Sub();var tries=0;(function go(){if(!ARC.idx&&tries++<20){setTimeout(go,3000);return}var mine='';try{mine=store('tj-e9run')}catch(e){}
-    var old=!E9.res||E9.res.v!==APP_VER||Date.now()-E9.res.at>24*36e5;try{mpRun()}catch(e){}if(old&&mine!==String(APP_VER)+lday(new Date())){try{store('tj-e9run',String(APP_VER)+lday(new Date()))}catch(e){}e9Study()}})()}
+    var old=!E9.res||Date.now()-E9.res.at>24*36e5;try{mpRun()}catch(e){}if(old&&mine!==lday(new Date())){try{store('tj-e9run',lday(new Date()))}catch(e){}e9Study()}})()}
 function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<p class="muted">⏳ Τρέχει η δοκιμή σε όλο το αρχείο κεριών…</p>';return}var D=E9.res;
   if(!D){el.innerHTML='<p class="muted">Δεν έχει τρέξει ακόμα. <button class="btn sm" data-e9run>▶ Τρέξε τη δοκιμή</button></p>';return}
   var R=D.rows.filter(function(r){return !r.skip}),tot={n:0,t:0,w:0,pb:0,pbn:0,nf:0};R.forEach(function(r){var x=r.x15;tot.n+=x.n;tot.t+=x.tot;tot.w+=x.w*x.n;tot.pb+=r.pb.tot;tot.pbn+=r.pb.n;tot.nf+=r.nofee*x.n});
@@ -5004,7 +5004,7 @@ function e9Render(){var el=$('#e9Out');if(!el)return;if(E9.busy){el.innerHTML='<
    R.map(function(r){var x=r.x15;
      return '<tr><td>'+esc(r.coin)+'</td><td>'+esc(r.tf)+'</td><td>'+fmt(r.bars,0)+'</td><td>'+x.n+'</td><td>'+fmt(100*x.w,0)+'%</td><td>'+tr(x.avg)+'</td><td>'+tr(r.x20.avg)+'</td><td>'+tr(r.x30.avg)+'</td><td>'+tr(x.tot)+'</td><td>'+tr(x.tl)+' / '+tr(x.ts)+'</td></tr>'}).join('')+'</tbody></table></div>'+(function(){var sk=D.rows.filter(function(r){return r.skip}).map(function(r){return r.coin+' '+r.tf});return sk.length?'<p class="muted" style="font-size:.8rem">Χωρίς αρκετά κεριά ακόμα (θέλει 300+): '+esc(sk.join(', '))+'</p>':''})()}
 var MPL={busy:false,rows:null};
-function mpRun(){if(MPL.busy)return;MPL.busy=true;var el=$('#mpOut');if(el)el.innerHTML='<p class="muted">⏳ Υπολογίζω από τα κεριά 1 ώρας του αρχείου…</p>';var rows=[],chain=Promise.resolve();
+function mpRun(force){if(MPL.busy)return;if(!force&&MPL.rows&&MPL.at&&Date.now()-MPL.at<3*36e5){mpRender();return}MPL.busy=true;var el=$('#mpOut');if(el)el.innerHTML='<p class="muted">⏳ Υπολογίζω από τα κεριά 1 ώρας του αρχείου…</p>';var rows=[],chain=Promise.resolve();
   arcCoins().forEach(function(c){chain=chain.then(function(){return histBars(c+'USDT','1h',75).then(function(r){var b=(r.bars||[]).filter(function(x){return !x.approx});if(!b.length){rows.push({coin:c});return}
       var cur=mprofMk(Date.now()),prev=b.filter(function(x){return mprofMk(x.t)===cur-1}),now=b.filter(function(x){return mprofMk(x.t)===cur}),last=b[b.length-1];
       var days=new Date(Date.UTC(Math.floor((cur-1)/12),(cur-1)%12+1,0)).getUTCDate(),cov=prev.length/(days*24);if(cov<0.6){rows.push({coin:c,cov:cov});return}
@@ -5070,7 +5070,7 @@ function mpRender(){var el=$('#mpOut');if(!el||!MPL.rows)return;var fp=function(
      return '<tr class="'+(r.coin===MPSEL?'on':'')+'" data-mpsel="'+esc(r.coin)+'"><td><b>'+esc(r.coin)+'</b>'+(r.age>3?' <span class="warn" title="παλιά κεριά">⚠️</span>':'')+'</td><td><b>'+fp(r.px)+'</b></td><td class="h">'+fp(r.P.vah)+'</td><td class="p"><b>'+fp(r.P.poc)+'</b></td><td class="l">'+fp(r.P.val)+'</td><td>'+mpLadder(r)+'</td><td><span class="pill '+ZN[z][0]+'">'+ZN[z][1]+'</span></td><td style="font-size:.8rem">'+esc(IDEA[z])+'</td><td class="muted">'+(r.Q?fp(r.Q.poc):'–')+'</td></tr>'}).join('')+'</tbody></table></div>'+
    '<p class="muted" style="font-size:.8rem">Πάτα ένα νόμισμα (ή μια γραμμή του πίνακα) για το 3D διάγραμμα. Θεωρία: Μπούσουλας → Δείκτες → «Market Profile μήνα». Στρατηγικές: Μπούσουλας → Στρατηγικές. Backtest: Αναλύσεις → Εξελιγμένος αναλυτής → Backtest.</p>'}
 document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-mpsel]');if(!q)return;MPSEL=q.getAttribute('data-mpsel');try{store('tj-mpsel',MPSEL)}catch(x){}mpRender();var c=document.querySelector('#mpOut .mpbig');if(c&&q.tagName==='TR')c.scrollIntoView({behavior:'smooth',block:'start'})});
-document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-mprun]'))mpRun()});
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-mprun]'))mpRun(true)});
 document.addEventListener('click',function(e){var q=e.target.closest&&e.target.closest('[data-sq]');if(!q)return;var v=q.getAttribute('data-sq'),tb=function(t){var b=document.querySelector('[data-tab="'+t+'"]');if(b)b.click()};
   if(v==='bt'){tb('stats');setTimeout(function(){var a=document.querySelector('[data-adv="bt"]');if(a)a.click();var c=$('#advCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'})},150);return}
 });
@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=294,VERS={sub:null,t:null};
+var APP_VER=295,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}

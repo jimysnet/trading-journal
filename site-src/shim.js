@@ -26,6 +26,8 @@
     try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}) } catch (e) {}
     var fs = firebase.firestore();
     try { fs.settings({ ignoreUndefinedProperties: true, merge: true }) } catch (e) {}
+    /* τοπικό αντίγραφο της βάσης στον browser: σε κάθε ξαναφόρτωμα διαβάζονται μόνο όσα άλλαξαν (λιγότερες αναγνώσεις στο Firebase) */
+    try { fs.enablePersistence({ synchronizeTabs: true }).catch(function () {}) } catch (e) {}
     return { cfg: c, fs: fs, auth: firebase.auth() };
   });
   appP.catch(function (e) { showMsg('⚠️ Η σελίδα δεν έχει ρυθμιστεί ακόμα: ' + ((e && e.message) || e)) });
