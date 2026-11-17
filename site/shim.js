@@ -94,7 +94,7 @@
       document.body.appendChild(LG);
       var err = function (e) { LG && (LG.querySelector('[data-x]').textContent = trErr(e)) };
       LG.querySelector('[data-g]').onclick = function () {
-        var p = new firebase.auth.GoogleAuthProvider();
+        var p = new firebase.auth.GoogleAuthProvider(); try { p.setCustomParameters({ prompt: 'select_account' }) } catch (e) {}
         auth.signInWithPopup(p).catch(function (e) { if (e && /popup/.test(e.code || '')) return auth.signInWithRedirect(p); err(e) });
       };
       var ep = function () { return [LG.querySelector('[data-e]').value.trim(), LG.querySelector('[data-p]').value] };
@@ -297,6 +297,43 @@
       cache[name] = p; return p;
     }
   };
+  /* ---------- λογαριασμός: ποιος είναι συνδεδεμένος + αποσύνδεση ---------- */
+  if (!BOT) memberP.then(function (u) { acctUI(u) });
+  function acctUI(u) {
+    var put = function () {
+      var host = document.querySelector('header.top .brand') || document.body;
+      if (document.getElementById('tj-acct')) return;
+      var st = document.createElement('style');
+      st.textContent = '#tj-acct{position:relative;display:inline-flex;align-items:center;margin-left:8px;vertical-align:middle}' +
+        '#tj-acct>button{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(127,160,155,.35);background:rgba(127,160,155,.12);color:inherit;border-radius:999px;padding:3px 10px 3px 3px;font:inherit;font-size:.82rem;cursor:pointer;max-width:220px}' +
+        '#tj-acct img,#tj-acct .av{width:24px;height:24px;border-radius:50%;flex:none;object-fit:cover}#tj-acct .av{display:inline-flex;align-items:center;justify-content:center;background:#0d6b66;color:#fff;font-weight:700;font-size:.8rem}' +
+        '#tj-acct .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+        '#tj-acct .menu{position:absolute;top:calc(100% + 6px);left:0;z-index:9999;min-width:250px;background:#fff;color:#10201f;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:12px;font-size:.9rem}' +
+        '#tj-acct .menu[hidden]{display:none}#tj-acct .menu b{display:block;font-size:.98rem}#tj-acct .menu small{display:block;color:#556665;margin:2px 0 10px;word-break:break-all}' +
+        '#tj-acct .menu button{display:block;width:100%;text-align:left;padding:9px 10px;border-radius:8px;border:0;background:#f1f6f5;color:#10201f;font:inherit;cursor:pointer;margin-top:6px}#tj-acct .menu button:hover{background:#e3eeec}#tj-acct .menu .out{background:#fdecec;color:#a52a2a}' +
+        '@media (max-width:640px){#tj-acct .nm{display:none}#tj-acct>button{padding:3px}#tj-acct .menu{position:fixed;left:12px;right:12px;top:60px;min-width:0}}';
+      document.head.appendChild(st);
+      var w = document.createElement('span'); w.id = 'tj-acct';
+      var prov = (u.providerData || []).map(function (p) { return p && p.providerId }).indexOf('google.com') >= 0 ? 'Google' : 'email και κωδικό';
+      var nm = u.displayName || (u.email || '').split('@')[0] || 'Λογαριασμός';
+      w.innerHTML = '<button type="button" aria-haspopup="true" title="Ο λογαριασμός σου"></button><div class="menu" hidden><b></b><small></small><div data-p style="font-size:.8rem;color:#556665">Σύνδεση με ' + prov + '</div><button type="button" data-sw>🔁 Άλλαξε λογαριασμό</button><button type="button" class="out" data-out>🚪 Αποσύνδεση</button></div>';
+      var b = w.querySelector('button');
+      if (u.photoURL) { var im = document.createElement('img'); im.src = u.photoURL; im.alt = ''; im.referrerPolicy = 'no-referrer'; b.appendChild(im) }
+      else { var av = document.createElement('span'); av.className = 'av'; av.textContent = (nm[0] || '?').toUpperCase(); b.appendChild(av) }
+      var t = document.createElement('span'); t.className = 'nm'; t.textContent = u.email || nm; b.appendChild(t);
+      w.querySelector('.menu b').textContent = nm; w.querySelector('.menu small').textContent = u.email || '';
+      var menu = w.querySelector('.menu');
+      b.onclick = function (e) { e.stopPropagation(); menu.hidden = !menu.hidden };
+      document.addEventListener('click', function (e) { if (!w.contains(e.target)) menu.hidden = true });
+      var out = function () { firebase.auth().signOut().then(function () { location.href = location.pathname }) };
+      w.querySelector('[data-out]').onclick = function () { if (confirm('Αποσύνδεση από ' + (u.email || 'αυτόν τον λογαριασμό') + ';')) out() };
+      w.querySelector('[data-sw]').onclick = out;
+      var who = document.getElementById('whoami');
+      if (who && who.parentNode === host) host.insertBefore(w, who.nextSibling); else host.appendChild(w);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', put); else put();
+  }
+
   /* ---------- μεταφορά δεδομένων από το claude.ai (άνοιξε τη σελίδα με ?import=1) ---------- */
   if (Q.get('import') === '1') memberP.then(function (u) { appP.then(function (a) { importUI(a, u) }) });
   function importUI(a, me) {
