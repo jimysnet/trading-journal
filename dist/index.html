@@ -81,7 +81,9 @@ h1{font-family:var(--display);font-weight:700;font-size:1.35rem;margin:0;letter-
 @media (max-width:640px){.tvf{grid-template-columns:1fr 1fr}}
 .rsopts{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem}.btn.danger{border-color:var(--loss);color:var(--loss)}.btn.danger:hover{background:var(--loss-soft)}.btn.dangerfill{background:var(--loss);border-color:var(--loss);color:#fff}
 .stwarn{background:var(--warn-soft);border:1px solid var(--warn,#b45309);border-radius:8px;padding:.55rem .8rem;font-size:.88rem;margin-bottom:1rem}
-@media (min-width:1840px){.top .inner{max-width:84rem;gap:.4rem 1rem}.top .brand{flex:0 0 auto}.top .tabs{flex:0 1 auto!important;min-width:0;margin-left:auto}.top .tabs button{padding:.45rem .22rem;font-size:.9rem}.top .who{display:none}}
+@media (min-width:1840px){.top .inner{max-width:min(120rem,calc(100vw - 2rem));gap:.4rem 1rem}.top .brand{flex:0 0 auto}.top .tabs{flex:1 1 auto!important;min-width:0;margin-left:auto;justify-content:flex-end}.top .tabs button{padding:.5rem .7rem;font-size:.95rem}.top .who{display:none}}
+/* οι καρτέλες δεν «σφηνώνουν» ούτε κρύβονται πίσω από μπάρα κύλισης: αν δεν χωράνε, πάνε σε δεύτερη γραμμή (στο κινητό μένει η κύλιση) */
+@media (min-width:641px){.top .tabs{flex-wrap:wrap;overflow-x:visible;row-gap:.2rem}}
 @media (max-width:640px){.top .inner{padding-block:.35rem .25rem;gap:.15rem .5rem}.brand{flex-wrap:nowrap!important;gap:.5rem}h1{font-size:1.08rem}.who{display:none}.tabs button{padding:.38rem .6rem;font-size:.86rem}
   section[data-panel=train] .card{padding:.8rem .55rem}.tcinfo{grid-template-columns:1fr 1fr!important}.tci{font-size:.72rem!important;padding:.35rem .45rem!important}
   #mkEx{flex-wrap:wrap}.exl{max-width:100%}}
