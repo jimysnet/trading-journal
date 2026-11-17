@@ -24,18 +24,47 @@ async function getJson(url, headers = {}) {
 /* ---------- Crypto.com Exchange (δημόσιο API, χωρίς κλειδί) ---------- */
 const CC = 'https://api.crypto.com/exchange/v1/public/';
 const CC_TF = { '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m', '1h': '1h', '2h': '2h', '4h': '4h', '6h': '6h', '12h': '12h', '1d': '1D', '1D': '1D', 'D1': '1D', '7D': '7D', '1w': '7D', '1W': '7D', '14D': '14D', '1M': '1M' };
+/* Κεριά: πρώτα Crypto.com· αν δεν έχει το ζεύγος (π.χ. ZEC, HYPE σε USDT), Binance και μετά OKX.
+   Έτσι το αρχείο κεριών γεμίζει μόνο του για ΟΛΑ τα νομίσματα, χωρίς χειροκίνητη συμπλήρωση. */
+const BN_TF = { '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m', '1h': '1h', '2h': '2h', '4h': '4h', '6h': '6h', '12h': '12h', '1D': '1d', '7D': '1w', '1M': '1M' };
+const OKX_TF = { '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m', '1h': '1H', '2h': '2H', '4h': '4H', '6h': '6Hutc', '12h': '12Hutc', '1D': '1Dutc', '7D': '1Wutc', '1M': '1Mutc' };
+const row = (t, o, h, l, c, v) => ({ open: String(o), high: String(h), low: String(l), close: String(c), volume: String(v), timestamp: new Date(+t).toISOString() });
+async function ccRaw(inst, tf, count) {
+  const j = await cached(`cc|${inst}|${tf}|${count}`, TTL.candles, () => getJson(`${CC}get-candlestick?instrument_name=${inst}&timeframe=${tf}&count=${count}`).catch(e => ({ code: e.code || 'err' })));
+  const d = (j && j.result && j.result.data) || [];
+  return d.map(x => row(x.t, x.o, x.h, x.l, x.c, x.v)).reverse();
+}
+async function binanceRaw(base, quote, tf, count) {
+  const iv = BN_TF[tf]; if (!iv) return [];
+  const sym = base + (quote === 'USD' ? 'USDT' : quote);
+  for (const host of ['https://data-api.binance.vision', 'https://api.binance.com']) {
+    try {
+      const j = await cached(`bn|${sym}|${iv}|${count}`, TTL.candles, () => getJson(`${host}/api/v3/klines?symbol=${sym}&interval=${iv}&limit=${Math.min(1000, count)}`));
+      if (Array.isArray(j) && j.length) return j.map(k => row(k[0], k[1], k[2], k[3], k[4], k[5])).reverse();
+    } catch (e) { }
+  }
+  return [];
+}
+async function okxRaw(base, quote, tf, count) {
+  const bar = OKX_TF[tf]; if (!bar) return [];
+  const id = `${base}-${quote === 'USD' ? 'USDT' : quote}`;
+  try {
+    const j = await cached(`okx|${id}|${bar}|${count}`, TTL.candles, () => getJson(`https://www.okx.com/api/v5/market/candles?instId=${id}&bar=${bar}&limit=${Math.min(300, count)}`));
+    const d = (j && j.data) || [];
+    return d.map(k => row(k[0], k[1], k[2], k[3], k[4], k[5]));
+  } catch (e) { return [] }
+}
 async function ccCandles(a) {
   const inst = String(a.instrument_name || '').toUpperCase();
   const tf = CC_TF[a.timeframe] || a.timeframe || '1h';
   if (!/^[A-Z0-9]+_[A-Z0-9]+$/.test(inst)) throw { code: 'invalid_request', message: 'instrument_name' };
   const count = Math.min(300, Math.max(10, +a.count || 300));
-  const j = await cached(`cc|${inst}|${tf}|${count}`, TTL.candles, () => getJson(`${CC}get-candlestick?instrument_name=${inst}&timeframe=${tf}&count=${count}`));
-  const d = (j && j.result && j.result.data) || [];
-  if (!d.length && j && j.code) throw { code: 'tool_error', message: `Crypto.com ${j.code} ${j.message || ''}` };
-  return {
-    instrument_name: inst, timeframe: tf,
-    data: d.map(x => ({ open: String(x.o), high: String(x.h), low: String(x.l), close: String(x.c), volume: String(x.v), timestamp: new Date(+x.t).toISOString() })).reverse()
-  };
+  const [base, quote] = inst.split('_');
+  let data = await ccRaw(inst, tf, count), source = 'Crypto.com';
+  if (!data.length && /^(USDT|USDC|USD)$/.test(quote)) { data = await binanceRaw(base, quote, tf, count); source = 'Binance' }
+  if (!data.length && /^(USDT|USDC|USD)$/.test(quote)) { data = await okxRaw(base, quote, tf, count); source = 'OKX' }
+  if (!data.length) throw { code: 'tool_error', message: `δεν βρέθηκαν κεριά για ${inst}` };
+  return { instrument_name: inst, timeframe: tf, source, data };
 }
 async function ccTickers(a) {
   const inst = a.instrument_name ? String(a.instrument_name).toUpperCase() : '';

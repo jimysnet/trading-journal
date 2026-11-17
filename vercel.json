@@ -6,11 +6,34 @@
   "outputDirectory": "site",
   "cleanUrls": false,
   "functions": {
-    "api/ai.js": { "maxDuration": 60 },
-    "api/mcp.js": { "maxDuration": 20 }
+    "api/ai.js": {
+      "maxDuration": 60
+    },
+    "api/mcp.js": {
+      "maxDuration": 20
+    }
   },
   "headers": [
-    { "source": "/(.*)\\.(webp|jpg|png)", "headers": [{ "key": "cache-control", "value": "public, max-age=604800" }] },
-    { "source": "/(app|i18n|manual|ru|shim)\\.js", "headers": [{ "key": "cache-control", "value": "public, max-age=0, must-revalidate" }] }
+    {
+      "source": "/(.*)\\.(webp|jpg|png)",
+      "headers": [
+        {
+          "key": "cache-control",
+          "value": "public, max-age=604800"
+        }
+      ]
+    },
+    {
+      "source": "/(app|i18n|manual|ru|shim)\\.js",
+      "headers": [
+        {
+          "key": "cache-control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "regions": [
+    "fra1"
   ]
 }
