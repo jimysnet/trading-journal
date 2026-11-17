@@ -3387,7 +3387,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=282,VERS={sub:null,t:null};
+var APP_VER=283,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7025,7 +7025,7 @@ function impGo(){
 function impStrategies(){var s=$('#imp-strategy');if(!s)return;var v=s.value;s.innerHTML='<option value="">Χωρίς στρατηγική</option>'+S.strategies.filter(function(x){return x.active!==false}).map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>'}).join('');s.value=v}
 
 /* ---------- tabs & events ---------- */
-var TABS=['today','trades','strategies','stats','markets','train','demo','history','manual','params'];
+var TABS=['today','trades','strategies','stats','markets','flow','train','demo','history','manual','params'];
 function showTab(t,keepHash){
   var jump=null;if(t==='strategies'){t='stats';jump='anSA'}/* οι στρατηγικές είναι πλέον μέσα στις Αναλύσεις */
   if(TABS.indexOf(t)<0)t='today';
@@ -7035,6 +7035,7 @@ function showTab(t,keepHash){
   if(!keepHash){try{history.replaceState(null,'','#'+t)}catch(e){}}
   store('tj-tab',t);
   if(t==='history')setTimeout(function(){try{hiInit()}catch(e){console.error(e)}},0);
+  if(t==='flow')flowShow();else if(window.FLOW)window.FLOW.hide();
   if(t==='demo'){qFlush('demo',renderDemo);setTimeout(function(){try{dmLiveTick()}catch(e){}},300)}
   if(t==='markets'&&typeof renderMarkets==='function'){if(!keepHash||!MK.v0){MK.v='grid';MK.v0=1}setTimeout(renderMarkets,0)}/* πρώτη εικόνα: όλα τα διαγράμματα μαζί */
   if(t==='train'&&typeof trnShow==='function')setTimeout(function(){trnShow(TRN.tab)},0);
@@ -7042,6 +7043,9 @@ function showTab(t,keepHash){
   if(t==='stats')setTimeout(function(){try{saInit();saRender();saMaybeRun()}catch(e){console.error(e)}},50);
   if(jump)setTimeout(function(){var a=$('#'+jump);if(a)a.scrollIntoView({block:'start'})},120);else if(!keepHash)window.scrollTo(0,0);
 }
+/* 🔬 Order Flow: το πρόγραμμα φορτώνεται μόνο όταν ανοίξει η καρτέλα (flow.js) */
+function flowShow(){if(window.FLOW){window.FLOW.show();return}var r=$('#flowRoot');if(r&&!r.firstChild)r.innerHTML='<p class="muted" style="padding:1rem">⏳ Φορτώνω το Order Flow…</p>';
+  var sc=document.createElement('script');sc.src='flow.js?v='+APP_VER;sc.onload=function(){if(window.FLOW){if(r)r.innerHTML='';window.FLOW.show()}};sc.onerror=function(){if(r)r.innerHTML='<p class="muted" style="padding:1rem">Το Order Flow υπάρχει μόνο στη σελίδα του Vercel.</p>'};document.head.appendChild(sc)}
 function applyWriteState(){
   $$('#t-save,#s-save,#c-save,#p-save,#a-save,#s-templates,#t-del,#s-del').forEach(function(b){if(!S.canWrite)b.disabled=true});
   if(!S.canWrite)notice('Μπορείς να δεις το ημερολόγιο αλλά όχι να γράψεις. Ζήτα από τον ιδιοκτήτη να σου δώσει πρόσβαση Contributor ή Editor από το Share.');

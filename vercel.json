@@ -24,7 +24,7 @@
       ]
     },
     {
-      "source": "/(app|i18n|manual|ru|shim)\\.js",
+      "source": "/(app|i18n|manual|ru|shim|flow)\\.js",
       "headers": [
         {
           "key": "cache-control",
