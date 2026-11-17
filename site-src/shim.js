@@ -20,6 +20,7 @@
     if (!c || !c.firebase || !c.firebase.apiKey) throw { code: 'not_configured', message: 'Λείπει το FIREBASE_CONFIG στο Vercel' };
     if (!window.firebase) throw { code: 'not_configured', message: 'Δεν φορτώθηκε το Firebase' };
     firebase.initializeApp(c.firebase);
+    try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}) } catch (e) {}
     var fs = firebase.firestore();
     try { fs.settings({ ignoreUndefinedProperties: true, merge: true }) } catch (e) {}
     return { cfg: c, fs: fs, auth: firebase.auth() };
@@ -80,15 +81,16 @@
     var go = function () {
       var em = (u.email || '').toLowerCase();
       if (u.providerData && u.providerData.some(function (p) { return p && p.providerId === 'password' }) && !u.emailVerified) {
-        var d0 = boxUI('<h2>📧 Επιβεβαίωσε το email σου</h2><p>Σου στείλαμε μήνυμα στο <b></b>. Πάτα τον σύνδεσμο και μετά <b>Συνέχεια</b>.</p><button type="button" data-c>Συνέχεια</button><button type="button" class="alt" data-r>Στείλε ξανά το μήνυμα</button><div class="err" data-x></div>');
+        var d0 = boxUI('<h2>📧 Συνδέθηκες! Ένα βήμα ακόμα: επιβεβαίωσε το email σου</h2><p>Σου στείλαμε μήνυμα στο <b></b> (από noreply@…firebaseapp.com). <b>Κοίτα και στα Ανεπιθύμητα / Junk</b>, εκεί πάει συχνά στο Hotmail/Outlook. Πάτα τον σύνδεσμο του μηνύματος και η σελίδα θα ανοίξει μόνη της.</p><button type="button" data-c>Συνέχεια</button><button type="button" class="alt" data-r>Στείλε ξανά το μήνυμα</button><div class="err" data-x></div>');
         d0.querySelector('b').textContent = em;
-        d0.querySelector('[data-c]').onclick = function () { u.reload().then(function () { if (firebase.auth().currentUser.emailVerified) location.reload(); else d0.querySelector('[data-x]').textContent = 'Δεν έχει επιβεβαιωθεί ακόμα.' }) };
+        var poll = setInterval(function () { var cu = firebase.auth().currentUser; if (!cu) { clearInterval(poll); return } cu.reload().then(function () { if (firebase.auth().currentUser && firebase.auth().currentUser.emailVerified) { clearInterval(poll); firebase.auth().currentUser.getIdToken(true).then(function () { location.reload() }) } }).catch(function () {}) }, 4000);
+        d0.querySelector('[data-c]').onclick = function () { u.reload().then(function () { if (firebase.auth().currentUser.emailVerified) firebase.auth().currentUser.getIdToken(true).then(function () { location.reload() }); else d0.querySelector('[data-x]').textContent = 'Δεν έχει επιβεβαιωθεί ακόμα.' }) };
         d0.querySelector('[data-r]').onclick = function () { u.sendEmailVerification().then(function () { d0.querySelector('[data-x]').textContent = 'Στάλθηκε ξανά.' }, function (e) { d0.querySelector('[data-x]').textContent = trErr(e) }) };
         if (!sessionStorage.getItem('tj-ver-sent')) { try { sessionStorage.setItem('tj-ver-sent', '1') } catch (e) {} u.sendEmailVerification().catch(function () {}) }
         return;
       }
       var req = a.fs.collection('requests').doc(u.uid);
-      var d = boxUI('<h2>⏳ Περιμένεις έγκριση</h2><p>Συνδέθηκες ως <b></b>. Στάλθηκε αίτημα στους διαχειριστές της παρέας· μόλις σε εγκρίνουν, η σελίδα θα ανοίξει μόνη της.</p><div class="err" data-x></div>');
+      var d = boxUI('<h2>✅ Συνδέθηκες · ⏳ περιμένεις έγκριση</h2><p>Είσαι μέσα ως <b></b>. Στάλθηκε αίτημα στους διαχειριστές της παρέας (στη σελίδα τους εμφανίζεται «👥 αιτήματα»)· μόλις πατήσουν Έγκριση, η σελίδα θα ανοίξει μόνη της. Δεν χρειάζεται να ξανασυνδεθείς.</p><div class="err" data-x></div>');
       d.querySelector('b').textContent = em || u.uid;
       req.get().then(function (sn) {
         var x = sn.exists ? sn.data() : null;
