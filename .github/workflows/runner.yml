@@ -48,4 +48,7 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run runner.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" || curl -sf -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/runner.yml/dispatches" -d '{"ref":"${{ github.ref_name }}"}'
+        run: |
+          gh workflow run runner.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" || \
+          curl -sf -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/runner.yml/dispatches" -d '{"ref":"${{ github.ref_name }}"}'
