@@ -282,6 +282,60 @@
     };
   }
 
+  /* ---------- assets: φωτογραφίες/αρχεία του chat και των συναλλαγών, μέσα στο Firestore ----------
+     Στο claude.ai τα κρατούσε το ίδιο το claude.ai και τα σέρβιρε στο /_blob/<id>. Εδώ τα σπάω σε κομμάτια
+     στη συλλογή «blobs» και τα δείχνω στη σελίδα με τοπικά blob: URLs (μόνο για συνδεδεμένα μέλη). */
+  var BLOB_MAX = 4 * 1024 * 1024, CH = 700000, BURL = {}, BREQ = {};
+  function assetsApi(a) {
+    return {
+      upload: function (blob, o) {
+        if (!blob || blob.size > BLOB_MAX) return Promise.reject({ code: 'too_large', message: 'Μέχρι 4MB ανά αρχείο' });
+        var id = 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), type = (o && o.type) || blob.type || 'application/octet-stream';
+        return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result)) }; r.onerror = rej; r.readAsDataURL(blob) }).then(function (du) {
+          var b64 = du.slice(du.indexOf(',') + 1), parts = [];
+          for (var i = 0; i < b64.length; i += CH) parts.push(b64.slice(i, i + CH));
+          var col = a.fs.collection('blobs');
+          return Promise.all(parts.map(function (d, i) { return col.doc(id + '_' + i).set({ d: d }) })).then(function () {
+            return col.doc(id).set({ type: type, n: parts.length, size: blob.size, at: Date.now() });
+          }).then(function () { try { BURL[id] = URL.createObjectURL(blob) } catch (e) {} return { id: id, url: '/_blob/' + id } });
+        });
+      },
+      delete: function (id) {
+        var col = a.fs.collection('blobs');
+        return col.doc(id).get().then(function (s) { var n = (s.exists && s.data().n) || 0, L = [col.doc(id).delete()]; for (var i = 0; i < n; i++) L.push(col.doc(id + '_' + i).delete()); return Promise.all(L) });
+      }
+    };
+  }
+  function blobUrl(a, id) {
+    if (BURL[id]) return Promise.resolve(BURL[id]);
+    if (BREQ[id]) return BREQ[id];
+    var col = a.fs.collection('blobs');
+    BREQ[id] = col.doc(id).get().then(function (s) {
+      if (!s.exists) return null;
+      var m = s.data();
+      return Promise.all(Array.from({ length: m.n || 0 }, function (_, i) { return col.doc(id + '_' + i).get() })).then(function (ps) {
+        var b64 = ps.map(function (p) { return (p.data() || {}).d || '' }).join(''), bin = atob(b64), u8 = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        return (BURL[id] = URL.createObjectURL(new Blob([u8], { type: m.type || 'application/octet-stream' })));
+      });
+    }).catch(function (e) { log('blob', id, e && e.code); return null });
+    return BREQ[id];
+  }
+  memberP.then(function () { return appP }).then(function (a) {
+    var fix = function (el) {
+      var attr = el.tagName === 'A' ? 'href' : 'src', v = el.getAttribute(attr) || '', m = v.match(/^\/_blob\/([A-Za-z0-9_-]+)/);
+      if (!m || el.__tjb === v) return; el.__tjb = v;
+      blobUrl(a, m[1]).then(function (u) {
+        if (u) { el.setAttribute(attr, u); el.__tjb = u }
+        else if (el.tagName === 'IMG') { el.removeAttribute('src'); el.alt = '🖼️ (η εικόνα έμεινε στο claude.ai)'; el.title = el.alt; el.style.minHeight = '2em' }
+        else { el.removeAttribute('href'); el.title = 'Το αρχείο έμεινε στο claude.ai' }
+      });
+    };
+    var scan = function (root) { (root.querySelectorAll ? root : document).querySelectorAll('img[src^="/_blob/"],a[href^="/_blob/"]').forEach(fix) };
+    var go = function () { scan(document); new MutationObserver(function (ms) { ms.forEach(function (m) { if (m.type === 'attributes') fix(m.target); else m.addedNodes.forEach(function (n) { if (n.nodeType === 1) { if (/^(IMG|A)$/.test(n.tagName)) fix(n); scan(n) } }) }) }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'href'] }) };
+    if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+  });
+
   /* ---------- window.claude ---------- */
   var cache = {};
   window.claude = {
@@ -293,6 +347,7 @@
       else if (name === 'user') p = memberP.then(function (u) { return appP.then(function (a) { return user(a, u) }) });
       else if (name === 'sample') p = memberP.then(function () { return cfgP }).then(function (c) { return c && c.ai ? sampleApi() : null });
       else if (name === 'mcp') p = Promise.resolve(mcpApi());
+      else if (name === 'assets') p = memberP.then(function () { return appP }).then(function (a) { return assetsApi(a) });
       else p = Promise.reject({ code: 'not_granted' });
       cache[name] = p; return p;
     }
