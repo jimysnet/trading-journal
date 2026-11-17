@@ -1,5 +1,5 @@
 # 🤖 Ο «φύλακας»: κρατά τη σελίδα ανοιχτή 24/7 (βάρδιες ~5,8 ωρών).
-# Το GitHub καθυστερεί ή και «χάνει» προγραμματισμένες εκτελέσεις, γι' αυτό ζητάμε βάρδια ΚΑΘΕ ΩΡΑ:
+# Το GitHub καθυστερεί ή και «χάνει» προγραμματισμένες εκτελέσεις, γι' αυτό: κάθε βάρδια ξεκινά μόνη της την επόμενη, και ζητάμε βάρδια και κάθε 30′:
 # όσο τρέχει μία, η επόμενη περιμένει στη σειρά (concurrency) και ξεκινά μόλις τελειώσει η προηγούμενη.
 # ώστε τα αυτόματα demo (Αυτόματος, Turtle, έλεγχοι SL/TP) να τρέχουν χωρίς να ανοίγει κανείς σελίδα.
 # Χρειάζεται στα Settings → Secrets and variables → Actions του repo:
@@ -12,6 +12,9 @@ on:
     - cron: '7 * * * *'
     - cron: '37 * * * *'
   workflow_dispatch: {}
+permissions:
+  contents: read
+  actions: write
 concurrency:
   group: runner
   cancel-in-progress: false
@@ -39,3 +42,10 @@ jobs:
           TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
           RUN_MINUTES: '350'
         run: node run.mjs
+      # Το GitHub «χάνει» συχνά τις προγραμματισμένες εκτελέσεις (π.χ. 5 ώρες κενό τη νύχτα).
+      # Γι' αυτό κάθε βάρδια, μόλις τελειώσει, ζητά μόνη της την επόμενη: η αλυσίδα δεν σπάει ποτέ.
+      - name: Επόμενη βάρδια
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run runner.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}" || curl -sf -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/actions/workflows/runner.yml/dispatches" -d '{"ref":"${{ github.ref_name }}"}'
