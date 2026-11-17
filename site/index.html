@@ -1955,7 +1955,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΣΥΝΑΛΛΑΓΕΣ -->
   <section data-panel="trades" hidden>
-    <div class="card hint" id="impMoved"><span class="muted">📥 Η εισαγωγή CSV από το TradingView είναι πλέον στις <b>Αναλύσεις → 🧑‍🏫 Απολογισμός</b>, μαζί με τον έλεγχο λαθών.</span><button class="btn small" type="button" id="goRevImp">Άνοιγμα</button></div>
+    <div class="card hint" id="impMoved"><span class="muted">📥 Η εισαγωγή CSV από το TradingView είναι πλέον στις <b>Αναλύσεις → 🧑‍🏫 Ανάλυση</b>, μαζί με τον έλεγχο λαθών.</span><button class="btn small" type="button" id="goRevImp">Άνοιγμα</button></div>
     <details class="card imp" id="impCard">
       <summary>Εισαγωγή από TradingView (CSV)</summary>
       <div class="impbody">
@@ -2043,12 +2043,15 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
   <!-- ΑΝΑΛΥΣΕΙΣ -->
   <section data-panel="stats" hidden>
-    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="rev"><span>🧑‍🏫</span>Απολογισμός</button><button type="button" role="tab" data-ang="ins"><span>💡</span>Αναλυτής</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
+    <nav class="antabs" role="tablist" aria-label="Ενότητες αναλύσεων"><button type="button" role="tab" data-ang="rev"><span>🧑‍🏫</span>Ανάλυση</button><button type="button" role="tab" data-ang="perf"><span>📊</span>Απόδοση</button><button type="button" role="tab" data-ang="strat"><span>🤖</span>Στρατηγικές</button><button type="button" role="tab" data-ang="tools"><span>🔬</span>Εργαλεία</button></nav>
     <div class="angrp" data-angrp="perf">
     <div id="anPerf" class="anh"><h2>📊 Η απόδοσή μας</h2><span class="muted">πραγματικές συναλλαγές της ομάδας (με τα φίλτρα πάνω)</span></div>
     <div class="kpis" id="kpis"></div>
     <div class="card c3d chart"><div class="formhead"><h2 style="margin:0">Καμπύλη αποτελεσμάτων σε R</h2><span class="muted" id="eqNote"></span></div><div id="equity" style="margin-top:.6rem"></div></div>
     <div class="card c3d" id="calCard"><div class="formhead"><h2 style="margin:0">Ημερολόγιο αποτελεσμάτων</h2><div class="row" style="gap:.4rem"><button class="btn small" type="button" id="exCsv">Εξαγωγή CSV (Excel)</button><button class="btn small" type="button" id="exRep">Αναφορά για PDF</button></div></div><div id="calendar" style="margin-top:.6rem"></div></div>
+    <div class="card c3d" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>
+    <div class="card c3d"><h2>Κανόνες playbook: ποιοι αποδίδουν</h2><div class="tw" id="ruleStats"></div></div>
+    <details class="card" id="metCard"><summary><h2 style="margin:0;display:inline">Όλες οι μετρικές</h2> <span class="pill acc" id="metCount"></span></summary><div id="metrics" style="margin-top:.8rem"></div></details>
     </div>
     <div class="angrp" data-angrp="strat" hidden>
     <div id="anSA" class="anh"><h2>🤖 Στρατηγικές &amp; Αυτόματος Καθηγητής</h2><span class="muted">όλες οι στρατηγικές που ξέρει ο Καθηγητής: backtest σε πολλά νομίσματα, τι έπαιξε ο Αυτόματος και τι η ομάδα</span></div>
@@ -2082,11 +2085,8 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
     </div>
     </div>
     <div class="angrp" data-angrp="rev" hidden><div id="revRoot" class="revroot"></div></div>
-    <div class="angrp" data-angrp="ins" hidden>
-    <div class="card c3d" id="insAllCard"><h2>💡 Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
-    <div class="card c3d" id="weekCard"><div class="formhead"><h2 style="margin:0">Εβδομαδιαίος απολογισμός</h2><div class="row" style="gap:.4rem"><select id="wk-who" class="dmsel"><option value="me">Εγώ</option><option value="all">Όλοι</option></select><select id="wk-per" class="dmsel"><option value="0">Όλο το ιστορικό</option><option value="90">90 μέρες</option><option value="30">30 μέρες</option></select></div></div><div id="weekBody"></div></div>
-    <div class="card c3d"><h2>Κανόνες playbook: ποιοι αποδίδουν</h2><div class="tw" id="ruleStats"></div></div>
-    <details class="card" id="metCard"><summary><h2 style="margin:0;display:inline">Όλες οι μετρικές</h2> <span class="pill acc" id="metCount"></span></summary><div id="metrics" style="margin-top:.8rem"></div></details>
+    <div class="angrp" data-angrp="ins" hidden style="display:none">
+    <div class="card c3d" id="insAllCard" hidden style="display:none"><h2>💡 Ο αναλυτής</h2><ul class="insights" id="insightsAll"></ul></div>
     </div>
     <div class="angrp" data-angrp="tools" hidden>
     <div class="card adv" id="advCard">

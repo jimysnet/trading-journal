@@ -320,8 +320,8 @@ function renderToday(){
   var ins=insights(mineList);
   if(ds.level==='stop')ins.unshift({lv:'stop',ref:'breakers',t:head+'. '+sub});
   var insX=window.__insx;if(insX===undefined){try{insX=localStorage.getItem('tj-insx')==='1'}catch(e){insX=false}}
-  renderInsights($('#insightsToday'),ins,insX?12:2);
-  var imb=$('#insMore');if(imb){var tot=Math.min(ins.length,12);imb.hidden=!insX&&tot<=2;imb.textContent=insX?'Λιγότερα ▴':'Όλες οι γνώμες ('+tot+') ▾';imb.setAttribute('aria-expanded',insX)}
+  renderInsights($('#insightsToday'),ins,2);
+  var imb=$('#insMore');if(imb){imb.hidden=false;imb.textContent='Όλη η ανάλυση →'}
   renderRisk();renderGoals();renderProp();
   var open=S.trades.filter(function(t){return t.status!=='closed'}).sort(sortTime).reverse(),ol=$('#openList');var osm=$('#openSum');if(osm)osm.textContent=open.length?open.length+(open.length===1?' ανοιχτή χειροκίνητη συναλλαγή':' ανοιχτές χειροκίνητες συναλλαγές'):'καμία ανοιχτή χειροκίνητη συναλλαγή';
   if(!open.length){ol.innerHTML='<div class="empty">Καμία ανοιχτή θέση. Όταν καταγράφεις συναλλαγή χωρίς τιμή εξόδου, εμφανίζεται εδώ για να την κλείσεις αργότερα.</div>';return}
@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=293,VERS={sub:null,t:null};
+var APP_VER=294,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5091,8 +5091,8 @@ function saRender(){var el=$('#saBody');if(!el)return;try{var bz=$('#saBasis');i
   if(!el.dataset.sab){el.dataset.sab='1';el.addEventListener('click',function(e){if(e.target.closest('[data-saall]')){SA.allc=!SA.allc;saRender();return}var v=e.target.closest('.savsw [data-sav]');if(v){SA.view=v.getAttribute('data-sav');try{localStorage.setItem('tj-sav',SA.view)}catch(_){}el.setAttribute('data-v',SA.view);$$('#saBody .savsw [data-sav]').forEach(function(x){x.classList.toggle('on',x===v)})}})}}
 document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-anj]');if(!a)return;e.preventDefault();var t=$('#'+a.getAttribute('data-anj'));if(t){if(t.tagName==='DETAILS')t.open=true;t.scrollIntoView({block:'start',behavior:'smooth'})}});
 /* Αναλύσεις: 4 καρτέλες αντί για μία μακριά σελίδα */
-var ANG={k:'perf'};try{ANG.k=localStorage.getItem('tj-ang')||'perf'}catch(e){}
-function anGo(k,noSave){var ok=false;$$('[data-angrp]').forEach(function(g){var on=g.getAttribute('data-angrp')===k;g.hidden=!on;if(on)ok=true});if(!ok)return;ANG.k=k;$$('.antabs [data-ang]').forEach(function(b){var on=b.getAttribute('data-ang')===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});if(!noSave){try{localStorage.setItem('tj-ang',k)}catch(e){}}
+var ANG={k:'rev'};try{ANG.k=localStorage.getItem('tj-ang')||'rev'}catch(e){}if(ANG.k==='ins')ANG.k='rev';
+function anGo(k,noSave){var ok=false;$$('[data-angrp]').forEach(function(g){var on=g.getAttribute('data-angrp')===k;g.hidden=!on;if(on)ok=true});if(!ok)return;ANG.k=k;try{var sx=$('section[data-panel=stats]');if(sx&&!sx.hidden)$('#filters').hidden=k==='rev'}catch(e){}$$('.antabs [data-ang]').forEach(function(b){var on=b.getAttribute('data-ang')===k;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});if(!noSave){try{localStorage.setItem('tj-ang',k)}catch(e){}}
   try{window.dispatchEvent(new Event('resize'))}catch(e){}}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.antabs [data-ang]');if(!b)return;anGo(b.getAttribute('data-ang'));var t=document.querySelector('.antabs');if(t&&t.getBoundingClientRect().top<0)t.scrollIntoView({block:'start'})});
 setTimeout(function(){anGo(ANG.k,true)},0);
@@ -5961,7 +5961,7 @@ function bindConfirms(){
     if(e.target.closest('#cfMore')){CF.days+=14;renderConfirms();return}
     if(e.target.closest('#cfX')){CF.x=!CF.x;try{localStorage.setItem('tj-cfx',CF.x?'1':'0')}catch(_){}renderConfirms();if(!CF.x){var cc=$('#cfCard');if(cc&&cc.getBoundingClientRect().top<0)cc.scrollIntoView({block:'start'})}return}
     if(e.target.closest('#cfAllDay')){CF.all=true;renderConfirms();return}
-    if(e.target.closest('#insMore')){window.__insx=!($('#insMore').getAttribute('aria-expanded')==='true');try{localStorage.setItem('tj-insx',window.__insx?'1':'0')}catch(_){}renderToday();return}
+    if(e.target.closest('#insMore')){showTab('stats');anGo('rev');setTimeout(revRender,30);return}
     if(e.target.closest('[data-cfgo]')){showTab('today');setTimeout(function(){var c=$('#cfCard');if(c)c.scrollIntoView({block:'start'})},80)}
   });
   var w=$('#cf-who');if(w)w.addEventListener('change',function(){CF.who=w.value;renderConfirms()});
@@ -6910,22 +6910,22 @@ function revRender(){
   var cost=agg.reduce(function(s,a){return s+a.cost},0),disc=list.length?Math.round(100*(1-serious.length/list.length)):NaN;
   var who='<select id="rvWho" class="dmsel"><option value="me"'+(REV.who==='me'?' selected':'')+'>Εγώ</option><option value="all"'+(REV.who==='all'?' selected':'')+'>Όλοι</option>'+Object.keys(S.names||{}).filter(function(u){return u!==S.uid}).map(function(u){return '<option value="'+esc(u)+'"'+(REV.who===u?' selected':'')+'>'+esc(name(u))+'</option>'}).join('')+'</select>';
   var per='<select id="rvPer" class="dmsel">'+[['30','30 μέρες'],['90','90 μέρες'],['365','1 χρόνος'],['all','Όλο το ιστορικό']].map(function(o){return '<option value="'+o[0]+'"'+(REV.per===o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select>';
-  var h='<div class="card c3d"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Απολογισμός &amp; ημερολόγιο λαθών</h2><div class="row" style="gap:.4rem">'+who+per+'</div></div>'+
-   '<p class="muted" style="margin:.3rem 0 .7rem;font-size:.86rem">Η σελίδα ελέγχει κάθε κλειστή συναλλαγή με τους Κανόνες ρίσκου, τις στρατηγικές και το ιστορικό σου, και βρίσκει τα λάθη και πόσο σας κόστισαν σε R. Ο Καθηγητής εξηγεί γιατί έγιναν και τι να αλλάξετε. Ό,τι μαθαίνετε γράφεται στο ημερολόγιο μαθημάτων.</p>'+
+  var h='<div id="rvImpHost"></div><div class="card c3d"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Ανάλυση των συναλλαγών μας</h2><div class="row" style="gap:.4rem">'+who+per+'</div></div>'+
+   '<p class="muted" style="margin:.3rem 0 .7rem;font-size:.86rem">Βάζεις τις συναλλαγές (CSV από το TradingView ή στο 📝 Συναλλαγές) και η ανάλυση γίνεται μόνη της: τι πήγε καλά, τι όχι, ποια λάθη σας κοστίζουν και πόσο. Ό,τι μαθαίνετε γράφεται στο ημερολόγιο μαθημάτων.</p>'+
    (list.length?'<div class="kpis">'+kpi('Συναλλαγές',String(list.length),'κλειστές')+kpi('Με λάθος',withM.length+' ('+Math.round(100*withM.length/list.length)+'%)','τουλάχιστον ένα',withM.length?'neg':'pos')+kpi('Κόστος λαθών',fR(cost),'εκτίμηση',cls(cost))+kpi('Αποτέλεσμα',fR(st.totalR),'χωρίς τα λάθη ≈ '+fR(st.totalR-cost),cls(st.totalR))+kpi('Πειθαρχία',isFinite(disc)?disc+'/100':'–','χωρίς σοβαρό λάθος',disc>=80?'pos':disc<60?'neg':'')+'</div>':'<div class="empty">Δεν υπάρχουν κλειστές συναλλαγές σε αυτό το διάστημα. Φόρτωσε CSV από το TradingView πιο κάτω ή γράψε συναλλαγές στο 📝 Συναλλαγές.</div>')+'</div>';
+  // τι πήγε καλά και τι όχι (ο αυτόματος αναλυτής)
+  if(list.length)h+='<div class="card c3d"><h2>💡 Τι πήγε καλά και τι όχι</h2><ul class="insights" id="rvIns"></ul></div>';
   // τα λάθη που κοστίζουν
   if(agg.length)h+='<div class="card c3d"><h2>💸 Τα λάθη που σας κοστίζουν</h2><div class="tw"><table class="tbl rvtbl"><thead><tr><th>Λάθος</th><th>Φορές</th><th>Κόστος</th><th>Αποτέλεσμα αυτών</th><th>Τι να κάνετε</th></tr></thead><tbody>'+
     agg.map(function(a){var m=REVMAP[a.id];return '<tr><td><b>'+m.ic+' '+esc(m.t)+'</b><div class="muted" style="font-size:.78rem">'+esc(m.why)+'</div></td><td>'+a.n+'</td><td class="'+cls(a.cost)+'">'+(a.cost<0?fR(a.cost):'–')+'</td><td class="'+cls(a.r)+'">'+fR(a.r)+'</td><td style="font-size:.82rem">'+esc(m.fix)+'</td></tr>'}).join('')+'</tbody></table></div>'+
     '<p class="muted" style="font-size:.76rem;margin:.4rem 0 0">Κόστος = ό,τι χάθηκε εξαιτίας του λάθους (π.χ. η απώλεια πέρα από 1R, η απώλεια συναλλαγής εκτός κανόνων, το μισό από όσο άφησες στο τραπέζι). Όταν μια συναλλαγή έχει πολλά λάθη, το κόστος μοιράζεται.</p></div>';
   // ο Καθηγητής
   var sums=(S.reviews||[]).filter(function(x){return x.kind==='sum'}).sort(function(a,b){return (b.at||0)-(a.at||0)});
-  h+='<div class="card c3d" id="rvProf"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Ο Καθηγητής: τι κάναμε λάθος και τι μαθαίνουμε</h2><div class="row" style="gap:.4rem"><button class="btn primary small" type="button" id="rvAsk"'+(REV.sumBusy?' disabled':'')+'>'+(REV.sumBusy?'⏳ Διαβάζει…':'Ζήτα απολογισμό')+'</button><button class="btn small" type="button" id="rvCopy" title="Αντιγράφει όλα τα δεδομένα και την ερώτηση για να τα επικολλήσεις σε συζήτηση στο claude.ai">📋 Για το claude.ai</button></div></div>'+
-   (S.sample?'':'<p class="muted" style="font-size:.82rem;margin:.3rem 0">Ο Καθηγητής-AI της σελίδας χρειάζεται κλειδί Anthropic στο Vercel. Μέχρι τότε: πάτα «📋 Για το claude.ai», επικόλλησε σε μια συζήτηση στο claude.ai με τον λογαριασμό σας και φέρε την απάντηση εδώ.</p>')+
+  h+='<div class="card c3d" id="rvProf"><div class="formhead"><h2 style="margin:0">🧑‍🏫 Σχόλια από τον Καθηγητή (AI)</h2><div class="row" style="gap:.4rem"><button class="btn primary small" type="button" id="rvAsk"'+(REV.sumBusy?' disabled':'')+'>'+(REV.sumBusy?'⏳ Διαβάζει…':'Ζήτα απολογισμό')+'</button><button class="btn small" type="button" id="rvCopy" title="Αντιγράφει όλα τα δεδομένα και την ερώτηση για να τα επικολλήσεις σε συζήτηση στο claude.ai">📋 Για το claude.ai</button></div></div>'+
+   (S.sample?'':'<p class="muted" style="font-size:.82rem;margin:.3rem 0">Η αυτόματη ανάλυση πιο πάνω δουλεύει πάντα. Για γραπτό σχολιασμό από τον Καθηγητή-AI χρειάζεται κλειδί Anthropic στο Vercel· μέχρι τότε πάτα «📋 Για το claude.ai», επικόλλησε σε συζήτηση στο claude.ai και φέρε την απάντηση εδώ.</p>')+
    '<div id="rvOut" class="rvout"'+(REV.live?'':' hidden')+'>'+esc(REV.live||'')+'</div>'+
    '<details class="rvpaste"><summary>Επικόλληση απάντησης από το claude.ai</summary><textarea id="rvPaste" rows="5" placeholder="Επικόλλησε εδώ την απάντηση του Claude για να μείνει στο ημερολόγιο"></textarea><button class="btn small" type="button" id="rvPasteSave">💾 Αποθήκευση στο ημερολόγιο</button></details>'+
    (sums.length?'<h3 style="margin:.8rem 0 .3rem;font-size:.95rem">Προηγούμενοι απολογισμοί</h3>'+sums.slice(0,12).map(function(x,i){return '<details class="rvsum"'+(i===0&&!REV.live?' open':'')+'><summary><b>'+esc(new Date(x.at).toLocaleString('el-GR',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}))+'</b> · '+esc(name(x.by))+' · '+esc(x.scope||'')+'</summary><div class="rvout">'+esc(x.ai||'')+'</div></details>'}).join(''):'')+'</div>';
-  // εισαγωγή CSV
-  h+='<div id="rvImpHost"></div>';
   // συναλλαγή-συναλλαγή
   var L=(REV.only?withM:list).slice().reverse();
   h+='<div class="card c3d"><div class="formhead"><h2 style="margin:0">🔍 Συναλλαγή-συναλλαγή</h2><label class="muted" style="font-size:.85rem"><input type="checkbox" style="width:auto;vertical-align:middle" id="rvOnly"'+(REV.only?' checked':'')+'> μόνο όσες έχουν λάθος</label></div>'+
@@ -6934,8 +6934,10 @@ function revRender(){
   // ημερολόγιο μαθημάτων
   var les=(S.reviews||[]).filter(function(x){return x.kind==='trade'&&(x.lesson||'').trim()}).sort(function(a,b){return (b.at||0)-(a.at||0)});
   h+='<div class="card c3d"><h2>📒 Το ημερολόγιο μαθημάτων μας</h2>'+(les.length?'<ul class="rvles">'+les.slice(0,60).map(function(x){var t=S.trades.find(function(q){return q.id===x.tid});return '<li><div class="muted" style="font-size:.78rem">'+esc(name(x.by))+' · '+(t?esc(dateGr(t.date))+' · '+esc(t.symbol||'')+' '+(t.dir==='short'?'short':'long')+' · <span class="'+cls(t.r)+'">'+fR(t.r)+'</span>':'')+' '+(x.marks||[]).map(function(m){return REVMAP[m]?REVMAP[m].ic:''}).join(' ')+'</div><div>'+esc(x.lesson)+'</div></li>'}).join('')+'</ul>':'<div class="empty">Ακόμα κανένα μάθημα. Άνοιξε μια συναλλαγή πιο πάνω και γράψε τι έμαθες.</div>')+'</div>';
+  var allL=(function(){var cut=null;if(REV.per!=='all'){var d=new Date();d.setDate(d.getDate()-(+REV.per));cut=d.toISOString().slice(0,10)}return S.trades.filter(function(t){if(cut&&(t.date||'')<cut)return false;if(REV.who==='me')return t.by===S.uid;if(REV.who!=='all')return t.by===REV.who;return true})})();
   var ic0=$('#impCard');if(ic0&&el.contains(ic0)){var pk=$('#impPark');if(!pk){pk=document.createElement('div');pk.id='impPark';pk.hidden=true;document.body.appendChild(pk)}pk.appendChild(ic0)}
   el.innerHTML=h;
+  var ri=$('#rvIns');if(ri){var SKIP={orders:1,possize:1,'p-checklist':1,'p-biases':1};renderInsights(ri,insights(allL).filter(function(x){return !SKIP[x.ref]}))}
   // η εισαγωγή CSV ζει εδώ
   var ic=$('#impCard'),host=$('#rvImpHost');if(ic&&host){host.appendChild(ic);ic.classList.add('c3d');if(!ic._dd){ic._dd=1;['dragover','dragenter'].forEach(function(ev){ic.addEventListener(ev,function(e){e.preventDefault();ic.classList.add('drag')})});ic.addEventListener('dragleave',function(){ic.classList.remove('drag')});ic.addEventListener('drop',function(e){e.preventDefault();ic.classList.remove('drag');var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(!f)return;try{var dt=new DataTransfer();dt.items.add(f);$('#imp-file').files=dt.files;$('#imp-file').dispatchEvent(new Event('change'))}catch(x){}ic.open=true})}var sm=ic.querySelector('summary');if(sm&&!/📥/.test(sm.textContent))sm.textContent='📥 Φόρτωσε CSV από το TradingView (ή σύρε το αρχείο εδώ)'}
 }
@@ -7215,7 +7217,7 @@ function showTab(t,keepHash){
   if(TABS.indexOf(t)<0)t='today';
   $$('.tabs button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.tab===t?'true':'false')});
   $$('section[data-panel]').forEach(function(s){s.hidden=s.dataset.panel!==t});
-  $('#filters').hidden=!(t==='trades'||t==='stats');
+  $('#filters').hidden=!(t==='trades'||(t==='stats'&&!(typeof ANG!=='undefined'&&ANG&&ANG.k==='rev')));
   if(!keepHash){try{history.replaceState(null,'','#'+t)}catch(e){}}
   store('tj-tab',t);
   if(t==='history')setTimeout(function(){try{hiInit()}catch(e){console.error(e)}},0);
@@ -7341,7 +7343,7 @@ function boot(){
   if(!cl){setTimeout(profGreet,300);S.uid='me';var had=loadLocal();notice('Τοπική λειτουργία: οι εγγραφές κρατιούνται μόνο σε αυτόν τον browser'+(had?' (φορτώθηκαν οι αποθηκευμένες)':'')+'. Άνοιξε τη σελίδα από το claude.ai για κοινή αποθήκευση.');render();return}
   Promise.all([cl.use('db'),cl.use('user'),cl.use('sample')]).then(function(r){
     S.db=r[0];S.user=r[1];S.sample=r[2];
-    $('#aiCard').hidden=!S.sample;
+    $('#aiCard').hidden=true;
     var idP=S.user?S.user.id().catch(function(){return null}):Promise.resolve(null);
     var canP=S.user?S.user.can('data.write').catch(function(){return null}):Promise.resolve(null);
     return Promise.all([idP,canP]);
