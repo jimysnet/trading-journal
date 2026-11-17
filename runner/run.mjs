@@ -24,7 +24,9 @@ async function open() {
   await ctx.addInitScript(([e, p]) => { window.__TJ_BOT = { email: e, password: p } }, [EMAIL, PASS]);
   page = await ctx.newPage();
   page.on('console', m => { const t = m.text(); if (m.type() === 'error' || /^\[tj\]|Αυτόματος|Turtle|apScan/.test(t)) console.log(ts(), m.type(), t.slice(0, 300)) });
-  page.on('pageerror', e => console.log(ts(), 'pageerror', String(e).slice(0, 300)));
+  page.on('pageerror', e => console.log(ts(), 'pageerror', String((e && (e.message || e.code)) || e).slice(0, 300)));
+  page.on('requestfailed', r => console.log(ts(), 'reqfail', r.url().slice(0, 160)));
+  page.on('response', r => { if (r.status() >= 500) console.log(ts(), r.status(), r.url().replace(/[?&]a=.*/, '').slice(0, 160)) });
   page.on('crash', () => { console.log(ts(), 'crash'); loadedAt = 0 });
   await page.goto(URL + '/?runner=1#demo', { waitUntil: 'domcontentloaded', timeout: 120000 });
   loadedAt = Date.now();
