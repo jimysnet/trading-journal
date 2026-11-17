@@ -82,7 +82,7 @@
       return loadBars().then(function () { connect(); backfill(); loadOI(); idbLoad(); OPT.lv = null; if (CFG.sh.opt) optLevels(); if (CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && !W.__E9.mpRows() && W.__E9.mp() } catch (x) { } } })
     }).catch(function (e) { if (m === M) { m.err = LX('Δεν ήρθαν δεδομένα από το Binance (') + (e && e.status || LX('δίκτυο')) + ').'; renderHead() } });
   }
-  function stop() { if (M) { M.dead = true; try { M.ws && M.ws.close() } catch (e) { } clearTimeout(M.rt); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
+  function stop() { if (M) { M.dead = true; (M.wss || []).forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); clearTimeout(M.rt); clearInterval(M.wd); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
 
   function loadBars() {
     var m = M, ms = TF[m.tf];
@@ -116,18 +116,27 @@
   }
 
   /* ---------- WebSocket ---------- */
+  /* Binance Futures (από 2026): οι συναλλαγές/ρευστοποιήσεις/mark price έρχονται από το /market και το βιβλίο από το /public.
+     Τα παλιά /ws και /stream στέλνουν πλέον μόνο το βιβλίο, γι' αυτό ανοίγουμε δύο συνδέσεις (με εφεδρεία το παλιό URL). */
+  var FWS = { mk: 'wss://fstream.binance.com/market/stream?streams=', pb: 'wss://fstream.binance.com/public/stream?streams=', old: 'wss://fstream.binance.com/stream?streams=' };
   function connect() {
-    var m = M; if (m.dead) return; if (!m.liveFrom) m.liveFrom = Date.now(); var s = m.pair.toLowerCase(), st = [s + '@aggTrade', s + '@depth@100ms'];
-    if (m.venue === 'f') st.push(s + '@forceOrder', s + '@markPrice@1s'); else st.push(s + '@ticker');
-    var hosts = WSH[m.venue], url = hosts[m.wsTry % hosts.length] + st.join('/'), ws;
-    try { ws = new WebSocket(url) } catch (e) { return retry() }
-    m.ws = ws;
-    ws.onopen = function () { if (m !== M) return ws.close(); m.conn = true; m.status = ''; renderHead(); m.book.ok = false; m.book.buf = []; m.book.sync = 0; resync() };
-    ws.onmessage = function (ev) { if (m !== M) return; var j; try { j = JSON.parse(ev.data) } catch (e) { return } var d = j.data || j; onMsg(d) };
-    ws.onclose = function () { if (m !== M) return; m.conn = false; m.book.ok = false; renderHead(); retry() };
-    ws.onerror = function () { try { ws.close() } catch (e) { } };
+    var m = M; if (m.dead) return; if (!m.liveFrom) m.liveFrom = Date.now(); var s = m.pair.toLowerCase(), groups;
+    if (m.venue === 'f') {
+      var mk = [s + '@aggTrade', s + '@forceOrder', s + '@markPrice@1s'], dp = [s + '@depth@100ms'];
+      groups = m.wsTry % 3 === 2 ? [[FWS.old, mk.concat(dp)]] : [[FWS.mk, mk], [FWS.pb, dp]];
+    } else { var hosts = WSH.s; groups = [[hosts[m.wsTry % hosts.length], [s + '@aggTrade', s + '@depth@100ms', s + '@ticker']]] }
+    var open = 0, gone = false; m.wss = []; m.lastMsg = Date.now();
+    var down = function () { if (m !== M || gone) return; gone = true; m.conn = false; m.book.ok = false; m.wss.forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); renderHead(); retry() };
+    groups.forEach(function (gp) {
+      var ws; try { ws = new WebSocket(gp[0] + gp[1].join('/')) } catch (e) { down(); return } m.wss.push(ws);
+      ws.onopen = function () { if (m !== M) return ws.close(); open++; if (open === groups.length) { m.conn = true; m.status = ''; renderHead() } if (gp[1].some(function (x) { return x.indexOf('@depth') > 0 })) { m.book.ok = false; m.book.buf = []; m.book.sync = 0; resync() } };
+      ws.onmessage = function (ev) { if (m !== M) return; var j; try { j = JSON.parse(ev.data) } catch (e) { return } var d = j.data || j; if (d.e === 'aggTrade') m.lastTrade = Date.now(); try { onMsg(d) } catch (e) { } };
+      ws.onclose = down; ws.onerror = function () { try { ws.close() } catch (e) { } };
+    });
     function retry() { if (m !== M || m.dead) return; m.wsTry++; m.rt = setTimeout(connect, Math.min(15000, 1000 * m.wsTry)) }
     clearInterval(m.hi); m.hi = setInterval(heatCap, m.heat.dt);
+    // φύλακας: αν σε 90″ δεν ήρθε καμία συναλλαγή ενώ το βιβλίο κινείται, δοκίμασε την άλλη διαδρομή
+    clearInterval(m.wd); m.wd = setInterval(function () { if (m !== M || m.dead) { clearInterval(m.wd); return } if (m.conn && m.book.ok && Date.now() - (m.lastTrade || m.liveFrom) > 90000 && Date.now() - m.liveFrom > 90000) { m.lastTrade = Date.now(); down() } }, 15000);
   }
   function onMsg(d) {
     var m = M;
@@ -764,7 +773,7 @@
   }
 
   /* ---------- αλληλεπίδραση ---------- */
-  function zoomX(f, ax) { if (!M || !M.bars.length) return; var x = ax == null ? Lay.R - Lay.pad : ax, i = iOfX(x); V.bw = clamp(V.bw * f, 1.5, 240); V.off = cOff(V.off + (iOfX(x) - i)); DIRTY = true }
+  function zoomX(f, ax) { if (!M || !M.bars.length) return; var x = ax == null ? Lay.R - Lay.pad : ax, i = iOfX(x); V.bw = clamp(V.bw * f, 1, 480); V.off = cOff(V.off + (iOfX(x) - i)); DIRTY = true }
   function zoomY(f, ay) { var p = ay == null ? (V.y0 + V.y1) / 2 : pOfY(ay); V.yAuto = false; V.y0 = p - (p - V.y0) * f; V.y1 = p + (V.y1 - p) * f; DIRTY = true }
   function bindChart() {
     var pts = new Map(), pinch = null;
@@ -773,7 +782,7 @@
     cv.addEventListener('pointermove', function (e) {
       var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; V.mx = x; V.my = y; DIRTY = true;
       if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: x, y: y });
-      if (pinch && pts.size === 2) { var a = Array.from(pts.values()), d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), mxp = (a[0].x + a[1].x) / 2, i = iOfX(mxp); V.bw = clamp(pinch.bw * d / pinch.d, 1.5, 240); V.off = cOff(V.off + (iOfX(mxp) - i)); return }
+      if (pinch && pts.size === 2) { var a = Array.from(pts.values()), d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y), mxp = (a[0].x + a[1].x) / 2, i = iOfX(mxp); V.bw = clamp(pinch.bw * d / pinch.d, 1, 480); V.off = cOff(V.off + (iOfX(mxp) - i)); return }
       var dg = V.drag; if (!dg) return;
       if (dg.axis) { var f = Math.exp((y - dg.y) * 0.01), mid = (dg.y0 + dg.y1) / 2, hh = (dg.y1 - dg.y0) / 2 * f; V.yAuto = false; V.y0 = mid - hh; V.y1 = mid + hh; return }
       V.off = cOff(dg.off + (x - dg.x) / V.bw);
