@@ -123,7 +123,7 @@
     var m = M; if (m.dead) return; if (!m.liveFrom) m.liveFrom = Date.now(); var s = m.pair.toLowerCase(), groups;
     if (m.venue === 'f') {
       var mk = [s + '@aggTrade', s + '@forceOrder', s + '@markPrice@1s'], dp = [s + '@depth@100ms'];
-      groups = m.wsTry % 3 === 2 ? [[FWS.old, mk.concat(dp)]] : [[FWS.mk, mk], [FWS.pb, dp]];
+      groups = [[FWS.mk, mk], [FWS.pb, dp]];
     } else { var hosts = WSH.s; groups = [[hosts[m.wsTry % hosts.length], [s + '@aggTrade', s + '@depth@100ms', s + '@ticker']]] }
     var open = 0, gone = false; m.wss = []; m.lastMsg = Date.now();
     var down = function () { if (m !== M || gone) return; gone = true; m.conn = false; m.book.ok = false; m.wss.forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); renderHead(); retry() };
@@ -194,7 +194,7 @@
       else if (bt === L.t) { L.h = Math.max(L.h, p); L.l = Math.min(L.l, p); L.c = p; L.v += q; if (side) L.bv += q; L.usd += p * q; L.n = (L.n || 0) + 1; L.dl = 2 * L.bv - L.v; L.dmx = Math.max(L.dmx == null ? L.dl : L.dmx, L.dl); L.dmn = Math.min(L.dmn == null ? L.dl : L.dmn, L.dl) }
       var sec = Math.floor(T / 1000), tp = m.tps[m.tps.length - 1]; if (tp && tp[0] === sec) tp[1]++; else { m.tps.push([sec, 1]); if (m.tps.length > 120) m.tps.shift() }
       if (isFinite(prev)) lineCross(prev, p);
-      m.tape.push({ t: T, p: p, q: q, s: side }); if (m.tape.length > 400) m.tape.shift();
+      m.tape.push({ t: T, p: p, q: q, s: side }); if (m.tape.length > 4000) m.tape.splice(0, 1000);
       iceCheck(p, q, side, T);
     }
     // ομαδοποίηση σε εντολές αγοράς/πώλησης (ίδιο ms, ίδια πλευρά = μία εντολή που «σάρωσε» επίπεδα)
@@ -204,15 +204,15 @@
     if (!hist) { clearTimeout(m.gt); m.gt = setTimeout(function () { if (m === M && m.grp) { flushOrder(m.grp); m.grp = null } }, 60) }
     DIRTY = true
   }
-  function bigTh() { return CFG.big > 0 ? CFG.big : Math.max(M.bigAuto || 0, 5000) }
+  function bigTh() { if (CFG.big > 0) return CFG.big; var g = M.t24 && +M.t24.quoteVolume ? +M.t24.quoteVolume / 60000 : 0; return Math.max(M.bigAuto || g || 0, 5000) }
   function flushOrder(g) {
     var m = M; m.sizes.push(g.usd); if (m.sizes.length > 4000) m.sizes.splice(0, 1000);
-    if (m.sizes.length % 300 === 0 && m.sizes.length >= 300) { var s = m.sizes.slice().sort(function (a, b) { return a - b }); m.bigAuto = s[Math.floor(s.length * 0.995)] }
+    if (m.sizes.length % 500 === 0 && m.sizes.length >= 1500) { var s = m.sizes.slice().sort(function (a, b) { return a - b }), nv = s[Math.floor(s.length * 0.995)]; m.bigAuto = m.bigAuto ? m.bigAuto * 0.8 + nv * 0.2 : nv }
     var th = bigTh(), o = { t: g.T, s: g.s, q: g.q, usd: g.usd, p: g.usd / g.q, pmin: g.pmin, pmax: g.pmax, n: g.n };
-    if (g.usd >= th) { m.big.push(o); if (m.big.length > 1500) m.big.shift(); var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
+    if (g.usd >= th) { m.big.push(o); if (m.big.length > 9000) { m.big.sort(function (a, b) { return a.t - b.t }); m.big.splice(0, m.big.length - 7000) } var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
     if (g.live && CFG.al.big && g.usd >= th * (CFG.al.bigx || 3)) fire((g.s ? '🟢 ' : '🔴 ') + T('Μεγάλη ', 'Big ') + (g.s ? T('αγορά ', 'buy ') : T('πώληση ', 'sell ')) + usd(g.usd) + ' @ ' + (g.usd / g.q).toFixed(m.dec), 1)
     var lv = Math.round((g.pmax - g.pmin) / (m.tick || m.bucket)) + 1;
-    if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; m.sw.push(o); if (m.sw.length > 600) m.sw.shift() }
+    if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; m.sw.push(o); if (m.sw.length > 3000) { m.sw.sort(function (a, b) { return a.t - b.t }); m.sw.splice(0, m.sw.length - 2000) } }
   }
   /* iceberg: σε ένα επίπεδο εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο, και το επίπεδο ακόμα κρατά */
   function iceCheck(p, q, side, T) {
@@ -755,10 +755,10 @@
   }
   var SLT = 0;
   function renderSide(force) {
-    var el = D.getElementById('fList'); if (!el || !M || !VIS) return; if (!force && Date.now() - SLT < 400) return; SLT = Date.now();
+    var el = D.getElementById('fList'); if (!el || !M || !VIS) return; if (!force && Date.now() - SLT < 400) return; if (!force && D.activeElement && D.activeElement.id === 'fTapeMin') return; SLT = Date.now();
     var dec = M.dec, row = function (t, s, p, q, x, hl, at) { return '<div class="' + (s ? 'b' : 's') + (hl ? ' hl' : '') + '"' + (at ? ' data-fat="' + at + '"' : '') + '><span>' + hm(t, true) + '</span><span>' + p + '</span><span>' + q + '</span><span>' + x + '</span></div>' };
     var hd = function (a, b, c, d) { return '<div class="hd"><span>' + a + '</span><span>' + b + '</span><span>' + c + '</span><span>' + d + '</span></div>' }, html = '', th = bigTh();
-    if (SIDE === 'tape') { var L = M.tape.slice(-140).reverse().filter(function (x) { return x.p * x.q >= (CFG.tapeMin || 0) }); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Ποσότ.'), '$') + (L.length ? L.map(function (x) { return row(x.t, x.s, x.p.toFixed(dec), fv(x.q), usd(x.p * x.q), x.p * x.q >= th * 0.5) }).join('') : LX('<span class="em">περιμένω συναλλαγές…</span>')) }
+    if (SIDE === 'tape') { var tm = CFG.tapeMin === 'big' ? th : +CFG.tapeMin || 0, src = tm > 0 ? M.tape : M.tape.slice(-140), L = src.filter(function (x) { return x.p * x.q >= tm }).slice(-140).reverse(); html = '<label class="fchk" style="padding:.3rem .5rem">' + T('Φίλτρο:', 'Filter:') + ' <select id="fTapeMin">' + [[0, T('όλες', 'all')], [1000, '≥ $1k'], [10000, '≥ $10k'], [50000, '≥ $50k'], ['big', 'Big ≥ ' + usd(th)]].map(function (o) { return '<option value="' + o[0] + '"' + (String(CFG.tapeMin || 0) === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>' }).join('') + '</select></label>'; html += hd(LX('Ώρα'), LX('Τιμή'), LX('Ποσότ.'), '$') + (L.length ? L.map(function (x) { return row(x.t, x.s, x.p.toFixed(dec), fv(x.q), usd(x.p * x.q), x.p * x.q >= th * 0.5) }).join('') : LX('<span class="em">περιμένω συναλλαγές…</span>')) }
     else if (SIDE === 'big') { L = M.big.filter(function (o) { return o.usd >= th }).slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Ποσότ.'), '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, o.p.toFixed(dec), fv(o.q), usd(o.usd), o.usd >= th * 4, o.t) }).join('') : LX('<span class="em">Καμία εντολή ≥ ') + usd(th) + LX(' ακόμα.</span>')) }
     else if (SIDE === 'sw') { L = M.sw.slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Από→Έως'), LX('Επίπεδα'), '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, (o.s ? o.pmin : o.pmax).toFixed(dec) + '→' + (o.s ? o.pmax : o.pmin).toFixed(dec), o.lv, usd(o.usd), o.usd >= th, o.t) }).join('') : LX('<span class="em">Κανένα sweep ακόμα. Sweep = μία εντολή που χτύπησε 4+ επίπεδα τιμής ταυτόχρονα.</span>')) }
     else if (SIDE === 'ice') { L = M.ice.slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Εκτελ./Φαιν.'), '$') + (L.length ? L.map(function (o) { return row(o.t, !o.s, o.p.toFixed(dec), fv(o.q) + '/' + fv(o.shown), usd(o.usd), o.usd >= th, o.t) }).join('') : LX('<span class="em">Κανένα iceberg ακόμα. Iceberg = σε μία τιμή εκτελέστηκε πάνω από 2,5× όσο έδειχνε το βιβλίο και η τιμή κράτησε (κρυφός μεγάλος αγοραστής/πωλητής).</span>')) }
@@ -854,6 +854,7 @@
     if (t.id === 'fBig') { CFG.big = Math.max(0, +t.value || 0); saveCfg(); DIRTY = true; renderSide(true); renderHead(); return }
     if (t.id === 'fAlBig') { CFG.al.big = t.checked ? 1 : 0; saveCfg(); if (t.checked) { askNotif(); beep(1) } return }
     if (t.id === 'fAlBigX') { CFG.al.bigx = +t.value; saveCfg(); renderSide(true); return }
+    if (t.id === 'fTapeMin') { CFG.tapeMin = t.value === 'big' ? 'big' : +t.value; saveCfg(); renderSide(true); return }
     if (t.id === 'fExp') { CFG.oexp = t.value; saveCfg(); optRender(); return }
   }
 
