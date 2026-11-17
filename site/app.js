@@ -3335,7 +3335,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=279,VERS={sub:null,t:null};
+var APP_VER=280,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3968,7 +3968,9 @@ document.addEventListener('click',function(e){if(!e.target.closest)return;var c=
 document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('.hr[data-ox]')){e.preventDefault();e.target.click()}});
 /* Διάγραμμα δίπλα στην ανοιχτή συναλλαγή: κεριά του νομίσματος με είσοδο, SL, TP (και κλειδωμένο stop) */
 var OTC=window.__OTC={},OT_TFS=['15m','1h','4h'],OT_DAYS={'15m':10,'1h':30,'4h':120},OT_CG={'15m':'1','1h':'7','4h':'30'};
-function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];return u||'15m'}
+/* προεπιλογή πλαισίου: 15m για φρέσκιες εντολές· αν η είσοδος είναι παλιά (ή είναι Turtle/1D), μεγαλύτερο πλαίσιο ώστε να φαίνονται είσοδος, SL και η πορεία (αλλιώς τα 96 κεριά των 15′ δείχνουν μόνο το τελευταίο 24ωρο, «ίσια γραμμή») */
+function otTf(t){var a=t.auto||{},u=(DM.otf||{})[t.id];if(u)return u;var at=+(t.filledAt||t.at||0),age=at?Date.now()-at:0;
+  if(a.tf==='1D'||/^ttl/.test(a.strat||'')||age>4*864e5)return '4h';if(age>20*36e5)return '1h';return '15m'}
 /* εφεδρικό: κεριά φτιαγμένα από τις τιμές του CoinGecko (ανά 5λεπτο/ώρα) ομαδοποιημένες στο πλαίσιο */
 function otCg(base,tf){var id=CGID[base],ms=CC_TFMS[tf];if(!id||!CG.mcp)return Promise.resolve([]);
   return CG.mcp.callTool('CoinGecko','get-coin-market-chart',{id:id,days:OT_CG[tf]},{cache:{staleTime:120000,gcTime:1800000}}).then(function(r){var P=(r&&r.payload&&r.payload.prices)||[],out=[],cur=null;
