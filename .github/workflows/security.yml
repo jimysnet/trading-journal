@@ -1,0 +1,22 @@
+# 🔒 Έλεγχος ασφαλείας: επιβεβαιώνει ότι χωρίς έγκριση δεν διαβάζεται/γράφεται τίποτα. Τρέχει κάθε Δευτέρα και με το χέρι.
+name: security
+on:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch: {}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: runner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Έλεγχος
+        working-directory: runner
+        env:
+          TJ_URL: ${{ secrets.TJ_URL }}
+        run: node sec.mjs
