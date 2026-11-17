@@ -12,8 +12,11 @@
   var FONT = '11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
 
   /* ---------- ρυθμίσεις (ανά browser) ---------- */
-  var CFG = { sym: 'BTC', venue: 'f', tf: '1m', mode: 'fp_ba', mult: 'auto', big: 0, sub: { delta: 1, cvd: 1, oi: 1 }, sh: { heat: 1, big: 1, liq: 1, sw: 1, ice: 1, vp: 1, vwap: 1, mlv: 1, opt: 1, imb: 1 }, view: 'chart', oc: 'BTC', oexp: 'all', tapeMin: 0 };
+  var CFG = { lang: 'el', lines: {}, al: { big: 0, bigx: 3 }, csMin: 0, sym: 'BTC', venue: 'f', tf: '1m', mode: 'fp_ba', mult: 'auto', big: 0, sub: { delta: 1, cvd: 1, oi: 1, spd: 0, stat: 1 }, sh: { heat: 1, big: 1, liq: 1, sw: 1, ice: 1, vp: 1, vwap: 1, mlv: 1, opt: 1, imb: 1, stk: 1, cs: 1, sig: 1, vpd: 1 }, view: 'chart', oc: 'BTC', oexp: 'all', tapeMin: 0 };
   try { var sv = JSON.parse(localStorage.getItem('tj-flow') || 'null'); if (sv) { for (var k in sv) if (k in CFG) CFG[k] = (typeof CFG[k] === 'object' && !Array.isArray(CFG[k])) ? Object.assign({}, CFG[k], sv[k]) : sv[k] } } catch (e) { }
+  var EN = {"φόρτωση…": "loading…", " δεν υπάρχει στο Binance ": " is not listed on Binance ", ". Δοκίμασε την άλλη αγορά.": ". Try the other market.", "Δεν ήρθαν δεδομένα από το Binance (": "No data from Binance (", "δίκτυο": "network", "⏸ ΠΑΓΩΜΕΝΟ": "⏸ FROZEN", "φορτώνω footprint… ": "loading footprint… ", "Όγκος ": "Volume ", "Στο ": "At ", "σύνδεση στο βιβλίο…": "connecting to the order book…", "Τιμή": "Price", "<span style=\"flex:1\"></span><span style=\"font-size:.74rem;color:var(--fmu)\">Δωρεάν δημόσια δεδομένα Binance · Deribit · τίποτα δεν εκτελεί εντολές</span></div>": "<span style=\"flex:1\"></span><span style=\"font-size:.74rem;color:var(--fmu)\">Free public data from Binance · Deribit · nothing places orders</span></div>", "\" size=\"6\" title=\"Νόμισμα\"><datalist id=\"flowCoins\">": "\" size=\"6\" title=\"Coin\"><datalist id=\"flowCoins\">", "Binance USDⓈ-M perpetual (περισσότερος όγκος, ρευστοποιήσεις, OI)": "Binance USDⓈ-M perpetual (more volume, liquidations, OI)", "Κεριά": "Candles", "Footprint: πωλήσεις αγοράς (αριστερά) × αγορές αγοράς (δεξιά) σε κάθε τιμή": "Footprint: market sells (left) × market buys (right) at each price", "Footprint: αγορές − πωλήσεις σε κάθε τιμή": "Footprint: buys − sells at each price", "Όγκος": "Volume", "Footprint: συνολικός όγκος σε κάθε τιμή": "Footprint: total volume at each price", "<select id=\"fMult\" title=\"Βήμα τιμής (cluster)\"><option value=\"auto\">Βήμα: αυτόματο</option>": "<select id=\"fMult\" title=\"Price step (cluster size)\"><option value=\"auto\">Step: auto</option>", "\" placeholder=\"αυτόματο\" style=\"width:7em\"></label>": "\" placeholder=\"auto\" style=\"width:7em\"></label>", "<button class=\"fbtn\" id=\"fPause\" title=\"Πάγωμα της εικόνας (τα δεδομένα συνεχίζουν να καταγράφονται)\">⏸ Πάγωμα</button></div>": "<button class=\"fbtn\" id=\"fPause\" title=\"Freeze the picture (data keeps recording)\">⏸ Freeze</button></div>", "Ιστορικό βάθους βιβλίου εντολών (από τη στιγμή που άνοιξε η σελίδα)": "Order book depth history (since the page was opened)", "Μεγάλες εντολές αγοράς/πώλησης": "Large market buy/sell orders", "Εντολές που «σάρωσαν» πολλά επίπεδα μαζί": "Orders that swept several price levels at once", "Κρυφές εντολές: εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο": "Hidden orders: far more was filled than the book showed", "Ρευστοποιήσεις futures": "Futures liquidations", "Προφίλ όγκου ορατού εύρους με POC/VAH/VAL": "Visible-range volume profile with POC/VAH/VAL", "VWAP ημέρας": "Daily VWAP", "Διαγώνιες ανισορροπίες ×3 στο footprint": "Diagonal ×3 imbalances in the footprint", "M/POC μήνα": "Monthly M/POC", "Επίπεδα μηνιαίου Market Profile (καρτέλα Αγορές)": "Monthly Market Profile levels (Markets tab)", "<div class=\"fgrid\"><div class=\"fmain\"><canvas id=\"fCv\"></canvas><div class=\"fzm\"><button data-fz=\"-\" title=\"Σμίκρυνση\">−</button><button data-fz=\"+\" title=\"Μεγέθυνση\">+</button><button data-fz=\"y\" title=\"Αυτόματη κλίμακα τιμής\">↕</button><button data-fz=\"0\" title=\"Επαναφορά\">⟲</button></div><button class=\"ffs\" data-ffull title=\"Πλήρης οθόνη (Esc για έξοδο)\">⛶</button></div>": "<div class=\"fgrid\"><div class=\"fmain\"><canvas id=\"fCv\"></canvas><div class=\"fzm\"><button data-fz=\"-\" title=\"Zoom out\">−</button><button data-fz=\"+\" title=\"Zoom in\">+</button><button data-fz=\"y\" title=\"Auto price scale\">↕</button><button data-fz=\"0\" title=\"Reset\">⟲</button></div><button class=\"ffs\" data-ffull title=\"Full screen (Esc to exit)\">⛶</button></div>", "<div class=\"fleg\"><span><i style=\"color:#ff8f9b\">Bid</i> × <i style=\"color:#6dffb8\">Ask</i>: πωλήσεις × αγορές «στην αγορά» σε κάθε τιμή</span><span><i style=\"color:#ffc443\">▭</i> POC κεριού</span><span><i style=\"color:#6dffb8\">έντονο</i> = ανισορροπία ×3</span><span>🫧 Big trade</span><span><i style=\"color:#ff6bd6\">↕</i> Sweep</span><span><i style=\"color:#5ef0ff\">⊟</i> Iceberg</span><span><i style=\"color:#ffb020\">◆</i> ρευστοποίηση long · <i style=\"color:#5ef0ff\">◆</i> short</span><span><i style=\"color:#c77dff\">—</i> VWAP</span><span><i style=\"color:#5cb3ff\">VAH</i> · <i style=\"color:#ffc443\">POC</i> · <i style=\"color:#d08bff\">VAL</i></span></div>": "<div class=\"fleg\"><span><i style=\"color:#ff8f9b\">Bid</i> × <i style=\"color:#6dffb8\">Ask</i>: market sells × market buys at each price</span><span><i style=\"color:#ffc443\">▭</i> candle POC</span><span><i style=\"color:#6dffb8\">bold</i> = ×3 imbalance</span><span>🫧 Big trade</span><span><i style=\"color:#ff6bd6\">↕</i> Sweep</span><span><i style=\"color:#5ef0ff\">⊟</i> Iceberg</span><span><i style=\"color:#ffb020\">◆</i> long liquidation · <i style=\"color:#5ef0ff\">◆</i> short</span><span><i style=\"color:#c77dff\">—</i> VWAP</span><span><i style=\"color:#5cb3ff\">VAH</i> · <i style=\"color:#ffc443\">POC</i> · <i style=\"color:#d08bff\">VAL</i></span></div>", "<div class=\"fnote\">Ροδέλα: ζουμ στον χρόνο · Ctrl/⌘ + ροδέλα ή σύρσιμο στον άξονα τιμών: ζουμ στην τιμή · σύρσιμο: μετακίνηση · διπλό κλικ: επαναφορά. Τα αριθμητικά footprint εμφανίζονται όταν μεγεθύνεις (+). Το footprint χτίζεται από τις πραγματικές συναλλαγές (aggTrades): τα τελευταία λεπτά φορτώνονται αμέσως, και όσο η καρτέλα μένει ανοιχτή φυλάγεται στον browser για 3 μέρες. Το heatmap καταγράφει το βάθος από τη στιγμή που ανοίγεις την καρτέλα.</div>": "<div class=\"fnote\">Wheel: zoom time · Ctrl/⌘ + wheel or drag on the price axis: zoom price · drag: pan · double-click: reset. Footprint numbers appear when you zoom in (+). The footprint is built from real trades (aggTrades): the last minutes load instantly, and while the tab stays open it is kept in your browser for 3 days. The heatmap records depth from the moment you open the tab.</div>", "<select id=\"fExp\"></select><button class=\"fbtn\" id=\"fOptR\">↻ Ανανέωση</button><span style=\"font-size:.74rem;color:var(--fmu)\">Deribit · όλα τα options · ενημέρωση ανά λεπτό</span></div><div id=\"fOpt\"><p style=\"padding:1rem;color:var(--fmu)\">φόρτωση…</p></div></div>": "<select id=\"fExp\"></select><button class=\"fbtn\" id=\"fOptR\">↻ Refresh</button><span style=\"font-size:.74rem;color:var(--fmu)\">Deribit · all options · updated every minute</span></div><div id=\"fOpt\"><p style=\"padding:1rem;color:var(--fmu)\">loading…</p></div></div>", "Όγκος 24ω": "24h volume", "% 1ω)": "% 1h)", "CVD σήμερα": "CVD today", "Βιβλίο ±1%": "Book ±1%", "αγοραστές +": "buyers +", "πωλητές ": "sellers ", " (αυτ.)": " (auto)", "Footprint από": "Footprint since", "Ώρα": "Time", "Ποσότ.": "Qty", "<span class=\"em\">περιμένω συναλλαγές…</span>": "<span class=\"em\">waiting for trades…</span>", "<span class=\"em\">Καμία εντολή ≥ ": "<span class=\"em\">No order ≥ ", " ακόμα.</span>": " yet.</span>", "Από→Έως": "From→To", "Επίπεδα": "Levels", "<span class=\"em\">Κανένα sweep ακόμα. Sweep = μία εντολή που χτύπησε 4+ επίπεδα τιμής ταυτόχρονα.</span>": "<span class=\"em\">No sweeps yet. Sweep = one order that hit 4+ price levels at once.</span>", "Εκτελ./Φαιν.": "Filled/Shown", "<span class=\"em\">Κανένα iceberg ακόμα. Iceberg = σε μία τιμή εκτελέστηκε πάνω από 2,5× όσο έδειχνε το βιβλίο και η τιμή κράτησε (κρυφός μεγάλος αγοραστής/πωλητής).</span>": "<span class=\"em\">No icebergs yet. Iceberg = at one price more than 2.5× the displayed size was filled and the level held (hidden large buyer/seller).</span>", "Θέση": "Position", "<span class=\"em\">Οι ρευστοποιήσεις υπάρχουν μόνο στα Futures.</span>": "<span class=\"em\">Liquidations exist only on Futures.</span>", "<span class=\"em\">Καμία ρευστοποίηση από τότε που άνοιξε η καρτέλα.</span>": "<span class=\"em\">No liquidations since the tab was opened.</span>", "▶ Συνέχεια": "▶ Resume", "⏸ Πάγωμα": "⏸ Freeze", "<option value=\"all\">Όλες οι λήξεις</option>": "<option value=\"all\">All expiries</option>", " μέρες</option>": " days</option>", "Τιμή (υποκείμενο)": "Price (underlying)", " · μέγιστο OI calls (αντίσταση)": " · max call OI (resistance)", " · μέγιστο OI puts (στήριξη)": " · max put OI (support)", " · λήξη ": " · expiry ", "από πάνω: θετικό gamma (ήρεμη αγορά)": "above it: positive gamma (calm market)", "από κάτω: αρνητικό gamma (απότομες κινήσεις)": "below it: negative gamma (sharp moves)", "χωρίς αλλαγή πρόσημου ±20%": "no sign change within ±20%", "Αναμενόμενη κίνηση": "Expected move", "Συνολικό GEX": "Total GEX", "ανά 1% κίνηση · ": "per 1% move · ", "οι dealers φρενάρουν την τιμή": "dealers dampen price", "οι dealers ενισχύουν την κίνηση": "dealers amplify moves", "<div class=\"opg\"><div class=\"opc\"><h4>Strike Profile · Open Interest (puts ← → calls)</h4><canvas id=\"fOiCv\"></canvas></div><div class=\"opc\"><h4>GEX Profile ανά strike (Gamma Exposure, $ ανά 1%)</h4><canvas id=\"fGxCv\"></canvas></div></div>": "<div class=\"opg\"><div class=\"opc\"><h4>Strike Profile · Open Interest (puts ← → calls)</h4><canvas id=\"fOiCv\"></canvas></div><div class=\"opc\"><h4>GEX Profile by strike (Gamma Exposure, $ per 1%)</h4><canvas id=\"fGxCv\"></canvas></div></div>", "<div class=\"opg\"><div class=\"opc\"><h4>Αναμενόμενη κίνηση ανά λήξη (από το ATM implied volatility)</h4><table class=\"opt\"><thead><tr><th>Λήξη</th><th>Μέρες</th><th>ATM IV</th><th>±Κίνηση</th><th>Εύρος</th></tr></thead><tbody>": "<div class=\"opg\"><div class=\"opc\"><h4>Expected move by expiry (from ATM implied volatility)</h4><table class=\"opt\"><thead><tr><th>Expiry</th><th>Days</th><th>ATM IV</th><th>±Move</th><th>Range</th></tr></thead><tbody>", "<div class=\"opc\"><h4>Τι σημαίνουν</h4><p style=\"font-size:.8rem;color:var(--fmu);margin:.2rem .3rem;line-height:1.45\"><b style=\"color:#22c27f\">Call wall</b>: το strike με τα περισσότερα ανοιχτά calls πάνω από την τιμή. Συχνά λειτουργεί σαν αντίσταση.<br><b style=\"color:#ef4f5f\">Put wall</b>: τα περισσότερα puts κάτω από την τιμή, συχνά στήριξη.<br><b>Max pain</b>: η τιμή λήξης όπου χάνουν τα περισσότερα options. Κοντά στη λήξη η τιμή τείνει προς τα εκεί.<br><b style=\"color:#ff6bd6\">Gamma flip</b>: πάνω από αυτό οι dealers (θετικό gamma) πουλούν στις ανόδους και αγοράζουν στις πτώσεις, οπότε η αγορά ηρεμεί. Κάτω από αυτό κάνουν το αντίθετο και οι κινήσεις επιταχύνονται.<br><b>Αναμενόμενη κίνηση</b>: το ±1σ εύρος μέχρι τη λήξη, όπως το «τιμολογεί» η αγορά options.<br>Υπόθεση GEX: οι dealers είναι long calls/short puts από την πλευρά του πελάτη (συνήθης παραδοχή).</p></div></div>": "<div class=\"opc\"><h4>What they mean</h4><p style=\"font-size:.8rem;color:var(--fmu);margin:.2rem .3rem;line-height:1.45\"><b style=\"color:#22c27f\">Call wall</b>: the strike with the most open calls above price. Often acts as resistance.<br><b style=\"color:#ef4f5f\">Put wall</b>: the most puts below price, often support.<br><b>Max pain</b>: the expiry price where the most options lose. Near expiry price tends to drift there.<br><b style=\"color:#ff6bd6\">Gamma flip</b>: above it dealers (positive gamma) sell rallies and buy dips, so the market calms down. Below it they do the opposite and moves accelerate.<br><b>Expected move</b>: the ±1σ range to expiry as priced by the options market.<br>GEX assumption: dealers are long calls/short puts against customers (the usual convention).</p></div></div>", "<p style=\"padding:0 .7rem .7rem;font-size:.74rem;color:var(--fmu)\">Πηγή: Deribit, δημόσιο API (": "<p style=\"padding:0 .7rem .7rem;font-size:.74rem;color:var(--fmu)\">Source: Deribit public API (", " συμβόλαια). Ενημέρωση ": " contracts). Updated ", ". Το gamma υπολογίζεται με Black-Scholes από το mark IV κάθε συμβολαίου. Τα επίπεδα εμφανίζονται και στο διάγραμμα Order Flow (κουμπί «Options levels»).</p>": ". Gamma is computed with Black-Scholes from each contract's mark IV. The levels also appear on the Order Flow chart (\"Options levels\" button).</p>", "<p style=\"padding:1rem;color:#ef4f5f\">Δεν ήρθαν δεδομένα από το Deribit. Δοκίμασε ↻ σε λίγο.</p>": "<p style=\"padding:1rem;color:#ef4f5f\">No data from Deribit. Try ↻ in a moment.</p>", "Τιμή ": "Price ", "← αρνητικό   θετικό →": "← negative   positive →"};
+  function LX(s) { return CFG.lang === 'en' && EN[s] != null ? EN[s] : s }
+  function T(el, en) { return CFG.lang === 'en' ? en : el }
   function saveCfg() { try { localStorage.setItem('tj-flow', JSON.stringify(CFG)) } catch (e) { } }
 
   /* ---------- βοηθητικά ---------- */
@@ -54,7 +57,7 @@
       book: { b: new Map(), a: new Map(), u: 0, ok: false, buf: [], sync: 0 },
       heat: { dt: 2000, cols: [], half: 0 },
       tape: [], orders: [], big: [], sw: [], ice: [], liq: [], oi: [], grp: null, sizes: [], bigAuto: 0,
-      icew: {}, icen: 0, status: 'φόρτωση…', err: '', ws: null, wsTry: 0, conn: false, created: Date.now()
+      icew: {}, icen: 0, bd1: {}, tps: [], fpVer: 0, rc: {}, alerts: [], status: LX('φόρτωση…'), err: '', ws: null, wsTry: 0, conn: false, created: Date.now()
     }
   }
 
@@ -72,12 +75,12 @@
     var p2 = bn(m.venue, m.venue === 'f' ? '/fapi/v1/ticker/24hr' : '/api/v3/ticker/24hr', 'symbol=' + m.pair).then(function (t) { if (m === M) { m.t24 = t; if (!isFinite(m.mid0)) m.mid0 = +t.lastPrice } }).catch(function (e) { if (m === M) m.noSym = true });
     Promise.all([p1, p2]).then(function () {
       if (m !== M) return;
-      if (m.noSym && !m.snap) { m.status = ''; m.err = m.pair + ' δεν υπάρχει στο Binance ' + (m.venue === 'f' ? 'Futures' : 'Spot') + '. Δοκίμασε την άλλη αγορά.'; renderHead(); DIRTY = true; return }
+      if (m.noSym && !m.snap) { m.status = ''; m.err = m.pair + LX(' δεν υπάρχει στο Binance ') + (m.venue === 'f' ? 'Futures' : 'Spot') + LX('. Δοκίμασε την άλλη αγορά.'); renderHead(); DIRTY = true; return }
       var px = m.mid0 || 1; m.bucket = nice(px * 2e-4); if (m.tick && m.bucket < m.tick) m.bucket = m.tick; m.dec = pdec(Math.min(m.bucket, m.tick || m.bucket));
       m.heat.half = Math.ceil(px * 0.04 / m.bucket);
       if (m.snap) bookSnap(m.snap);
       return loadBars().then(function () { connect(); backfill(); loadOI(); idbLoad() })
-    }).catch(function (e) { if (m === M) { m.err = 'Δεν ήρθαν δεδομένα από το Binance (' + (e && e.status || 'δίκτυο') + ').'; renderHead() } });
+    }).catch(function (e) { if (m === M) { m.err = LX('Δεν ήρθαν δεδομένα από το Binance (') + (e && e.status || LX('δίκτυο')) + ').'; renderHead() } });
   }
   function stop() { if (M) { M.dead = true; try { M.ws && M.ws.close() } catch (e) { } clearTimeout(M.rt); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
 
@@ -85,7 +88,7 @@
     var m = M, ms = TF[m.tf];
     return bn(m.venue, m.venue === 'f' ? '/fapi/v1/klines' : '/api/v3/klines', 'symbol=' + m.pair + '&interval=' + m.tf + '&limit=' + (m.venue === 'f' ? 1500 : 1000)).then(function (k) {
       if (m !== M) return;
-      m.bars = k.map(function (x) { return { t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[5], bv: +x[9], usd: +x[7] } });
+      m.bars = k.map(function (x) { return { t: +x[0], o: +x[1], h: +x[2], l: +x[3], c: +x[4], v: +x[5], bv: +x[9], usd: +x[7], n: +x[8] } });
       var l = m.bars[m.bars.length - 1]; if (l) m.last = l.c; m.status = ''; DIRTY = true; renderHead()
     })
   }
@@ -98,7 +101,7 @@
         if (m !== M || !a || !a.length) return;
         var lim = m.liveFrom || Infinity;
         a.forEach(function (x) { if (x.T < lim) addTrade(+x.p, +x.q, x.T, x.m, true) });
-        n++; m.bf.n = n; m.bf.from = a[0].T; DIRTY = true;
+        n++; m.bf.n = n; m.bf.from = a[0].T; m.fpVer++; DIRTY = true;
         if (n < MAX && a[0].T > oldest && a[0].a > 0) return page(Math.max(0, a[0].a - 1000));
       })
     }
@@ -177,16 +180,18 @@
     if (T < m.fpFrom) m.fpFrom = T;
     var bt = barT(T); if (m.tf !== '1m') { var f = m.fp[bt] || (m.fp[bt] = { l: {} }), c = f.l[k] || (f.l[k] = [0, 0]); c[side] += q }
     if (!hist) {
-      m.last = p; var bars = m.bars, L = bars[bars.length - 1];
-      if (!L || bt > L.t) { bars.push({ t: bt, o: p, h: p, l: p, c: p, v: q, bv: side ? q : 0, usd: p * q }); if (bars.length > 3000) bars.shift() }
-      else if (bt === L.t) { L.h = Math.max(L.h, p); L.l = Math.min(L.l, p); L.c = p; L.v += q; if (side) L.bv += q; L.usd += p * q }
+      var prev = m.last; m.last = p; var bars = m.bars, L = bars[bars.length - 1], sq = side ? q : -q;
+      if (!L || bt > L.t) { bars.push({ t: bt, o: p, h: p, l: p, c: p, v: q, bv: side ? q : 0, usd: p * q, n: 1, dl: sq, dmx: Math.max(0, sq), dmn: Math.min(0, sq) }); if (bars.length > 3000) bars.shift() }
+      else if (bt === L.t) { L.h = Math.max(L.h, p); L.l = Math.min(L.l, p); L.c = p; L.v += q; if (side) L.bv += q; L.usd += p * q; L.n = (L.n || 0) + 1; L.dl = 2 * L.bv - L.v; L.dmx = Math.max(L.dmx == null ? L.dl : L.dmx, L.dl); L.dmn = Math.min(L.dmn == null ? L.dl : L.dmn, L.dl) }
+      var sec = Math.floor(T / 1000), tp = m.tps[m.tps.length - 1]; if (tp && tp[0] === sec) tp[1]++; else { m.tps.push([sec, 1]); if (m.tps.length > 120) m.tps.shift() }
+      if (isFinite(prev)) lineCross(prev, p);
       m.tape.push({ t: T, p: p, q: q, s: side }); if (m.tape.length > 400) m.tape.shift();
       iceCheck(p, q, side, T);
     }
     // ομαδοποίηση σε εντολές αγοράς/πώλησης (ίδιο ms, ίδια πλευρά = μία εντολή που «σάρωσε» επίπεδα)
     var gk = hist ? 'grpH' : 'grp', g = m[gk];
     if (g && g.T === T && g.s === side) { g.q += q; g.usd += p * q; g.pmin = Math.min(g.pmin, p); g.pmax = Math.max(g.pmax, p); g.n++; g.pe = p }
-    else { if (g) flushOrder(g); m[gk] = { T: T, s: side, q: q, usd: p * q, pmin: p, pmax: p, n: 1, ps: p, pe: p } }
+    else { if (g) flushOrder(g); m[gk] = { T: T, s: side, q: q, usd: p * q, pmin: p, pmax: p, n: 1, ps: p, pe: p, live: !hist } }
     if (!hist) { clearTimeout(m.gt); m.gt = setTimeout(function () { if (m === M && m.grp) { flushOrder(m.grp); m.grp = null } }, 60) }
     DIRTY = true
   }
@@ -195,7 +200,8 @@
     var m = M; m.sizes.push(g.usd); if (m.sizes.length > 4000) m.sizes.splice(0, 1000);
     if (m.sizes.length % 300 === 0 && m.sizes.length >= 300) { var s = m.sizes.slice().sort(function (a, b) { return a - b }); m.bigAuto = s[Math.floor(s.length * 0.995)] }
     var th = bigTh(), o = { t: g.T, s: g.s, q: g.q, usd: g.usd, p: g.usd / g.q, pmin: g.pmin, pmax: g.pmax, n: g.n };
-    if (g.usd >= th) { m.big.push(o); if (m.big.length > 1500) m.big.shift() }
+    if (g.usd >= th) { m.big.push(o); if (m.big.length > 1500) m.big.shift(); var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
+    if (g.live && CFG.al.big && g.usd >= th * (CFG.al.bigx || 3)) fire((g.s ? '🟢 ' : '🔴 ') + T('Μεγάλη ', 'Big ') + (g.s ? T('αγορά ', 'buy ') : T('πώληση ', 'sell ')) + usd(g.usd) + ' @ ' + (g.usd / g.q).toFixed(m.dec), 1)
     var lv = Math.round((g.pmax - g.pmin) / (m.tick || m.bucket)) + 1;
     if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; m.sw.push(o); if (m.sw.length > 600) m.sw.shift() }
   }
@@ -231,9 +237,9 @@
     var r = cv.getBoundingClientRect(), dpr = W.devicePixelRatio || 1, w = Math.max(300, r.width), h = Math.max(260, r.height);
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr) }
     cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var subs = []; if (CFG.sub.delta) subs.push('delta'); if (CFG.sub.cvd) subs.push('cvd'); if (CFG.sub.oi && M && M.venue === 'f') subs.push('oi');
-    var sh = h < 520 ? 52 : 70, ax = 74, tb = 22, mainH = h - tb - subs.length * sh;
-    Lay = { w: w, h: h, L: 0, R: w - ax, T: 0, B: mainH, ax: ax, subs: subs.map(function (s, i) { return { k: s, T: mainH + tb + i * sh, B: mainH + tb + (i + 1) * sh - 2 } }), tb: mainH, pad: Math.min(140, (w - ax) * 0.16) };
+    var subs = []; if (CFG.sub.delta) subs.push('delta'); if (CFG.sub.cvd) subs.push('cvd'); if (CFG.sub.oi && M && M.venue === 'f') subs.push('oi'); if (CFG.sub.spd) subs.push('spd'); if (CFG.sub.stat) subs.push('stat');
+    var sh = h < 520 ? 48 : 64, ax = 74, tb = 22, hs = subs.map(function (k) { return k === 'stat' ? 84 : sh }), tot = hs.reduce(function (p, q) { return p + q }, 0), mainH = h - tb - tot, acc0 = mainH + tb;
+    Lay = { w: w, h: h, L: 0, R: w - ax, T: 0, B: mainH, ax: ax, subs: subs.map(function (s, i) { var o = { k: s, T: acc0, B: acc0 + hs[i] - 2 }; acc0 += hs[i]; return o }), tb: mainH, pad: Math.min(140, (w - ax) * 0.16) };
   }
   function xOf(i) { var n = M.bars.length; return Lay.R - Lay.pad - (n - 1 - i - V.off) * V.bw - V.bw / 2 }
   function cOff(v) { return clamp(v, -60, Math.max(0, M.bars.length - 5)) }
@@ -246,13 +252,15 @@
     var b = M.bucket; if (CFG.mult !== 'auto') return b * CFG.mult;
     var target = (V.y1 - V.y0) / Math.max(8, (Lay.B - Lay.T) / (V.bw >= 46 ? 15 : 7)); for (var i = 0; i < MULTS.length; i++)if (b * MULTS[i] >= target) return b * MULTS[i]; return b * MULTS[MULTS.length - 1]
   }
+  function rowsC(k, f, step) { var m = M; if (m.rcs !== step || m.rcv !== m.fpVer) { m.rc = {}; m.rcs = step; m.rcv = m.fpVer } var last = m.bars[m.bars.length - 1]; if (k === last) return fpRows(f, step); return m.rc[k.t] || (m.rc[k.t] = fpRows(f, step)) }
   function fpRows(f, step) { var o = {}, b = M.bucket; for (var k in f.l) { var p = +k * b, r = Math.floor(p / step + 1e-9), c = o[r] || (o[r] = [0, 0]); c[0] += f.l[k][0]; c[1] += f.l[k][1] } return o }
 
   function draw() {
     if (!M || !cv || !VIS) return; layout(); var g = cx, w = Lay.w, h = Lay.h;
+    var fb = ROOT.querySelector('.ffs'); if (fb) { var tp = Math.max(40, Lay.tb - 44) + 'px'; if (fb.style.top !== tp) { fb.style.top = tp; fb.style.bottom = 'auto' } }
     g.fillStyle = C.bg; g.fillRect(0, 0, w, h); g.font = FONT; g.textBaseline = 'middle';
     var bars = M.bars, n = bars.length;
-    if (!n) { g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText(M.err || M.status || 'φόρτωση…', w / 2, h / 2); return }
+    if (!n) { g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText(M.err || M.status || LX('φόρτωση…'), w / 2, h / 2); return }
     var vr = visRange(), a = vr[0], b = vr[1];
     if (V.yAuto) { var lo = Infinity, hi = -Infinity; for (var i = a; i <= b; i++) { lo = Math.min(lo, bars[i].l); hi = Math.max(hi, bars[i].h) } if (!isFinite(lo)) { lo = bars[n - 1].l; hi = bars[n - 1].h } var pd = (hi - lo) * 0.06 || hi * 0.002; V.y0 = lo - pd; V.y1 = hi + pd }
     var step = rowStep(), dec = Math.max(M.dec, pdec(step));
@@ -266,9 +274,13 @@
     if (CFG.sh.heat) drawHeat(g);
     if (CFG.sh.vwap) drawVwap(g, a, b);
     drawBars(g, a, b, step, dec);
+    if (CFG.sh.stk) drawStacked(g, a, b, step);
+    if (CFG.sh.cs) drawCS(g, a, b, step);
     if (CFG.sh.vp) drawVP(g, a, b, step);
     drawBook(g, step);
     drawLevels(g);
+    drawLines(g);
+    if (CFG.sh.sig) drawSig(g, a, b, step);
     if (CFG.sh.sw) drawSweeps(g);
     if (CFG.sh.big) drawBig(g);
     if (CFG.sh.ice) drawIce(g);
@@ -284,8 +296,8 @@
     for (i = a - a % tg; i <= b; i += tg) { if (i < 0) continue; var t = bars[i].t, lb = (new Date(t).getHours() === 0 && new Date(t).getMinutes() === 0) || M.tf === '1h' ? dm(t) + ' ' + hm(t) : hm(t); g.fillText(lb, xOf(i), Lay.tb + 11) }
     Lay.subs.forEach(function (s) { drawSub(g, s, a, b) });
     drawCross(g, step, dec);
-    if (PAUSE) { g.fillStyle = 'rgba(255,196,67,.9)'; g.textAlign = 'left'; g.fillText('⏸ ΠΑΓΩΜΕΝΟ', 10, 14) }
-    if (M.bf && !M.bfDone) { g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText('φορτώνω footprint… ' + M.bf.n, 10, Lay.B - 10) }
+    if (PAUSE) { g.fillStyle = 'rgba(255,196,67,.9)'; g.textAlign = 'left'; g.fillText(LX('⏸ ΠΑΓΩΜΕΝΟ'), 10, 14) }
+    if (M.bf && !M.bfDone) { g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText(LX('φορτώνω footprint… ') + M.bf.n, 10, Lay.B - 10) }
   }
   function tag(g, x, y, txt, bg, fg) { g.font = 'bold ' + FONT; var tw = g.measureText(txt).width + 10; g.fillStyle = bg; g.fillRect(x, y - 9, Math.max(tw, Lay.ax), 18); g.fillStyle = fg || '#000'; g.textAlign = 'left'; g.fillText(txt, x + 5, y); g.font = FONT }
 
@@ -301,7 +313,7 @@
   }
   /* ένα κερί footprint: γραμμές τιμής με bid×ask (ή delta / όγκο), POC, ανισορροπίες, λεπτό κερί αριστερά */
   function drawFp(g, k, f, x, step, dec, bw) {
-    var R = fpRows(f, step), rows = Object.keys(R).map(Number).sort(function (p, q) { return p - q }), mx = 0, pocR = null, pocV = -1, tot = 0;
+    var R = rowsC(k, f, step), rows = Object.keys(R).map(Number).sort(function (p, q) { return p - q }), mx = 0, pocR = null, pocV = -1, tot = 0;
     rows.forEach(function (r) { var c = R[r], v = c[0] + c[1]; tot += v; if (v > pocV) { pocV = v; pocR = r } mx = Math.max(mx, c[0], c[1]) });
     var md = 0, mvv = 0; rows.forEach(function (q) { md = Math.max(md, Math.abs(R[q][1] - R[q][0])); mvv = Math.max(mvv, R[q][0] + R[q][1]) });
     var x0 = x - bw / 2 + 1, cw = bw - 2, rh = Math.abs(yOf(0) - yOf(step)), txt = rh >= 10 && cw >= 46, mode = CFG.mode, half = cw / 2;
@@ -392,6 +404,7 @@
       g.fillStyle = inVA ? 'rgba(92,179,255,.38)' : 'rgba(140,155,170,.22)'; g.fillRect(x0, y, w * c[1] / v, rh);
       g.fillStyle = inVA ? 'rgba(92,179,255,.22)' : 'rgba(140,155,170,.13)'; g.fillRect(x0 + w * c[1] / v, y, w * c[0] / v, rh)
     });
+    if (CFG.sh.vpd) { var mdl = 0; pr.ks.forEach(function (r) { mdl = Math.max(mdl, Math.abs(pr.P[r][1] - pr.P[r][0])) }); pr.ks.forEach(function (r) { var dd = pr.P[r][1] - pr.P[r][0], ww = 46 * Math.abs(dd) / (mdl || 1), y = yOf((r + 1) * st); g.fillStyle = dd >= 0 ? 'rgba(34,194,127,.7)' : 'rgba(239,79,95,.7)'; g.fillRect(W0 + 6, y, ww, rh) }); g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText('Δ', W0 + 8, 12) }
     var ln = function (p, col, nm) { var y = yOf(p); g.strokeStyle = col; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(0, y); g.lineTo(Lay.R, y); g.stroke(); g.setLineDash([]); g.font = 'bold ' + FONT; g.fillStyle = col; g.textAlign = 'left'; g.fillText(nm, 4, y - 7); g.font = FONT };
     ln((pr.vah + 1) * st, C.vah, 'VAH'); ln((pr.poc + 0.5) * st, C.poc, 'POC'); ln(pr.val * st, C.val, 'VAL'); M.vp = pr; Lay.vpt = [[(pr.vah + 1) * st, C.vah], [(pr.poc + 0.5) * st, C.poc], [pr.val * st, C.val]]
   }
@@ -401,6 +414,67 @@
     if (CFG.sh.mlv) { try { var rows = W.__E9 && W.__E9.mpRows && W.__E9.mpRows(); var r = rows && rows.find(function (x) { return x.coin === M.sym && x.P }); if (r) L.push([r.P.vah, C.vah, 'M/VAH'], [r.P.poc, C.poc, 'M/POC'], [r.P.val, C.val, 'M/VAL']) } catch (e) { } }
     if (CFG.sh.opt && OPT.lv && OPT.lv.c === M.sym) { var o = OPT.lv; if (o.cw) L.push([o.cw, '#22c27f', 'Call wall']); if (o.pw) L.push([o.pw, '#ef4f5f', 'Put wall']); if (o.mp) L.push([o.mp, '#ffffff', 'Max pain']); if (o.flip) L.push([o.flip, '#ff6bd6', 'Gamma flip']); if (o.emH) { L.push([o.emH, '#8597a8', 'Exp. move ↑'], [o.emL, '#8597a8', 'Exp. move ↓']) } }
     L.forEach(function (l) { var y = yOf(l[0]); if (y < 0 || y > Lay.B) return; g.strokeStyle = l[1]; g.lineWidth = 1.4; g.globalAlpha = 0.85; g.beginPath(); g.moveTo(0, y); g.lineTo(Lay.R, y); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; g.font = 'bold ' + FONT; var tw = g.measureText(l[2]).width + 10; g.fillStyle = l[1]; g.fillRect(Lay.R - Lay.pad - tw - 4, y - 8, tw, 16); g.fillStyle = '#0a0e13'; g.textAlign = 'left'; g.fillText(l[2], Lay.R - Lay.pad - tw + 1, y); g.font = FONT })
+  }
+  /* Stacked imbalances: 3+ διαδοχικές ανισορροπίες στο ίδιο κερί → ζώνη που μένει ενεργή μέχρι να κλείσει κερί μέσα από αυτή */
+  function drawStacked(g, a, b, step) {
+    var bars = M.bars, Z = [], s0 = Math.max(0, a - 240);
+    for (var i = s0; i <= b; i++) {
+      var k = bars[i], f = fpOf(k.t); if (!f) continue; var R = rowsC(k, f, step), rows = Object.keys(R).map(Number).sort(function (p, q) { return p - q });
+      [1, 0].forEach(function (sd) {
+        var run = [], flush = function () { if (run.length >= 3) Z.push({ i: i, lo: run[0] * step, hi: (run[run.length - 1] + 1) * step, s: sd }); run = [] };
+        rows.forEach(function (r) { var c = R[r], ok = sd ? (R[r - 1] && c[1] > 3 * R[r - 1][0] && c[1] > 0) : (R[r + 1] && c[0] > 3 * R[r + 1][1] && c[0] > 0); if (ok && (!run.length || run[run.length - 1] === r - 1)) run.push(r); else { flush(); if (ok) run.push(r) } }); flush()
+      })
+    }
+    Z.slice(-60).forEach(function (z) {
+      var e = b + 1; for (var j = z.i + 1; j < bars.length; j++) { if ((z.s && bars[j].c < z.lo) || (!z.s && bars[j].c > z.hi)) { e = j; break } }
+      var x0 = xOf(z.i) - V.bw / 2, x1 = e > b ? Lay.R - Lay.pad : xOf(e), y0 = yOf(z.hi), y1 = yOf(z.lo); if (x1 < 0 || x0 > Lay.R) return;
+      g.fillStyle = z.s ? 'rgba(34,194,127,.14)' : 'rgba(239,79,95,.14)'; g.fillRect(x0, y0, x1 - x0, y1 - y0);
+      g.strokeStyle = z.s ? 'rgba(109,255,184,.7)' : 'rgba(255,143,155,.7)'; g.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0, y1 - y0);
+      if (x1 - x0 > 26) { g.fillStyle = z.s ? '#6dffb8' : '#ff8f9b'; g.textAlign = 'left'; g.fillText('SI', x0 + 3, y0 + 7) }
+    })
+  }
+  /* Cluster search: τα «κελιά» με τον μεγαλύτερο όγκο του ορατού εύρους (κορυφαίο 1% ή το όριο που βάζεις) */
+  function drawCS(g, a, b, step) {
+    var bars = M.bars, all = [], hits = [];
+    for (var i = a; i <= b; i++) { var k = bars[i], f = fpOf(k.t); if (!f) continue; var R = rowsC(k, f, step); for (var r in R) { var v = R[r][0] + R[r][1]; all.push(v); hits.push([i, +r, v, R[r][1] - R[r][0]]) } }
+    if (all.length < 30) return; var th = CFG.csMin > 0 ? CFG.csMin : all.slice().sort(function (p, q) { return p - q })[Math.floor(all.length * 0.99)], mx = Math.max.apply(null, all);
+    hits.forEach(function (h) {
+      if (h[2] < th) return; var x = xOf(h[0]), y = yOf((h[1] + 0.5) * step);
+      if (V.bw >= 46) { var rh = Math.abs(yOf(0) - yOf(step)); g.strokeStyle = '#ffe14d'; g.lineWidth = 2; g.strokeRect(x - V.bw / 2 + 4, y - rh / 2 + 1, V.bw - 7, rh - 2); g.lineWidth = 1; return }
+      var rr = 4 + 10 * Math.sqrt(h[2] / mx); g.beginPath(); g.arc(x, y, rr, 0, 7); g.fillStyle = h[3] >= 0 ? 'rgba(255,225,77,.28)' : 'rgba(255,150,60,.28)'; g.fill(); g.strokeStyle = '#ffe14d'; g.stroke()
+    })
+  }
+  /* Σήματα: απορρόφηση (absorption) και απόκλιση delta (delta divergence) */
+  function drawSig(g, a, b, step) {
+    var bars = M.bars, mk = function (x, y, txt, col) { g.font = 'bold ' + FONT; var w = g.measureText(txt).width + 8; g.fillStyle = col; g.fillRect(x - w / 2, y - 8, w, 16); g.fillStyle = '#0a0e13'; g.textAlign = 'center'; g.fillText(txt, x, y); g.font = FONT };
+    for (var i = Math.max(a, 5); i <= b; i++) {
+      var k = bars[i], d = 2 * k.bv - k.v, hh = -Infinity, ll = Infinity, up = 0, dn = 0; for (var j = i - 5; j < i; j++) { hh = Math.max(hh, bars[j].h); ll = Math.min(ll, bars[j].l) }
+      if (k.h > hh && d < 0) { mk(xOf(i), yOf(k.h) - 12, '÷', '#ff8f9b'); up++ }
+      if (k.l < ll && d > 0) { mk(xOf(i), yOf(k.l) + 12, '÷', '#6dffb8'); dn++ }
+      var f = fpOf(k.t); if (!f) continue; var R = rowsC(k, f, step), rows = Object.keys(R).map(Number).sort(function (p, q) { return p - q }); if (rows.length < 4) continue;
+      var tot = 0; rows.forEach(function (r) { tot += R[r][0] + R[r][1] }); var avg = tot / rows.length, mid = (k.h + k.l) / 2;
+      var sb2 = R[rows[0]][0] + R[rows[1]][0], ab2 = R[rows[rows.length - 1]][1] + R[rows[rows.length - 2]][1];
+      if (sb2 > 2.5 * avg && k.c > mid) mk(xOf(i), yOf(k.l) + 12 + dn * 18, 'A', '#6dffb8');
+      if (ab2 > 2.5 * avg && k.c < mid) mk(xOf(i), yOf(k.h) - 12 - up * 18, 'A', '#ff8f9b');
+    }
+  }
+  /* οριζόντιες γραμμές με ειδοποίηση */
+  function lk() { return M.venue + '|' + M.sym }
+  function myLines() { return CFG.lines[lk()] || (CFG.lines[lk()] = []) }
+  function drawLines(g) {
+    myLines().forEach(function (l) { var y = yOf(l.p); if (y < 0 || y > Lay.B) return; var col = l.al === 1 ? '#ffd166' : l.al === 2 ? '#8ff0c0' : '#9aa8b6'; g.strokeStyle = col; g.lineWidth = 1.5; g.setLineDash([8, 4]); g.beginPath(); g.moveTo(0, y); g.lineTo(Lay.R, y); g.stroke(); g.setLineDash([]); g.lineWidth = 1; g.font = 'bold ' + FONT; var txt = (l.al === 1 ? '🔔 ' : l.al === 2 ? '✔ ' : '') + l.p.toFixed(M.dec), w = g.measureText(txt).width + 10; g.fillStyle = col; g.fillRect(Lay.R - w - 2, y - 8, w, 16); g.fillStyle = '#0a0e13'; g.textAlign = 'left'; g.fillText(txt, Lay.R - w + 3, y); g.font = FONT })
+  }
+  function addLine(p) { var st = M.tick || M.bucket, v = Math.round(p / st) * st; myLines().push({ id: Date.now().toString(36), p: +v.toFixed(8), al: 1 }); saveCfg(); askNotif(); DIRTY = true; SIDE = 'al'; ROOT.querySelectorAll('[data-fside]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-fside') === 'al') }); renderSide(true) }
+  function lineCross(a, b) { var L2 = CFG.lines[lk()]; if (!L2) return; L2.forEach(function (l) { if (l.al === 1 && ((a < l.p && b >= l.p) || (a > l.p && b <= l.p))) { l.al = 2; saveCfg(); fire('🔔 ' + M.sym + ' ' + T('άγγιξε', 'hit') + ' ' + l.p.toFixed(M.dec)) } }) }
+  var AC = null;
+  function beep(n) { try { AC = AC || new (W.AudioContext || W.webkitAudioContext)(); var t0 = AC.currentTime; for (var i = 0; i < (n || 2); i++) { var o = AC.createOscillator(), gn = AC.createGain(); o.frequency.value = 880 + i * 220; gn.gain.setValueAtTime(0.0001, t0 + i * 0.18); gn.gain.exponentialRampToValueAtTime(0.25, t0 + i * 0.18 + 0.02); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.18 + 0.15); o.connect(gn); gn.connect(AC.destination); o.start(t0 + i * 0.18); o.stop(t0 + i * 0.18 + 0.16) } } catch (e) { } }
+  function askNotif() { try { if (W.Notification && Notification.permission === 'default') Notification.requestPermission() } catch (e) { } }
+  function fire(msg, soft) {
+    M.alerts.push({ t: Date.now(), msg: msg }); if (M.alerts.length > 100) M.alerts.shift(); beep(soft ? 1 : 3);
+    try { if (!soft && W.Notification && Notification.permission === 'granted' && D.hidden) new Notification('Order Flow', { body: msg }) } catch (e) { }
+    var h = D.getElementById('fHead'); if (h) { h.classList.remove('fflash'); void h.offsetWidth; h.classList.add('fflash') }
+    var tt = D.getElementById('fToast'); if (tt) { tt.textContent = msg; tt.hidden = false; clearTimeout(tt._t); tt._t = setTimeout(function () { tt.hidden = true }, 6000) }
+    if (SIDE === 'al') renderSide(true)
   }
   function inView(t) { var x = xOfT(t); return x > -20 && x < Lay.R + 20 }
   function drawBig(g) {
@@ -420,29 +494,46 @@
     })
   }
   function drawSub(g, s, a, b) {
-    var bars = M.bars, T = s.T, B = s.B, H = B - T; g.fillStyle = '#0c1218'; g.fillRect(0, T - 2, Lay.w, H + 4); g.strokeStyle = C.grid; g.beginPath(); g.moveTo(0, T - 2.5); g.lineTo(Lay.w, T - 2.5); g.stroke();
-    g.save(); g.beginPath(); g.rect(0, T, Lay.R, H); g.clip();
+    var bars = M.bars, T0 = s.T, B = s.B, H = B - T0; g.fillStyle = '#0c1218'; g.fillRect(0, T0 - 2, Lay.w, H + 4); g.strokeStyle = C.grid; g.beginPath(); g.moveTo(0, T0 - 2.5); g.lineTo(Lay.w, T0 - 2.5); g.stroke();
+    g.save(); g.beginPath(); g.rect(0, T0, Lay.R, H); g.clip();
     var lbl = '', lastV = NaN;
     if (s.k === 'delta') {
-      var mx = 0; for (var i = a; i <= b; i++) mx = Math.max(mx, Math.abs(2 * bars[i].bv - bars[i].v)); var y0 = T + H / 2;
+      var mx = 0; for (var i = a; i <= b; i++) mx = Math.max(mx, Math.abs(2 * bars[i].bv - bars[i].v)); var y0 = T0 + H / 2;
       for (i = a; i <= b; i++) { var d = 2 * bars[i].bv - bars[i].v, hh = d / (mx || 1) * (H / 2 - 2), bw = Math.max(1, V.bw * 0.66); g.fillStyle = d >= 0 ? C.up : C.dn; g.fillRect(xOf(i) - bw / 2, d >= 0 ? y0 - hh : y0, bw, Math.max(1, Math.abs(hh))); if (V.bw >= 46) { g.fillStyle = '#c9d6e2'; g.textAlign = 'center'; g.fillText(fv(d), xOf(i), d >= 0 ? y0 + 8 : y0 - 8) } }
       lbl = 'Delta'; lastV = 2 * bars[b].bv - bars[b].v
     } else if (s.k === 'cvd') {
       var cv2 = [], acc = 0, lo = Infinity, hi = -Infinity; for (i = 0; i <= b; i++) { acc += 2 * bars[i].bv - bars[i].v; if (i >= a) { cv2.push([i, acc]); lo = Math.min(lo, acc); hi = Math.max(hi, acc) } }
-      var yv = function (v) { return B - 3 - (v - lo) / ((hi - lo) || 1) * (H - 6) }; g.strokeStyle = '#ffc443'; g.lineWidth = 1.5; g.beginPath(); cv2.forEach(function (p, j) { var x = xOf(p[0]), y = yv(p[1]); if (j) g.lineTo(x, y); else g.moveTo(x, y) }); g.stroke(); g.lineWidth = 1; lbl = 'CVD'; lastV = acc
+      var yv = function (v) { return B - 3 - (v - lo) / ((hi - lo) || 1) * (H - 6) }; g.strokeStyle = '#ffc443'; g.lineWidth = 1.5; g.beginPath(); cv2.forEach(function (p, j) { var x = xOf(p[0]), y = yv(p[1]); if (j) g.lineTo(x, y); else g.moveTo(x, y) }); g.stroke(); g.lineWidth = 1; lbl = 'CVD'; lastV = acc;
+      // CVD μόνο των μεγάλων εντολών (≥ όριο Big trade): τι κάνουν τα «φάλαινες»
+      var ms = TF[M.tf], bacc = 0, bl = Infinity, bh = -Infinity, bp = [], any = false; for (i = 0; i <= b; i++) { var tt0 = bars[i].t; if (tt0 + ms < M.fpFrom) continue; for (var tm = tt0; tm < tt0 + ms; tm += 6e4) { var bd = M.bd1[tm]; if (bd) { bacc += bd; any = true } } if (i >= a) { bp.push([i, bacc]); bl = Math.min(bl, bacc); bh = Math.max(bh, bacc) } }
+      if (any && bp.length > 1) { g.strokeStyle = '#5ef0ff'; g.lineWidth = 1.3; g.beginPath(); bp.forEach(function (p, j) { var x = xOf(p[0]), y = B - 3 - (p[1] - bl) / ((bh - bl) || 1) * (H - 6); if (j) g.lineTo(x, y); else g.moveTo(x, y) }); g.stroke(); g.lineWidth = 1; g.fillStyle = '#5ef0ff'; g.textAlign = 'left'; g.fillText(T('μεγάλες εντολές ', 'big orders ') + (bacc > 0 ? '+' : '') + fv(bacc), 6, T0 + 22) }
     } else if (s.k === 'oi') {
       var t0 = bars[a].t, t1 = bars[b].t + TF[M.tf], pts = M.oi.filter(function (o) { return o.t >= t0 - 6e5 && o.t <= t1 }); if (pts.length > 1) { var l2 = Infinity, h2 = -Infinity; pts.forEach(function (o) { l2 = Math.min(l2, o.v); h2 = Math.max(h2, o.v) }); g.strokeStyle = '#5cb3ff'; g.lineWidth = 1.5; g.beginPath(); pts.forEach(function (o, j) { var x = xOfT(o.t), y = B - 3 - (o.v - l2) / ((h2 - l2) || 1) * (H - 6); if (j) g.lineTo(x, y); else g.moveTo(x, y) }); g.stroke(); g.lineWidth = 1; lastV = pts[pts.length - 1].v } lbl = 'Open Interest'
+    } else if (s.k === 'spd') {
+      var mn = 0; for (i = a; i <= b; i++) mn = Math.max(mn, bars[i].n || 0);
+      for (i = a; i <= b; i++) { var nn = bars[i].n || 0, av = 0, c3 = 0; for (var j = Math.max(0, i - 20); j < i; j++) { av += bars[j].n || 0; c3++ } av = c3 ? av / c3 : nn; var hh2 = nn / (mn || 1) * (H - 4), bw3 = Math.max(1, V.bw * 0.66); g.fillStyle = nn > 2 * av ? '#ff9f43' : '#3d6a8f'; g.fillRect(xOf(i) - bw3 / 2, B - hh2, bw3, hh2) }
+      lbl = T('Ταχύτητα (συναλλαγές/κερί · πορτοκαλί = 2× του μέσου)', 'Tape speed (trades/bar · orange = 2× average)'); lastV = bars[b].n
+    } else if (s.k === 'stat') {
+      var rowsN = [T('Όγκος', 'Volume'), 'Delta', 'Delta %', T('Συναλλαγές', 'Trades'), 'Max Δ', 'Min Δ'], rhh = (H - 2) / 6, mxs = [0, 0, 0, 0, 0, 0];
+      var val = function (k, r) { var d = 2 * k.bv - k.v; return r === 0 ? k.v : r === 1 ? d : r === 2 ? (k.v ? d / k.v * 100 : 0) : r === 3 ? k.n : r === 4 ? k.dmx : k.dmn };
+      for (i = a; i <= b; i++) for (var r = 0; r < 6; r++) { var vv = val(bars[i], r); if (vv != null && isFinite(vv)) mxs[r] = Math.max(mxs[r], Math.abs(vv)) }
+      for (i = a; i <= b; i++) { var xx = xOf(i), bw4 = Math.max(1, V.bw - 1);
+        for (r = 0; r < 6; r++) { var v4 = val(bars[i], r), yy = T0 + 1 + r * rhh; if (v4 == null || !isFinite(v4)) continue; var al4 = (0.12 + 0.6 * Math.abs(v4) / (mxs[r] || 1)).toFixed(3);
+          g.fillStyle = (r === 0 || r === 3) ? 'rgba(92,179,255,' + al4 + ')' : (v4 >= 0 ? 'rgba(34,194,127,' : 'rgba(239,79,95,') + al4 + ')'; g.fillRect(xx - bw4 / 2, yy, bw4, rhh - 1);
+          if (V.bw >= 40) { g.fillStyle = '#e9eef3'; g.textAlign = 'center'; g.fillText(r === 2 ? v4.toFixed(0) + '%' : fv(v4), xx, yy + rhh / 2) } } }
+      lbl = ''
     }
-    g.restore(); g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText(lbl + (isFinite(lastV) ? '  ' + (lastV > 0 && s.k !== 'oi' ? '+' : '') + fv(lastV) : ''), 6, T + 9);
-    g.fillStyle = C.panel; g.fillRect(Lay.R, T - 2, Lay.ax, H + 4)
+    g.restore(); g.fillStyle = C.mut; g.textAlign = 'left'; if (lbl) g.fillText(lbl + (isFinite(lastV) ? '  ' + (lastV > 0 && s.k !== 'oi' && s.k !== 'spd' ? '+' : '') + fv(lastV) : ''), 6, T0 + 9);
+    g.fillStyle = C.panel; g.fillRect(Lay.R, T0 - 2, Lay.ax, H + 4);
+    if (s.k === 'stat') { var rl = [T('Όγκος', 'Volume'), 'Delta', 'Delta %', T('Συναλλ.', 'Trades'), 'Max Δ', 'Min Δ'], rh5 = (H - 2) / 6; g.fillStyle = C.axis; g.textAlign = 'left'; rl.forEach(function (t5, r5) { g.fillText(t5, Lay.R + 5, T0 + 1 + r5 * rh5 + rh5 / 2) }) }
   }
   function drawCross(g, step, dec) {
     if (V.mx < 0 || V.my < 0 || V.mx > Lay.R || V.my > Lay.B) return; var x = V.mx, y = V.my;
     g.strokeStyle = 'rgba(214,226,238,.35)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x + 0.5, 0); g.lineTo(x + 0.5, Lay.h); g.moveTo(0, y + 0.5); g.lineTo(Lay.R, y + 0.5); g.stroke(); g.setLineDash([]);
     var p = pOfY(y); tag(g, Lay.R, y, p.toFixed(dec), '#d6e2ee', '#0a0e13');
     var i = Math.round(iOfX(x)), k = M.bars[i]; if (!k) return;
-    var d = 2 * k.bv - k.v, lines = [dm(k.t) + ' ' + hm(k.t) + ' · ' + M.tf, 'O ' + k.o.toFixed(M.dec) + '  H ' + k.h.toFixed(M.dec), 'L ' + k.l.toFixed(M.dec) + '  C ' + k.c.toFixed(M.dec), 'Όγκος ' + fv(k.v) + ' (' + usd(k.usd || k.v * k.c) + ')', 'Delta ' + (d > 0 ? '+' : '') + fv(d)];
-    var f = fpOf(k.t); if (f) { var R = fpRows(f, step), r = Math.floor(p / step + 1e-9), c = R[r]; if (c) lines.push('Στο ' + (r * step).toFixed(dec) + ': ' + fv(c[0]) + ' × ' + fv(c[1])) }
+    var d = 2 * k.bv - k.v, lines = [dm(k.t) + ' ' + hm(k.t) + ' · ' + M.tf, 'O ' + k.o.toFixed(M.dec) + '  H ' + k.h.toFixed(M.dec), 'L ' + k.l.toFixed(M.dec) + '  C ' + k.c.toFixed(M.dec), LX('Όγκος ') + fv(k.v) + ' (' + usd(k.usd || k.v * k.c) + ')', 'Delta ' + (d > 0 ? '+' : '') + fv(d)];
+    var f = fpOf(k.t); if (f) { var R = fpRows(f, step), r = Math.floor(p / step + 1e-9), c = R[r]; if (c) lines.push(LX('Στο ') + (r * step).toFixed(dec) + ': ' + fv(c[0]) + ' × ' + fv(c[1])) }
     var tw = 0; lines.forEach(function (l) { tw = Math.max(tw, g.measureText(l).width) }); var bx = x + 14 + tw + 16 > Lay.R ? x - tw - 30 : x + 14, by = Math.min(y + 14, Lay.B - lines.length * 15 - 10);
     g.fillStyle = 'rgba(14,20,27,.94)'; g.strokeStyle = '#2a3a4a'; g.fillRect(bx, by, tw + 16, lines.length * 15 + 8); g.strokeRect(bx + 0.5, by + 0.5, tw + 15, lines.length * 15 + 7);
     g.fillStyle = C.txt; g.textAlign = 'left'; lines.forEach(function (l, j) { g.fillText(l, bx + 8, by + 11 + j * 15) })
@@ -453,13 +544,13 @@
     if (!dom || !M || !VIS) return; var r = dom.getBoundingClientRect(), dpr = W.devicePixelRatio || 1, w = r.width, h = r.height; if (w < 10) return;
     if (dom.width !== Math.round(w * dpr) || dom.height !== Math.round(h * dpr)) { dom.width = Math.round(w * dpr); dom.height = Math.round(h * dpr) } dx.setTransform(dpr, 0, 0, dpr, 0, 0);
     var g = dx; g.fillStyle = C.bg; g.fillRect(0, 0, w, h); g.font = FONT; g.textBaseline = 'middle';
-    if (!M.book.ok || !M.bucket) { g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText('σύνδεση στο βιβλίο…', w / 2, h / 2); return }
+    if (!M.book.ok || !M.bucket) { g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText(LX('σύνδεση στο βιβλίο…'), w / 2, h / 2); return }
     var ba = bestBA(), mid = (ba[0] + ba[1]) / 2, rh = 17, n = Math.floor((h - 20) / rh), step = M.bucket * (CFG.mult === 'auto' ? domMult() : CFG.mult), dec = Math.max(M.dec, pdec(step));
     var cR = Math.floor(mid / step), R = {}, add = function (s) { return function (q, p) { var rr = Math.floor(p / step + 1e-9); if (Math.abs(rr - cR) > n) return; var c = R[rr] || (R[rr] = [0, 0]); c[s] += q } };
     M.book.b.forEach(add(0)); M.book.a.forEach(add(1));
     var VOL = {}, now = M.bars[M.bars.length - 1], f = now && fpOf(now.t); if (f) VOL = fpRows(f, step);
     var mx = 0, mv = 0; for (var k in R) mx = Math.max(mx, R[k][0], R[k][1]); for (k in VOL) mv = Math.max(mv, VOL[k][0] + VOL[k][1]);
-    var c1 = w * 0.36, c2 = w * 0.64; g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText('Bid', c1 / 2, 9); g.fillText('Τιμή', (c1 + c2) / 2, 9); g.fillText('Ask', (c2 + w) / 2, 9);
+    var c1 = w * 0.36, c2 = w * 0.64; g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText('Bid', c1 / 2, 9); g.fillText(LX('Τιμή'), (c1 + c2) / 2, 9); g.fillText('Ask', (c2 + w) / 2, 9);
     var top = cR + Math.floor(n / 2), lastR = Math.floor(M.last / step + 1e-9);
     for (var i = 0; i < n; i++) {
       var rr = top - i, y = 20 + i * rh, c = R[rr] || [0, 0], vl = VOL[rr];
@@ -531,6 +622,9 @@
     '#flowRoot table.opt{width:100%;border-collapse:collapse;font-size:.8rem}#flowRoot table.opt th,#flowRoot table.opt td{padding:.3rem .45rem;border-bottom:1px solid var(--fln);text-align:right}#flowRoot table.opt th:first-child,#flowRoot table.opt td:first-child{text-align:left}#flowRoot table.opt th{color:var(--fmu);font-size:.72rem}' +
     '#flowRoot .ffs{position:absolute;right:82px;bottom:8px;z-index:3;width:2.3rem;height:2.1rem;border-radius:8px;border:1px solid #2f8fe8!important;background:rgba(14,20,27,.9)!important;color:#fff!important;font-size:1.15rem;font-weight:800;cursor:pointer}' +
     '#flowRoot .fw.ffull{position:fixed;inset:0;z-index:2147483000;border-radius:0;display:flex;flex-direction:column;overflow:auto}#flowRoot .fw.ffull>[data-fv="chart"]{flex:1;display:flex;flex-direction:column;min-height:0}#flowRoot .fw.ffull>[data-fv="chart"][hidden]{display:none}#flowRoot .fw.ffull .fgrid{flex:1;min-height:0}#flowRoot .fw.ffull .fmain,#flowRoot .fw.ffull .fside{height:auto;min-height:0}#flowRoot .fw.ffull .fleg,#flowRoot .fw.ffull .fnote{display:none}' +
+    '#flowRoot .ftoast{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;background:#ffd166;color:#111;font-weight:800;padding:.4rem .8rem;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.5)}#flowRoot .fw{position:relative}#flowRoot .fflash{animation:fflash 1.2s ease 2}@keyframes fflash{0%,100%{background:transparent}50%{background:rgba(255,209,102,.25)}}' +
+    '#flowRoot .fal{display:grid!important;grid-template-columns:1.6em 1fr auto auto!important;align-items:center;cursor:default!important}#flowRoot .fal .fbtn{padding:.1rem .45rem;font-size:.72rem}#flowRoot .fchk{display:block;padding:.5rem .6rem;font-size:.76rem;color:var(--fmu);border-bottom:1px solid var(--fln)}#flowRoot .fchk select{padding:.1rem .3rem}' +
+    '#flowRoot .fhelp{position:absolute;inset:0;z-index:20;background:rgba(5,8,11,.82);display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow:auto}#flowRoot .fhb{background:#0e141b;border:1px solid #2a3a4a;border-radius:14px;max-width:980px;width:100%;padding:.8rem 1rem}#flowRoot .fhh{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;font-size:1.05rem}#flowRoot .fhg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.6rem}#flowRoot .fhg>div{background:#0a1016;border:1px solid #1d2935;border-radius:10px;padding:.5rem .65rem}#flowRoot .fhg b{color:#fff}#flowRoot .fhg p{margin:.25rem 0 0;font-size:.8rem;line-height:1.45;color:#a9b8c6}' +
     '@media (max-width:900px){#flowRoot .fw.ffull .fmain{height:75vh;flex:none}#flowRoot .fgrid{grid-template-columns:1fr}#flowRoot .fmain{height:68vh;border-right:0;border-bottom:1px solid var(--fln)}#flowRoot .fside{height:auto}#flowRoot .fdom{height:360px;flex:none}#flowRoot .flist{max-height:320px}#flowRoot .fzm{right:80px}}';
 
   var SIDE = 'tape';
@@ -540,25 +634,25 @@
     var tg = function (k, l, t) { return '<button class="ftg' + (CFG.sh[k] ? ' on' : '') + '" data-fsh="' + k + '" title="' + esc(t) + '">' + esc(l) + '</button>' };
     var sb = function (k, l) { return '<button class="ftg' + (CFG.sub[k] ? ' on' : '') + '" data-fsub="' + k + '">' + esc(l) + '</button>' };
     ROOT.innerHTML = '<div class="fw">' +
-      '<div class="fbar">' + seg('view', [['chart', '📊 Order Flow'], ['opt', '🧬 Options X-Ray']], CFG.view) +
-      '<span style="flex:1"></span><span style="font-size:.74rem;color:var(--fmu)">Δωρεάν δημόσια δεδομένα Binance · Deribit · τίποτα δεν εκτελεί εντολές</span></div>' +
+      '<div class="fbar">' + seg('view', [['chart', '📊 Order Flow'], ['opt', '🧬 Options X-Ray']], CFG.view) + ' ' + seg('lang', [['el', '🇬🇷 EL'], ['en', '🇬🇧 EN']], CFG.lang) + ' <button class="fbtn" data-fhelp>' + T('❓ Οδηγός', '❓ Guide') + '</button>' +
+      LX('<span style="flex:1"></span><span style="font-size:.74rem;color:var(--fmu)">Δωρεάν δημόσια δεδομένα Binance · Deribit · τίποτα δεν εκτελεί εντολές</span></div>') +
       '<div data-fv="chart"' + (CFG.view === 'chart' ? '' : ' hidden') + '>' +
-      '<div class="fbar"><input list="flowCoins" id="fSym" value="' + esc(CFG.sym) + '" size="6" title="Νόμισμα"><datalist id="flowCoins">' + COINS.map(function (c) { return '<option value="' + c + '">' }).join('') + '</datalist>' +
-      seg('venue', [['f', 'Futures', 'Binance USDⓈ-M perpetual (περισσότερος όγκος, ρευστοποιήσεις, OI)'], ['s', 'Spot', 'Binance Spot']], CFG.venue) +
+      '<div class="fbar"><input list="flowCoins" id="fSym" value="' + esc(CFG.sym) + LX('" size="6" title="Νόμισμα"><datalist id="flowCoins">') + COINS.map(function (c) { return '<option value="' + c + '">' }).join('') + '</datalist>' +
+      seg('venue', [['f', 'Futures', LX('Binance USDⓈ-M perpetual (περισσότερος όγκος, ρευστοποιήσεις, OI)')], ['s', 'Spot', 'Binance Spot']], CFG.venue) +
       seg('tf', [['1m', '1m'], ['5m', '5m'], ['15m', '15m'], ['1h', '1h']], CFG.tf) +
-      seg('mode', [['candle', 'Κεριά'], ['fp_ba', 'Bid×Ask', 'Footprint: πωλήσεις αγοράς (αριστερά) × αγορές αγοράς (δεξιά) σε κάθε τιμή'], ['fp_delta', 'Delta', 'Footprint: αγορές − πωλήσεις σε κάθε τιμή'], ['fp_vol', 'Όγκος', 'Footprint: συνολικός όγκος σε κάθε τιμή']], CFG.mode) +
-      '<select id="fMult" title="Βήμα τιμής (cluster)"><option value="auto">Βήμα: αυτόματο</option>' + MULTS.map(function (m) { return '<option value="' + m + '"' + (String(CFG.mult) === String(m) ? ' selected' : '') + '>×' + m + '</option>' }).join('') + '</select>' +
-      '<label style="font-size:.76rem;color:var(--fmu)">Big trade ≥ $<input id="fBig" type="number" min="0" step="1000" value="' + (CFG.big || '') + '" placeholder="αυτόματο" style="width:7em"></label>' +
-      '<button class="fbtn" id="fPause" title="Πάγωμα της εικόνας (τα δεδομένα συνεχίζουν να καταγράφονται)">⏸ Πάγωμα</button></div>' +
-      '<div class="fbar" style="padding-top:.35rem;padding-bottom:.35rem">' + tg('heat', '🌡️ Heatmap', 'Ιστορικό βάθους βιβλίου εντολών (από τη στιγμή που άνοιξε η σελίδα)') + tg('big', '🫧 Big Trades', 'Μεγάλες εντολές αγοράς/πώλησης') + tg('sw', '⚡ Sweeps', 'Εντολές που «σάρωσαν» πολλά επίπεδα μαζί') + tg('ice', '🧊 Icebergs', 'Κρυφές εντολές: εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο') + tg('liq', '💥 Stop runs / Liq.', 'Ρευστοποιήσεις futures') + tg('vp', '📶 Volume Profile', 'Προφίλ όγκου ορατού εύρους με POC/VAH/VAL') + tg('vwap', 'VWAP', 'VWAP ημέρας') + tg('imb', 'Imbalance', 'Διαγώνιες ανισορροπίες ×3 στο footprint') + tg('mlv', 'M/POC μήνα', 'Επίπεδα μηνιαίου Market Profile (καρτέλα Αγορές)') + tg('opt', 'Options levels', 'Call/Put wall, Max pain, Gamma flip (BTC, ETH)') +
-      '<span style="width:.6rem"></span>' + sb('delta', 'Delta') + sb('cvd', 'CVD') + sb('oi', 'OI') + '</div>' +
-      '<div class="fhd" id="fHead"></div>' +
-      '<div class="fgrid"><div class="fmain"><canvas id="fCv"></canvas><div class="fzm"><button data-fz="-" title="Σμίκρυνση">−</button><button data-fz="+" title="Μεγέθυνση">+</button><button data-fz="y" title="Αυτόματη κλίμακα τιμής">↕</button><button data-fz="0" title="Επαναφορά">⟲</button></div><button class="ffs" data-ffull title="Πλήρης οθόνη (Esc για έξοδο)">⛶</button></div>' +
-      '<div class="fside"><div class="fdom"><canvas id="fDom"></canvas></div><div class="ftabs">' + [['tape', 'Tape'], ['big', 'Big'], ['sw', 'Sweeps'], ['ice', 'Iceberg'], ['liq', 'Liq.']].map(function (x) { return '<button data-fside="' + x[0] + '"' + (SIDE === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>' }).join('') + '</div><div class="flist" id="fList"></div></div></div>' +
-      '<div class="fleg"><span><i style="color:#ff8f9b">Bid</i> × <i style="color:#6dffb8">Ask</i>: πωλήσεις × αγορές «στην αγορά» σε κάθε τιμή</span><span><i style="color:#ffc443">▭</i> POC κεριού</span><span><i style="color:#6dffb8">έντονο</i> = ανισορροπία ×3</span><span>🫧 Big trade</span><span><i style="color:#ff6bd6">↕</i> Sweep</span><span><i style="color:#5ef0ff">⊟</i> Iceberg</span><span><i style="color:#ffb020">◆</i> ρευστοποίηση long · <i style="color:#5ef0ff">◆</i> short</span><span><i style="color:#c77dff">—</i> VWAP</span><span><i style="color:#5cb3ff">VAH</i> · <i style="color:#ffc443">POC</i> · <i style="color:#d08bff">VAL</i></span></div>' +
-      '<div class="fnote">Ροδέλα: ζουμ στον χρόνο · Ctrl/⌘ + ροδέλα ή σύρσιμο στον άξονα τιμών: ζουμ στην τιμή · σύρσιμο: μετακίνηση · διπλό κλικ: επαναφορά. Τα αριθμητικά footprint εμφανίζονται όταν μεγεθύνεις (+). Το footprint χτίζεται από τις πραγματικές συναλλαγές (aggTrades): τα τελευταία λεπτά φορτώνονται αμέσως, και όσο η καρτέλα μένει ανοιχτή φυλάγεται στον browser για 3 μέρες. Το heatmap καταγράφει το βάθος από τη στιγμή που ανοίγεις την καρτέλα.</div>' +
+      seg('mode', [['candle', LX('Κεριά')], ['fp_ba', 'Bid×Ask', LX('Footprint: πωλήσεις αγοράς (αριστερά) × αγορές αγοράς (δεξιά) σε κάθε τιμή')], ['fp_delta', 'Delta', LX('Footprint: αγορές − πωλήσεις σε κάθε τιμή')], ['fp_vol', LX('Όγκος'), LX('Footprint: συνολικός όγκος σε κάθε τιμή')]], CFG.mode) +
+      LX('<select id="fMult" title="Βήμα τιμής (cluster)"><option value="auto">Βήμα: αυτόματο</option>') + MULTS.map(function (m) { return '<option value="' + m + '"' + (String(CFG.mult) === String(m) ? ' selected' : '') + '>×' + m + '</option>' }).join('') + '</select>' +
+      '<button class="fbtn" id="fLine" title="' + T('Πάτα και μετά κλικ στο διάγραμμα: οριζόντια γραμμή με ειδοποίηση (ήχος + μήνυμα) όταν την αγγίξει η τιμή', 'Press, then click on the chart: horizontal line with an alert (sound + message) when price touches it') + '">' + T('➖ Γραμμή 🔔', '➖ Line 🔔') + '</button>' + '<label style="font-size:.76rem;color:var(--fmu)">Big trade ≥ $<input id="fBig" type="number" min="0" step="1000" value="' + (CFG.big || '') + LX('" placeholder="αυτόματο" style="width:7em"></label>') +
+      LX('<button class="fbtn" id="fPause" title="Πάγωμα της εικόνας (τα δεδομένα συνεχίζουν να καταγράφονται)">⏸ Πάγωμα</button></div>') +
+      '<div class="fbar" style="padding-top:.35rem;padding-bottom:.35rem">' + tg('heat', '🌡️ Heatmap', LX('Ιστορικό βάθους βιβλίου εντολών (από τη στιγμή που άνοιξε η σελίδα)')) + tg('big', '🫧 Big Trades', LX('Μεγάλες εντολές αγοράς/πώλησης')) + tg('sw', '⚡ Sweeps', LX('Εντολές που «σάρωσαν» πολλά επίπεδα μαζί')) + tg('ice', '🧊 Icebergs', LX('Κρυφές εντολές: εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο')) + tg('liq', '💥 Stop runs / Liq.', LX('Ρευστοποιήσεις futures')) + tg('vp', '📶 Volume Profile', LX('Προφίλ όγκου ορατού εύρους με POC/VAH/VAL')) + tg('vwap', 'VWAP', LX('VWAP ημέρας')) + tg('imb', 'Imbalance', LX('Διαγώνιες ανισορροπίες ×3 στο footprint')) + tg('mlv', LX('M/POC μήνα'), LX('Επίπεδα μηνιαίου Market Profile (καρτέλα Αγορές)')) + tg('opt', 'Options levels', 'Call/Put wall, Max pain, Gamma flip (BTC, ETH)') + tg('stk', '▤ Stacked imb.', T('3+ διαδοχικές ανισορροπίες στο ίδιο κερί: ζώνη στήριξης/αντίστασης μέχρι να σπάσει', '3+ consecutive imbalances in one bar: support/resistance zone until broken')) + tg('cs', '◎ Cluster search', T('Τα κελιά με τον μεγαλύτερο όγκο (κορυφαίο 1%)', 'Cells with the highest volume (top 1%)')) + tg('sig', T('A ÷ Σήματα', 'A ÷ Signals'), T('A = απορρόφηση (absorption) · ÷ = απόκλιση delta', 'A = absorption · ÷ = delta divergence')) + tg('vpd', T('Δ στο VP', 'Δ in VP'), T('Delta ανά τιμή δίπλα στο Volume Profile', 'Delta per price next to the Volume Profile')) +
+      '<span style="width:.6rem"></span>' + sb('delta', 'Delta') + sb('cvd', 'CVD') + sb('oi', 'OI') + sb('spd', T('Ταχύτητα', 'Speed')) + sb('stat', T('Στατιστικά', 'Statistics')) + '</div>' +
+      '<div class="fhd" id="fHead"></div><div id="fToast" class="ftoast" hidden></div>' +
+      LX('<div class="fgrid"><div class="fmain"><canvas id="fCv"></canvas><div class="fzm"><button data-fz="-" title="Σμίκρυνση">−</button><button data-fz="+" title="Μεγέθυνση">+</button><button data-fz="y" title="Αυτόματη κλίμακα τιμής">↕</button><button data-fz="0" title="Επαναφορά">⟲</button></div><button class="ffs" data-ffull title="Πλήρης οθόνη (Esc για έξοδο)">⛶</button></div>') +
+      '<div class="fside"><div class="fdom"><canvas id="fDom"></canvas></div><div class="ftabs">' + [['tape', 'Tape'], ['big', 'Big'], ['sw', 'Sweeps'], ['ice', 'Iceberg'], ['liq', 'Liq.'], ['al', '🔔']].map(function (x) { return '<button data-fside="' + x[0] + '"' + (SIDE === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>' }).join('') + '</div><div class="flist" id="fList"></div></div></div>' +
+      LX('<div class="fleg"><span><i style="color:#ff8f9b">Bid</i> × <i style="color:#6dffb8">Ask</i>: πωλήσεις × αγορές «στην αγορά» σε κάθε τιμή</span><span><i style="color:#ffc443">▭</i> POC κεριού</span><span><i style="color:#6dffb8">έντονο</i> = ανισορροπία ×3</span><span>🫧 Big trade</span><span><i style="color:#ff6bd6">↕</i> Sweep</span><span><i style="color:#5ef0ff">⊟</i> Iceberg</span><span><i style="color:#ffb020">◆</i> ρευστοποίηση long · <i style="color:#5ef0ff">◆</i> short</span><span><i style="color:#c77dff">—</i> VWAP</span><span><i style="color:#5cb3ff">VAH</i> · <i style="color:#ffc443">POC</i> · <i style="color:#d08bff">VAL</i></span></div>') +
+      LX('<div class="fnote">Ροδέλα: ζουμ στον χρόνο · Ctrl/⌘ + ροδέλα ή σύρσιμο στον άξονα τιμών: ζουμ στην τιμή · σύρσιμο: μετακίνηση · διπλό κλικ: επαναφορά. Τα αριθμητικά footprint εμφανίζονται όταν μεγεθύνεις (+). Το footprint χτίζεται από τις πραγματικές συναλλαγές (aggTrades): τα τελευταία λεπτά φορτώνονται αμέσως, και όσο η καρτέλα μένει ανοιχτή φυλάγεται στον browser για 3 μέρες. Το heatmap καταγράφει το βάθος από τη στιγμή που ανοίγεις την καρτέλα.</div>') +
       '</div>' +
-      '<div data-fv="opt"' + (CFG.view === 'opt' ? '' : ' hidden') + '><div class="fbar">' + seg('oc', [['BTC', 'BTC'], ['ETH', 'ETH']], CFG.oc) + '<select id="fExp"></select><button class="fbtn" id="fOptR">↻ Ανανέωση</button><span style="font-size:.74rem;color:var(--fmu)">Deribit · όλα τα options · ενημέρωση ανά λεπτό</span></div><div id="fOpt"><p style="padding:1rem;color:var(--fmu)">φόρτωση…</p></div></div>' +
+      '<div data-fv="opt"' + (CFG.view === 'opt' ? '' : ' hidden') + '><div class="fbar">' + seg('oc', [['BTC', 'BTC'], ['ETH', 'ETH']], CFG.oc) + LX('<select id="fExp"></select><button class="fbtn" id="fOptR">↻ Ανανέωση</button><span style="font-size:.74rem;color:var(--fmu)">Deribit · όλα τα options · ενημέρωση ανά λεπτό</span></div><div id="fOpt"><p style="padding:1rem;color:var(--fmu)">φόρτωση…</p></div></div>') +
       '</div>';
     cv = D.getElementById('fCv'); cx = cv.getContext('2d'); dom = D.getElementById('fDom'); dx = dom.getContext('2d');
     bindChart(); renderHead(); renderSide(true)
@@ -573,12 +667,13 @@
     var it = function (l, v, cl) { return '<span><small>' + l + '</small><span class="' + (cl || '') + '">' + v + '</span></span>' };
     el.innerHTML = '<span><span class="fdot' + (M.conn ? ' on' : '') + '"></span><b>' + esc(M.sym) + '/USDT</b> <small>' + (M.venue === 'f' ? 'Perp' : 'Spot') + '</small></span>' +
       '<span><b>' + (isFinite(px) ? px.toFixed(M.dec) : '–') + '</b> ' + (isFinite(ch) ? '<span class="' + (ch >= 0 ? 'pos' : 'neg') + '">' + (ch >= 0 ? '+' : '') + ch.toFixed(2) + '%</span>' : '') + '</span>' +
-      it('Όγκος 24ω', t.quoteVolume ? usd(+t.quoteVolume) : '–') +
-      (M.venue === 'f' ? it('Funding', mk ? (mk.r * 100).toFixed(4) + '% · ' + Math.max(0, Math.round((mk.T - Date.now()) / 6e4)) + '′' : '–', mk && mk.r < 0 ? 'neg' : 'pos') + it('Open Interest', isFinite(oi) ? fv(oi) + ' ' + esc(M.sym) + (isFinite(oi1) ? ' (' + (oi1 >= 0 ? '+' : '') + oi1.toFixed(2) + '% 1ω)' : '') : '–') : '') +
-      it('CVD σήμερα', (cvd >= 0 ? '+' : '') + fv(cvd), cvd >= 0 ? 'pos' : 'neg') +
-      it('Βιβλίο ±1%', isFinite(imb) ? (imb >= 0 ? 'αγοραστές +' : 'πωλητές ') + Math.abs(imb).toFixed(0) + '%' : '–', imb >= 0 ? 'pos' : 'neg') +
-      it('Big ≥', usd(bigTh()) + (CFG.big ? '' : ' (αυτ.)')) +
-      it('Footprint από', isFinite(M.fpFrom) ? dm(M.fpFrom) + ' ' + hm(M.fpFrom) : '–') +
+      it(LX('Όγκος 24ω'), t.quoteVolume ? usd(+t.quoteVolume) : '–') +
+      (M.venue === 'f' ? it('Funding', mk ? (mk.r * 100).toFixed(4) + '% · ' + Math.max(0, Math.round((mk.T - Date.now()) / 6e4)) + '′' : '–', mk && mk.r < 0 ? 'neg' : 'pos') + it('Open Interest', isFinite(oi) ? fv(oi) + ' ' + esc(M.sym) + (isFinite(oi1) ? ' (' + (oi1 >= 0 ? '+' : '') + oi1.toFixed(2) + LX('% 1ω)') : '') : '–') : '') +
+      it(LX('CVD σήμερα'), (cvd >= 0 ? '+' : '') + fv(cvd), cvd >= 0 ? 'pos' : 'neg') +
+      it(LX('Βιβλίο ±1%'), isFinite(imb) ? (imb >= 0 ? LX('αγοραστές +') : LX('πωλητές ')) + Math.abs(imb).toFixed(0) + '%' : '–', imb >= 0 ? 'pos' : 'neg') +
+      it(T('Ταχύτητα', 'Speed'), (function () { var now = Math.floor(Date.now() / 1000), c = 0; M.tps.forEach(function (x) { if (x[0] > now - 10 && x[0] <= now) c += x[1] }); return (c / 10).toFixed(1) + T('/δευτ.', '/s') })()) +
+      it('Big ≥', usd(bigTh()) + (CFG.big ? '' : LX(' (αυτ.)'))) +
+      it(LX('Footprint από'), isFinite(M.fpFrom) ? dm(M.fpFrom) + ' ' + hm(M.fpFrom) : '–') +
       (M.err ? '<span class="neg">' + esc(M.err) + '</span>' : M.status ? '<span><small>' + esc(M.status) + '</small></span>' : '')
   }
   var SLT = 0;
@@ -586,11 +681,17 @@
     var el = D.getElementById('fList'); if (!el || !M || !VIS) return; if (!force && Date.now() - SLT < 400) return; SLT = Date.now();
     var dec = M.dec, row = function (t, s, p, q, x, hl, at) { return '<div class="' + (s ? 'b' : 's') + (hl ? ' hl' : '') + '"' + (at ? ' data-fat="' + at + '"' : '') + '><span>' + hm(t, true) + '</span><span>' + p + '</span><span>' + q + '</span><span>' + x + '</span></div>' };
     var hd = function (a, b, c, d) { return '<div class="hd"><span>' + a + '</span><span>' + b + '</span><span>' + c + '</span><span>' + d + '</span></div>' }, html = '', th = bigTh();
-    if (SIDE === 'tape') { var L = M.tape.slice(-140).reverse().filter(function (x) { return x.p * x.q >= (CFG.tapeMin || 0) }); html = hd('Ώρα', 'Τιμή', 'Ποσότ.', '$') + (L.length ? L.map(function (x) { return row(x.t, x.s, x.p.toFixed(dec), fv(x.q), usd(x.p * x.q), x.p * x.q >= th * 0.5) }).join('') : '<span class="em">περιμένω συναλλαγές…</span>') }
-    else if (SIDE === 'big') { L = M.big.filter(function (o) { return o.usd >= th }).slice(-150).reverse(); html = hd('Ώρα', 'Τιμή', 'Ποσότ.', '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, o.p.toFixed(dec), fv(o.q), usd(o.usd), o.usd >= th * 4, o.t) }).join('') : '<span class="em">Καμία εντολή ≥ ' + usd(th) + ' ακόμα.</span>') }
-    else if (SIDE === 'sw') { L = M.sw.slice(-150).reverse(); html = hd('Ώρα', 'Από→Έως', 'Επίπεδα', '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, (o.s ? o.pmin : o.pmax).toFixed(dec) + '→' + (o.s ? o.pmax : o.pmin).toFixed(dec), o.lv, usd(o.usd), o.usd >= th, o.t) }).join('') : '<span class="em">Κανένα sweep ακόμα. Sweep = μία εντολή που χτύπησε 4+ επίπεδα τιμής ταυτόχρονα.</span>') }
-    else if (SIDE === 'ice') { L = M.ice.slice(-150).reverse(); html = hd('Ώρα', 'Τιμή', 'Εκτελ./Φαιν.', '$') + (L.length ? L.map(function (o) { return row(o.t, !o.s, o.p.toFixed(dec), fv(o.q) + '/' + fv(o.shown), usd(o.usd), o.usd >= th, o.t) }).join('') : '<span class="em">Κανένα iceberg ακόμα. Iceberg = σε μία τιμή εκτελέστηκε πάνω από 2,5× όσο έδειχνε το βιβλίο και η τιμή κράτησε (κρυφός μεγάλος αγοραστής/πωλητής).</span>') }
-    else { L = M.liq.slice(-150).reverse(); html = hd('Ώρα', 'Τιμή', 'Θέση', '$') + (M.venue !== 'f' ? '<span class="em">Οι ρευστοποιήσεις υπάρχουν μόνο στα Futures.</span>' : L.length ? L.map(function (o) { return row(o.t, o.side === 'S', o.p.toFixed(dec), o.side === 'L' ? 'long ✕' : 'short ✕', usd(o.usd), o.usd >= 100000, o.t) }).join('') : '<span class="em">Καμία ρευστοποίηση από τότε που άνοιξε η καρτέλα.</span>') }
+    if (SIDE === 'tape') { var L = M.tape.slice(-140).reverse().filter(function (x) { return x.p * x.q >= (CFG.tapeMin || 0) }); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Ποσότ.'), '$') + (L.length ? L.map(function (x) { return row(x.t, x.s, x.p.toFixed(dec), fv(x.q), usd(x.p * x.q), x.p * x.q >= th * 0.5) }).join('') : LX('<span class="em">περιμένω συναλλαγές…</span>')) }
+    else if (SIDE === 'big') { L = M.big.filter(function (o) { return o.usd >= th }).slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Ποσότ.'), '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, o.p.toFixed(dec), fv(o.q), usd(o.usd), o.usd >= th * 4, o.t) }).join('') : LX('<span class="em">Καμία εντολή ≥ ') + usd(th) + LX(' ακόμα.</span>')) }
+    else if (SIDE === 'sw') { L = M.sw.slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Από→Έως'), LX('Επίπεδα'), '$') + (L.length ? L.map(function (o) { return row(o.t, o.s, (o.s ? o.pmin : o.pmax).toFixed(dec) + '→' + (o.s ? o.pmax : o.pmin).toFixed(dec), o.lv, usd(o.usd), o.usd >= th, o.t) }).join('') : LX('<span class="em">Κανένα sweep ακόμα. Sweep = μία εντολή που χτύπησε 4+ επίπεδα τιμής ταυτόχρονα.</span>')) }
+    else if (SIDE === 'ice') { L = M.ice.slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Εκτελ./Φαιν.'), '$') + (L.length ? L.map(function (o) { return row(o.t, !o.s, o.p.toFixed(dec), fv(o.q) + '/' + fv(o.shown), usd(o.usd), o.usd >= th, o.t) }).join('') : LX('<span class="em">Κανένα iceberg ακόμα. Iceberg = σε μία τιμή εκτελέστηκε πάνω από 2,5× όσο έδειχνε το βιβλίο και η τιμή κράτησε (κρυφός μεγάλος αγοραστής/πωλητής).</span>')) }
+    else if (SIDE === 'liq') { L = M.liq.slice(-150).reverse(); html = hd(LX('Ώρα'), LX('Τιμή'), LX('Θέση'), '$') + (M.venue !== 'f' ? LX('<span class="em">Οι ρευστοποιήσεις υπάρχουν μόνο στα Futures.</span>') : L.length ? L.map(function (o) { return row(o.t, o.side === 'S', o.p.toFixed(dec), o.side === 'L' ? 'long ✕' : 'short ✕', usd(o.usd), o.usd >= 100000, o.t) }).join('') : LX('<span class="em">Καμία ρευστοποίηση από τότε που άνοιξε η καρτέλα.</span>')) }
+    else if (SIDE === 'al') {
+      var LN = myLines(); html = '<span class="em" style="padding:.5rem .6rem">' + T('Πάτα «➖ Γραμμή 🔔» και μετά κλικ στο διάγραμμα για νέα γραμμή-ειδοποίηση.', 'Press "➖ Line 🔔", then click on the chart to add an alert line.') + '</span>' +
+        LN.map(function (l) { return '<div class="fal"><span>' + (l.al === 1 ? '🔔' : l.al === 2 ? '✔' : '🔕') + '</span><span>' + l.p.toFixed(dec) + '</span><span><button class="fbtn" data-fln="' + l.id + '" data-act="tog">' + (l.al === 1 ? T('Σίγαση', 'Mute') : T('Όπλισε', 'Arm')) + '</button></span><span><button class="fbtn" data-fln="' + l.id + '" data-act="del">✕</button></span></div>' }).join('') +
+        '<label class="fchk"><input type="checkbox" id="fAlBig"' + (CFG.al.big ? ' checked' : '') + '> ' + T('Ήχος για Big trades ≥', 'Sound for big trades ≥') + ' <select id="fAlBigX">' + [2, 3, 5, 10].map(function (x) { return '<option value="' + x + '"' + (+CFG.al.bigx === x ? ' selected' : '') + '>' + x + '×</option>' }).join('') + '</select> ' + T('το όριο', 'the threshold') + ' (' + usd(bigTh() * (CFG.al.bigx || 3)) + ')</label>' +
+        '<div class="hd" style="display:block">' + T('Πρόσφατες ειδοποιήσεις', 'Recent alerts') + '</div>' + (M.alerts.length ? M.alerts.slice().reverse().map(function (x) { return '<div style="display:block"><span>' + hm(x.t, true) + '</span> · ' + esc(x.msg) + '</div>' }).join('') : '<span class="em">–</span>')
+    }
     el.innerHTML = html
   }
 
@@ -610,7 +711,7 @@
       V.off = cOff(dg.off + (x - dg.x) / V.bw);
       if (!V.yAuto) { var dp = (y - dg.y) / (Lay.B - Lay.T - 16) * (dg.y1 - dg.y0); V.y0 = dg.y0 + dp; V.y1 = dg.y1 + dp }
     });
-    var up = function (e) { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; V.drag = null };
+    var up = function (e) { var dg = V.drag, r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top; if (V.place && dg && Math.hypot(x - dg.x, y - dg.y) < 6 && x < Lay.R && y < Lay.B) { addLine(pOfY(y)); V.place = false; var bl = D.getElementById('fLine'); if (bl) { bl.classList.remove('on'); bl.style.borderColor = '' } cv.style.cursor = 'crosshair' } pts.delete(e.pointerId); if (pts.size < 2) pinch = null; V.drag = null };
     cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
     cv.addEventListener('pointerleave', function () { V.mx = V.my = -1; DIRTY = true });
     cv.addEventListener('dblclick', function () { V.off = 0; V.yAuto = true; DIRTY = true });
@@ -621,6 +722,7 @@
     if (sg) { var v = t.getAttribute('data-v'); if (CFG[sg] === v) return; CFG[sg] = v; saveCfg(); t.parentNode.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === t) });
       if (sg === 'view') { ROOT.querySelectorAll('[data-fv]').forEach(function (s) { s.hidden = s.getAttribute('data-fv') !== v }); if (v === 'opt') optRender(); DIRTY = true; return }
       if (sg === 'oc') { optRender(); return }
+      if (sg === 'lang') { reshell(); return }
       if (sg === 'venue' || sg === 'tf') { if (sg === 'tf' && M && M.venue === CFG.venue && M.sym === CFG.sym) { switchTf() } else start(); return }
       DIRTY = true; return }
     if (t.hasAttribute('data-fsh')) { var k = t.getAttribute('data-fsh'); CFG.sh[k] = CFG.sh[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sh[k]); saveCfg(); if (k === 'opt' && CFG.sh.opt) optLevels(); DIRTY = true; return }
@@ -629,8 +731,33 @@
     if (t.hasAttribute('data-fside')) { SIDE = t.getAttribute('data-fside'); ROOT.querySelectorAll('[data-fside]').forEach(function (b) { b.classList.toggle('on', b === t) }); renderSide(true); return }
     if (t.hasAttribute('data-fat')) { var at = +t.getAttribute('data-fat'), b0 = M.bars[0]; if (!b0) return; var i = (at - b0.t) / TF[M.tf]; if (V.bw < 30) V.bw = 30; V.off = cOff(M.bars.length - 1 - i - (Lay.R / 2 - Lay.pad - V.bw / 2) / V.bw); V.yAuto = true; DIRTY = true; return }
     if (t.hasAttribute('data-ffull')) { fullTog(); return }
-    if (t.id === 'fPause') { PAUSE = !PAUSE; t.textContent = PAUSE ? '▶ Συνέχεια' : '⏸ Πάγωμα'; DIRTY = true; return }
+    if (t.id === 'fPause') { PAUSE = !PAUSE; t.textContent = PAUSE ? LX('▶ Συνέχεια') : LX('⏸ Πάγωμα'); DIRTY = true; return }
     if (t.id === 'fOptR') { optRender(true); return }
+    if (t.id === 'fLine') { V.place = !V.place; t.classList.toggle('on', V.place); t.style.borderColor = V.place ? '#ffd166' : ''; cv.style.cursor = V.place ? 'copy' : 'crosshair'; return }
+    if (t.hasAttribute('data-fln')) { var LN = myLines(), id = t.getAttribute('data-fln'), ix = LN.findIndex(function (l) { return l.id === id }); if (ix < 0) return; if (t.getAttribute('data-act') === 'del') LN.splice(ix, 1); else { LN[ix].al = LN[ix].al === 1 ? 0 : 1; if (LN[ix].al) askNotif() } saveCfg(); DIRTY = true; renderSide(true); return }
+    if (t.hasAttribute('data-fhelp')) { help(true); return }
+    if (t.hasAttribute('data-fhx')) { help(false); return }
+  }
+  function reshell() { var full = ROOT.querySelector('.fw.ffull'); ROOT.innerHTML = ''; shell(); if (full) { ROOT.querySelector('.fw').classList.add('ffull'); ROOT.querySelector('[data-ffull]').textContent = '✕' } renderHead(); renderSide(true); if (CFG.view === 'opt') optRender(); DIRTY = true }
+  function help(on) {
+    var fw = ROOT.querySelector('.fw'), h = D.getElementById('fHelp'); if (!on) { if (h) h.remove(); return } if (h) return;
+    var it = function (t, d) { return '<div><b>' + t + '</b><p>' + d + '</p></div>' };
+    h = D.createElement('div'); h.id = 'fHelp'; h.className = 'fhelp';
+    h.innerHTML = '<div class="fhb"><div class="fhh"><b>' + T('❓ Οδηγός Order Flow', '❓ Order Flow guide') + '</b><button class="fbtn" data-fhx>✕</button></div><div class="fhg">' +
+      it('Footprint (Bid×Ask / Delta / ' + T('Όγκος', 'Volume') + ')', T('Μέσα σε κάθε κερί: πόσα πουλήθηκαν (αριστερά) και πόσα αγοράστηκαν (δεξιά) «στην αγορά» σε κάθε τιμή. Μεγέθυνε (+) για να δεις τα νούμερα. Χρυσό πλαίσιο = POC του κεριού.', 'Inside each bar: how much was sold (left) and bought (right) at market at each price. Zoom in (+) to see the numbers. Gold box = the bar\'s POC.')) +
+      it('Imbalance / ▤ Stacked', T('Ανισορροπία: οι αγορές σε μια τιμή είναι 3× οι πωλήσεις της αμέσως χαμηλότερης (διαγώνια), ή το αντίθετο. 3+ στη σειρά = stacked imbalance: ζώνη που συχνά λειτουργεί σαν στήριξη (πράσινη) ή αντίσταση (κόκκινη) μέχρι να κλείσει κερί μέσα από αυτή.', 'Imbalance: buys at a price are 3× the sells one level below (diagonal), or the reverse. 3+ in a row = stacked imbalance: a zone that often acts as support (green) or resistance (red) until a bar closes through it.')) +
+      it('◎ Cluster search', T('Κύκλοι στα σημεία με τον μεγαλύτερο όγκο (κορυφαίο 1% του ορατού εύρους). Εκεί μπήκαν τα «μεγάλα χέρια». Συχνά η τιμή επιστρέφει σε αυτά.', 'Circles where volume was largest (top 1% of the visible range). That is where big players were active. Price often revisits them.')) +
+      it(T('A ÷ Σήματα', 'A ÷ Signals'), T('<b>A</b> = απορρόφηση: πολλές πωλήσεις στο κάτω άκρο του κεριού αλλά κλείσιμο ψηλά (κάποιος τις «απορρόφησε» με limit αγορές), ή το αντίθετο στην κορυφή. <b>÷</b> = απόκλιση delta: νέο υψηλό με αρνητικό delta (αδύναμη άνοδος) ή νέο χαμηλό με θετικό delta (αδύναμη πτώση).', '<b>A</b> = absorption: heavy selling at the bar\'s low but a high close (someone absorbed it with limit buys), or the reverse at the top. <b>÷</b> = delta divergence: new high with negative delta (weak rally) or new low with positive delta (weak drop).')) +
+      it('🌡️ Heatmap', T('Το βιβλίο εντολών στον χρόνο. Φωτεινές γραμμές = μεγάλες εντολές limit που περιμένουν. Αν εξαφανιστούν λίγο πριν τις φτάσει η τιμή, ήταν «ψεύτικες» (spoofing).', 'The order book over time. Bright lines = large resting limit orders. If they vanish just before price reaches them, they were fake (spoofing).')) +
+      it('🫧 Big Trades · ⚡ Sweeps · 🧊 Icebergs', T('Φούσκες = μεγάλες εντολές αγοράς (πράσινες) ή πώλησης (κόκκινες). Sweep = μία εντολή που «έφαγε» 4+ επίπεδα μαζί (βιασύνη). Iceberg = κρυφή εντολή: εκτελέστηκε πολύ περισσότερο από όσο φαινόταν και η τιμή κράτησε.', 'Bubbles = large buy (green) or sell (red) orders. Sweep = one order that ate 4+ levels at once (urgency). Iceberg = hidden order: far more was filled than was shown, and the level held.')) +
+      it('💥 Stop runs / Liq.', T('Ρευστοποιήσεις futures. Πολλές μαζί = «κυνήγι stop»: συχνά σημάδι εξάντλησης της κίνησης.', 'Futures liquidations. Many at once = stop run: often a sign the move is exhausted.')) +
+      it('📶 Volume Profile · Δ', T('Πόσος όγκος έγινε σε κάθε τιμή στο ορατό εύρος, με POC (χρυσό), VAH/VAL (70% του όγκου). Η στήλη Δ δείχνει ποιος κυριάρχησε σε κάθε τιμή.', 'Volume at each price in the visible range, with POC (gold) and VAH/VAL (70% of volume). The Δ column shows who dominated at each price.')) +
+      it('Delta · CVD · OI', T('Delta = αγορές − πωλήσεις ανά κερί. CVD = το άθροισμά του (χρυσή γραμμή) και, γαλάζια, μόνο των μεγάλων εντολών: αν η τιμή ανεβαίνει ενώ οι μεγάλοι πουλάνε, πρόσεχε. OI = ανοιχτές θέσεις futures.', 'Delta = buys − sells per bar. CVD = its running total (gold), and in cyan the big orders only: if price rises while big players sell, be careful. OI = open futures positions.')) +
+      it(T('Ταχύτητα · Στατιστικά', 'Speed · Statistics'), T('Ταχύτητα = πόσες συναλλαγές ανά κερί (πορτοκαλί όταν διπλασιάζεται: έρχεται κίνηση). Στατιστικά = πίνακας κάτω από κάθε κερί: όγκος, delta, delta %, συναλλαγές, μέγιστο/ελάχιστο delta μέσα στο κερί.', 'Speed = trades per bar (orange when it doubles: a move is coming). Statistics = table under each bar: volume, delta, delta %, trades, max/min intrabar delta.')) +
+      it('➖ ' + T('Γραμμή 🔔', 'Line 🔔'), T('Πάτα «➖ Γραμμή 🔔» και κλικ στο διάγραμμα. Όταν η τιμή την αγγίξει ακούς ήχο και βλέπεις μήνυμα (και ειδοποίηση του browser αν η καρτέλα είναι κρυμμένη). Διαχείριση στην καρτέλα 🔔 δεξιά, όπου βάζεις και ήχο για πολύ μεγάλες εντολές.', 'Press "➖ Line 🔔" and click on the chart. When price touches it you hear a sound and see a message (plus a browser notification if the tab is hidden). Manage them in the 🔔 tab on the right, where you can also enable a sound for very large orders.')) +
+      it('🧬 Options X-Ray', T('Από το Deribit: call/put wall, max pain, gamma flip, αναμενόμενη κίνηση. Τα επίπεδα μπαίνουν και στο διάγραμμα (BTC, ETH).', 'From Deribit: call/put wall, max pain, gamma flip, expected move. The levels are also drawn on the chart (BTC, ETH).')) +
+      '</div></div>';
+    fw.appendChild(h)
   }
   function fullTog() {
     var fw = ROOT.querySelector('.fw'), on = !fw.classList.contains('ffull'), fsEl = D.fullscreenElement || D.webkitFullscreenElement;
@@ -646,6 +773,8 @@
     if (t.id === 'fSym') { var s = String(t.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/USDT$/, ''); if (!s || s === CFG.sym) return; CFG.sym = s; t.value = s; saveCfg(); start(); return }
     if (t.id === 'fMult') { CFG.mult = t.value === 'auto' ? 'auto' : +t.value; saveCfg(); DIRTY = true; return }
     if (t.id === 'fBig') { CFG.big = Math.max(0, +t.value || 0); saveCfg(); DIRTY = true; renderSide(true); renderHead(); return }
+    if (t.id === 'fAlBig') { CFG.al.big = t.checked ? 1 : 0; saveCfg(); if (t.checked) { askNotif(); beep(1) } return }
+    if (t.id === 'fAlBigX') { CFG.al.bigx = +t.value; saveCfg(); renderSide(true); return }
     if (t.id === 'fExp') { CFG.oexp = t.value; saveCfg(); optRender(); return }
   }
 
@@ -655,18 +784,18 @@
     var el = D.getElementById('fOpt'); if (!el) return; var c = CFG.oc;
     optLoad(c, force).then(function (d) {
       if (CFG.oc !== c) return; var sel = D.getElementById('fExp'), ex = CFG.oexp; if (ex !== 'all' && !d.exps.some(function (x) { return x.e === ex })) ex = 'all';
-      sel.innerHTML = '<option value="all">Όλες οι λήξεις</option>' + d.exps.map(function (x) { return '<option value="' + x.e + '"' + (x.e === ex ? ' selected' : '') + '>' + x.e + ' · ' + Math.max(0, (x.T - Date.now()) / 864e5).toFixed(1) + ' μέρες</option>' }).join('');
+      sel.innerHTML = LX('<option value="all">Όλες οι λήξεις</option>') + d.exps.map(function (x) { return '<option value="' + x.e + '"' + (x.e === ex ? ' selected' : '') + '>' + x.e + ' · ' + Math.max(0, (x.T - Date.now()) / 864e5).toFixed(1) + LX(' μέρες</option>') }).join('');
       var v = optView(d, ex), S = v.S, fp = function (p) { return p == null ? '–' : '$' + Math.round(p).toLocaleString('el-GR') }, pc = function (p) { return p == null ? '' : ((p / S - 1) * 100 >= 0 ? '+' : '') + ((p / S - 1) * 100).toFixed(1) + '%' };
       var kp = function (col, l, val, sub) { return '<div style="--c:' + col + '"><small>' + l + '</small><b>' + val + '</b><i>' + sub + '</i></div>' };
-      el.innerHTML = '<div class="opk">' + kp('#d6e2ee', 'Τιμή (υποκείμενο)', fp(S), 'Deribit') + kp('#22c27f', 'Call wall', fp(v.cw), pc(v.cw) + ' · μέγιστο OI calls (αντίσταση)') + kp('#ef4f5f', 'Put wall', fp(v.pw), pc(v.pw) + ' · μέγιστο OI puts (στήριξη)') + kp('#ffffff', 'Max pain', fp(v.mp), pc(v.mp) + ' · λήξη ' + esc(v.pe || '')) + kp('#ff6bd6', 'Gamma flip', fp(v.flip), v.flip ? (S > v.flip ? 'από πάνω: θετικό gamma (ήρεμη αγορά)' : 'από κάτω: αρνητικό gamma (απότομες κινήσεις)') : 'χωρίς αλλαγή πρόσημου ±20%') +
-        kp('#8597a8', 'Αναμενόμενη κίνηση', v.e0 ? '±' + fp(v.e0.mv) : '–', v.e0 ? esc(v.e0.e) + ' · IV ' + (v.e0.iv * 100).toFixed(0) + '% · ' + fp(S - v.e0.mv) + '–' + fp(S + v.e0.mv) : '') + kp('#ffc443', 'Put/Call OI', v.tc ? (v.tp / v.tc).toFixed(2) : '–', fv(v.tc) + ' calls · ' + fv(v.tp) + ' puts') + kp(v.tg >= 0 ? '#22c27f' : '#ef4f5f', 'Συνολικό GEX', (v.tg >= 0 ? '+' : '−') + usd(Math.abs(v.tg)), 'ανά 1% κίνηση · ' + (v.tg >= 0 ? 'οι dealers φρενάρουν την τιμή' : 'οι dealers ενισχύουν την κίνηση')) + '</div>' +
-        '<div class="opg"><div class="opc"><h4>Strike Profile · Open Interest (puts ← → calls)</h4><canvas id="fOiCv"></canvas></div><div class="opc"><h4>GEX Profile ανά strike (Gamma Exposure, $ ανά 1%)</h4><canvas id="fGxCv"></canvas></div></div>' +
-        '<div class="opg"><div class="opc"><h4>Αναμενόμενη κίνηση ανά λήξη (από το ATM implied volatility)</h4><table class="opt"><thead><tr><th>Λήξη</th><th>Μέρες</th><th>ATM IV</th><th>±Κίνηση</th><th>Εύρος</th></tr></thead><tbody>' + v.em.map(function (x) { return '<tr><td>' + esc(x.e) + '</td><td>' + x.days.toFixed(1) + '</td><td>' + (x.iv * 100).toFixed(1) + '%</td><td>±' + fp(x.mv) + ' (' + (x.mv / S * 100).toFixed(1) + '%)</td><td>' + fp(S - x.mv) + ' – ' + fp(S + x.mv) + '</td></tr>' }).join('') + '</tbody></table></div>' +
-        '<div class="opc"><h4>Τι σημαίνουν</h4><p style="font-size:.8rem;color:var(--fmu);margin:.2rem .3rem;line-height:1.45"><b style="color:#22c27f">Call wall</b>: το strike με τα περισσότερα ανοιχτά calls πάνω από την τιμή. Συχνά λειτουργεί σαν αντίσταση.<br><b style="color:#ef4f5f">Put wall</b>: τα περισσότερα puts κάτω από την τιμή, συχνά στήριξη.<br><b>Max pain</b>: η τιμή λήξης όπου χάνουν τα περισσότερα options. Κοντά στη λήξη η τιμή τείνει προς τα εκεί.<br><b style="color:#ff6bd6">Gamma flip</b>: πάνω από αυτό οι dealers (θετικό gamma) πουλούν στις ανόδους και αγοράζουν στις πτώσεις, οπότε η αγορά ηρεμεί. Κάτω από αυτό κάνουν το αντίθετο και οι κινήσεις επιταχύνονται.<br><b>Αναμενόμενη κίνηση</b>: το ±1σ εύρος μέχρι τη λήξη, όπως το «τιμολογεί» η αγορά options.<br>Υπόθεση GEX: οι dealers είναι long calls/short puts από την πλευρά του πελάτη (συνήθης παραδοχή).</p></div></div>' +
-        '<p style="padding:0 .7rem .7rem;font-size:.74rem;color:var(--fmu)">Πηγή: Deribit, δημόσιο API (' + d.O.length + ' συμβόλαια). Ενημέρωση ' + hm(d.at, true) + '. Το gamma υπολογίζεται με Black-Scholes από το mark IV κάθε συμβολαίου. Τα επίπεδα εμφανίζονται και στο διάγραμμα Order Flow (κουμπί «Options levels»).</p>';
+      el.innerHTML = '<div class="opk">' + kp('#d6e2ee', LX('Τιμή (υποκείμενο)'), fp(S), 'Deribit') + kp('#22c27f', 'Call wall', fp(v.cw), pc(v.cw) + LX(' · μέγιστο OI calls (αντίσταση)')) + kp('#ef4f5f', 'Put wall', fp(v.pw), pc(v.pw) + LX(' · μέγιστο OI puts (στήριξη)')) + kp('#ffffff', 'Max pain', fp(v.mp), pc(v.mp) + LX(' · λήξη ') + esc(v.pe || '')) + kp('#ff6bd6', 'Gamma flip', fp(v.flip), v.flip ? (S > v.flip ? LX('από πάνω: θετικό gamma (ήρεμη αγορά)') : LX('από κάτω: αρνητικό gamma (απότομες κινήσεις)')) : LX('χωρίς αλλαγή πρόσημου ±20%')) +
+        kp('#8597a8', LX('Αναμενόμενη κίνηση'), v.e0 ? '±' + fp(v.e0.mv) : '–', v.e0 ? esc(v.e0.e) + ' · IV ' + (v.e0.iv * 100).toFixed(0) + '% · ' + fp(S - v.e0.mv) + '–' + fp(S + v.e0.mv) : '') + kp('#ffc443', 'Put/Call OI', v.tc ? (v.tp / v.tc).toFixed(2) : '–', fv(v.tc) + ' calls · ' + fv(v.tp) + ' puts') + kp(v.tg >= 0 ? '#22c27f' : '#ef4f5f', LX('Συνολικό GEX'), (v.tg >= 0 ? '+' : '−') + usd(Math.abs(v.tg)), LX('ανά 1% κίνηση · ') + (v.tg >= 0 ? LX('οι dealers φρενάρουν την τιμή') : LX('οι dealers ενισχύουν την κίνηση'))) + '</div>' +
+        LX('<div class="opg"><div class="opc"><h4>Strike Profile · Open Interest (puts ← → calls)</h4><canvas id="fOiCv"></canvas></div><div class="opc"><h4>GEX Profile ανά strike (Gamma Exposure, $ ανά 1%)</h4><canvas id="fGxCv"></canvas></div></div>') +
+        LX('<div class="opg"><div class="opc"><h4>Αναμενόμενη κίνηση ανά λήξη (από το ATM implied volatility)</h4><table class="opt"><thead><tr><th>Λήξη</th><th>Μέρες</th><th>ATM IV</th><th>±Κίνηση</th><th>Εύρος</th></tr></thead><tbody>') + v.em.map(function (x) { return '<tr><td>' + esc(x.e) + '</td><td>' + x.days.toFixed(1) + '</td><td>' + (x.iv * 100).toFixed(1) + '%</td><td>±' + fp(x.mv) + ' (' + (x.mv / S * 100).toFixed(1) + '%)</td><td>' + fp(S - x.mv) + ' – ' + fp(S + x.mv) + '</td></tr>' }).join('') + '</tbody></table></div>' +
+        LX('<div class="opc"><h4>Τι σημαίνουν</h4><p style="font-size:.8rem;color:var(--fmu);margin:.2rem .3rem;line-height:1.45"><b style="color:#22c27f">Call wall</b>: το strike με τα περισσότερα ανοιχτά calls πάνω από την τιμή. Συχνά λειτουργεί σαν αντίσταση.<br><b style="color:#ef4f5f">Put wall</b>: τα περισσότερα puts κάτω από την τιμή, συχνά στήριξη.<br><b>Max pain</b>: η τιμή λήξης όπου χάνουν τα περισσότερα options. Κοντά στη λήξη η τιμή τείνει προς τα εκεί.<br><b style="color:#ff6bd6">Gamma flip</b>: πάνω από αυτό οι dealers (θετικό gamma) πουλούν στις ανόδους και αγοράζουν στις πτώσεις, οπότε η αγορά ηρεμεί. Κάτω από αυτό κάνουν το αντίθετο και οι κινήσεις επιταχύνονται.<br><b>Αναμενόμενη κίνηση</b>: το ±1σ εύρος μέχρι τη λήξη, όπως το «τιμολογεί» η αγορά options.<br>Υπόθεση GEX: οι dealers είναι long calls/short puts από την πλευρά του πελάτη (συνήθης παραδοχή).</p></div></div>') +
+        LX('<p style="padding:0 .7rem .7rem;font-size:.74rem;color:var(--fmu)">Πηγή: Deribit, δημόσιο API (') + d.O.length + LX(' συμβόλαια). Ενημέρωση ') + hm(d.at, true) + LX('. Το gamma υπολογίζεται με Black-Scholes από το mark IV κάθε συμβολαίου. Τα επίπεδα εμφανίζονται και στο διάγραμμα Order Flow (κουμπί «Options levels»).</p>');
       optCharts(v);
       if (M && M.sym === c) optLevels()
-    }).catch(function () { el.innerHTML = '<p style="padding:1rem;color:#ef4f5f">Δεν ήρθαν δεδομένα από το Deribit. Δοκίμασε ↻ σε λίγο.</p>' })
+    }).catch(function () { el.innerHTML = LX('<p style="padding:1rem;color:#ef4f5f">Δεν ήρθαν δεδομένα από το Deribit. Δοκίμασε ↻ σε λίγο.</p>') })
   }
   function optCharts(v) {
     var S = v.S, L = v.L.filter(function (x) { return x.K >= S * 0.7 && x.K <= S * 1.3 && (x.c + x.p > 0 || x.g) });
@@ -679,8 +808,8 @@
       else { var mg = 0; L.forEach(function (x) { mg = Math.max(mg, Math.abs(x.g)) }); L.forEach(function (x) { var yy = y(x.K) - bh / 2, ww = half * Math.abs(x.g) / (mg || 1); g.fillStyle = x.g >= 0 ? 'rgba(79,194,184,.85)' : 'rgba(255,107,214,.8)'; g.fillRect(x.g >= 0 ? cx0 : cx0 - ww, yy, ww, bh) }); g.strokeStyle = '#2a3a4a'; g.beginPath(); g.moveTo(cx0, 0); g.lineTo(cx0, h); g.stroke() }
       var stp = nice((hi - lo) / 14); g.fillStyle = C.axis; g.textAlign = 'right'; for (var p = Math.ceil(lo / stp) * stp; p <= hi; p += stp) g.fillText(Math.round(p).toLocaleString('el-GR'), lw - 6, y(p));
       var used = [], ln = function (p, col, nm) { if (p == null) return; var yy = y(p), ty = yy - 7; while (used.some(function (u) { return Math.abs(u - ty) < 12 })) ty -= 12; used.push(ty); g.strokeStyle = col; g.setLineDash([5, 4]); g.beginPath(); g.moveTo(lw, yy); g.lineTo(w, yy); g.stroke(); g.setLineDash([]); g.fillStyle = col; g.textAlign = 'right'; g.fillText(nm, w - 6, ty) };
-      ln(S, '#ffffff', 'Τιμή ' + Math.round(S).toLocaleString('el-GR')); ln(v.mp, '#ffc443', 'Max pain'); ln(v.flip, '#ff6bd6', 'Gamma flip'); if (z[1] === 'oi') { ln(v.cw, '#22c27f', 'Call wall'); ln(v.pw, '#ef4f5f', 'Put wall') }
-      g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText(z[1] === 'oi' ? '← Puts   Calls →' : '← αρνητικό   θετικό →', lw + 4, h - 8)
+      ln(S, '#ffffff', LX('Τιμή ') + Math.round(S).toLocaleString('el-GR')); ln(v.mp, '#ffc443', 'Max pain'); ln(v.flip, '#ff6bd6', 'Gamma flip'); if (z[1] === 'oi') { ln(v.cw, '#22c27f', 'Call wall'); ln(v.pw, '#ef4f5f', 'Put wall') }
+      g.fillStyle = C.mut; g.textAlign = 'left'; g.fillText(z[1] === 'oi' ? '← Puts   Calls →' : LX('← αρνητικό   θετικό →'), lw + 4, h - 8)
     })
   }
 
