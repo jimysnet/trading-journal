@@ -7,7 +7,7 @@ const ctx = await browser.newContext({ locale: 'el-GR', timezoneId: 'Europe/Athe
 await ctx.addInitScript(([e, p]) => { window.__TJ_BOT = { email: e, password: p }; window.__TJ_DIAG = 1 }, [EMAIL, PASS]);
 const page = await ctx.newPage();
 await page.goto(URL + '/?diag=1', { waitUntil: 'domcontentloaded', timeout: 120000 });
-await page.waitForFunction(() => window.firebase && firebase.auth && firebase.auth().currentUser, null, { timeout: 90000 });
+await page.waitForFunction(() => window.firebase && firebase.apps && firebase.apps.length && firebase.auth().currentUser, null, { timeout: 90000 });
 const out = await page.evaluate(async () => {
   const db = firebase.firestore(), T = t => t ? new Date(t).toLocaleString('el-GR', { timeZone: 'Europe/Athens' }) : '–';
   const st = (await db.collection('apstate').doc('main').get()).data() || {};
