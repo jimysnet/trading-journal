@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=310,VERS={sub:null,t:null};
+var APP_VER=311,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8908,7 +8908,7 @@ document.addEventListener('click',function(e){if(e.target.closest&&e.target.clos
 /* 👀 Το βλέπουν όλοι: όταν ο Καθηγητής (ή ο φύλακας στο GitHub) ετοιμάζεται να μπει, κάθε ανοιχτή σελίδα δείχνει το ίδιο συννεφάκι */
 var PREW={el:null,id:'',t:null,seen:{}};
 function preWatch(p){
-  if(PRE.res)return;/* αυτή η σελίδα κάνει ήδη τη μέτρηση */
+  /* ένα και μόνο παράθυρο για όλους (και για τη σελίδα που κάνει τη μέτρηση): αυτό εδώ */
   var now=Date.now();if(!p||!p.id||(p.done&&now-(p.doneAt||0)>8000)||(!p.done&&p.ends<now-5000)){if(PREW.el)PREW.el.classList.remove('on');clearInterval(PREW.t);return}
   var el=PREW.el;if(!el){el=PREW.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');el.style.right='12px';el.style.bottom='12px';el.style.left='auto';el.style.width='min(360px,calc(100vw - 24px))';document.body.appendChild(el);
     el.addEventListener('click',function(e){var b=e.target.closest('[data-prew]');if(!b)return;if(b.getAttribute('data-prew')==='no'){apStWrite({preCancel:PREW.id});toast('Στάλθηκε ακύρωση στον Καθηγητή.');el.classList.remove('on')}else el.classList.remove('on')})}
@@ -8952,16 +8952,16 @@ function apPreEntry(it,doc){var tot=preSecs();if(!tot)return Promise.resolve(tru
       el.addEventListener('click',function(e){if(e.target.closest('[data-premore]')||(!e.target.closest('button,select,label')&&e.target.closest('.pre-b,.pre-lv,.pre-h'))){PRE.more=!PRE.more;if(PRE.redraw)PRE.redraw();return}var b=e.target.closest('[data-pre]');if(b&&PRE.res){var r0=PRE.res;PRE.res=null;clearInterval(PRE.t);r0(b.getAttribute('data-pre')==='go');if(b.getAttribute('data-pre')==='no')preHide()}});
       el.addEventListener('change',function(e){if(e.target.matches('[data-presec]')){try{localStorage.setItem('tj-presec',e.target.value)}catch(_){}toast(+e.target.value?'Αντίστροφη μέτρηση '+e.target.value+'″ πριν από κάθε είσοδο.':'Χωρίς αντίστροφη μέτρηση: μπαίνει αμέσως.')}});
       addEventListener('resize',prePlace)}
-    PRE.it=it;PRE.res=res;var end=Date.now()+tot*1000,px=NaN;el.className='precloud on '+(it.x.d>0?'lg':'sh');
+    PRE.it=it;PRE.res=res;var end=Date.now()+tot*1000,px=NaN;el.className=S.db?'precloud':'precloud on '+(it.x.d>0?'lg':'sh');el.style.display=S.db?'none':'';
     /* κοινή ανακοίνωση: όλοι όσοι έχουν τη σελίδα ανοιχτή βλέπουν το ίδιο συννεφάκι (και μπορούν να ακυρώσουν) */
     try{var P0=prePlan(it,NaN)||{},pid0='pre_'+Date.now()+'_'+it.coin;PRE.sid=pid0;apStWrite({pre:{id:pid0,coin:it.coin,d:it.x.d,name:it.x.s.t,tf:it.tf,pf:AP.rc&&AP.rc.name||'',e:P0.e,sl:P0.sl,tp:P0.tp,X:P0.X,ord:P0.ord||'',lev:P0.lev,margin:P0.margin,riskAmt:P0.riskAmt,ends:end,at:Date.now(),bot:!!window.__TJ_BOT}})}catch(e){}
     PRE.more=false;var draw=function(){var left=Math.max(0,Math.ceil((end-Date.now())/1000));var sc=el.querySelector('.pre-why');var st=sc?sc.scrollTop:0;el.innerHTML=preHtml(it,left,tot,px);var sc2=el.querySelector('.pre-why');if(sc2)sc2.scrollTop=st;prePlace();return left};PRE.redraw=draw;
-    var pb0=$('#profBubble');if(pb0)pb0.hidden=true;draw();preBeep(660,.25);setTimeout(function(){preBeep(880,.25)},260);try{profMood('cheer')}catch(e){}
+    var pb0=$('#profBubble');if(pb0)pb0.hidden=true;draw();try{profMood('cheer')}catch(e){}
     mktPrice(it.coin+'USDT').then(function(q){if(q&&isFinite(q.px)){px=q.px;draw()}}).catch(function(){});
-    clearInterval(PRE.t);PRE.t=setInterval(function(){var l=draw();if(l<=3&&l>0)preBeep(1000,.12);var cx=AP.state&&AP.state.preCancel;if(cx&&cx===PRE.sid&&PRE.res){clearInterval(PRE.t);var rc=PRE.res;PRE.res=null;rc(false);preHide();return}if(l<=0){clearInterval(PRE.t);var r0=PRE.res;PRE.res=null;if(r0)r0(true)}},1000)})}
+    clearInterval(PRE.t);PRE.t=setInterval(function(){var l=draw();var cx=AP.state&&AP.state.preCancel;if(cx&&cx===PRE.sid&&PRE.res){clearInterval(PRE.t);var rc=PRE.res;PRE.res=null;rc(false);preHide();return}if(l<=0){clearInterval(PRE.t);var r0=PRE.res;PRE.res=null;if(r0)r0(true)}},1000)})}
 function apPreDone(it,ok){try{if(PRE.sid&&AP.state&&AP.state.pre&&AP.state.pre.id===PRE.sid)apStWrite({pre:Object.assign({},AP.state.pre,{done:ok?1:-1,doneAt:Date.now()})})}catch(e){}var el=PRE.el;if(!el||!el.classList.contains('on')||PRE.it!==it)return;var d=it.x.d>0;
   el.innerHTML='<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+'</b><small>'+(ok?esc(pstG('Μπήκα!')):'Τελικά δεν μπήκα')+'</small></div></div><div class="pre-done">'+(ok?'✅ '+esc(it.coin)+' '+(d?'Long':'Short')+' · '+esc(it.x.s.t)+' · δες τις ανοιχτές AI συναλλαγές.':'Η τιμή ή οι κανόνες άλλαξαν τελευταία στιγμή. Ο λόγος είναι στο ημερολόγιο του Καθηγητή.')+'</div>';
-  if(ok){preBeep(784,.15);setTimeout(function(){preBeep(1175,.3)},170)}prePlace();clearTimeout(PRE.ht);PRE.ht=setTimeout(preHide,ok?7000:6000)}
+  prePlace();clearTimeout(PRE.ht);PRE.ht=setTimeout(preHide,ok?7000:6000)}
 window.__pre={check:function(it){return apPreCheck(it)},open:function(it,m,d){return apOpen(it,m,d)},entry:function(it,doc){return apPreEntry(it,doc)},done:function(it,ok){apPreDone(it,ok)}};
 function preHide(){if(PRE.el){PRE.el.classList.remove('on')}}
 function apOpenLive(it,manual){/* τιμή αγοράς τώρα (κερί 1 λεπτού) πριν ανοίξει: χωρίς αυτήν μπαίνει μόνο εντολή με όριο */
