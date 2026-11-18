@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=306,VERS={sub:null,t:null};
+var APP_VER=307,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4193,7 +4193,7 @@ function dmLogOpen(id){var t=(S.demo||[]).find(function(x){return x.id===id});if
     if(a.sigT)E.push({t:a.sigT,ic:'🧠',m:'Είδε σήμα «'+(t.title||'')+'» για '+(t.dir==='short'?'πτώση':'άνοδο')+({trend:' σε αγορά με τάση',range:' σε πλάγια αγορά',mixed:' σε αγορά χωρίς καθαρή κατεύθυνση',squeeze:' σε ήσυχη αγορά πριν από κίνηση'}[a.regime]||'')+'.'+(isFinite(a.wr)?' Στο παρελθόν αυτό το σήμα έπιανε τον στόχο περίπου '+Math.round(a.wr*10)+' στις 10 φορές.':'')});
     E.push({t:t.at||t.createdAt,ic:'📝',m:(t.ord==='limit'?'Εντολή με όριο':'Άνοιξε στην αγορά')+' '+(t.dir==='short'?'Short':'Long')+' στο '+dmPx(e)+' · stop '+dmPx(s)+(isFinite(tg)?' · στόχος '+dmPx(tg)+' ('+fmt(X,X%1?1:0)+'R)':'')+' · κεφάλαιο '+dmMoney(n(t.margin)||n(t.notional),'')+' x'+(t.lev||1)+' · ρίσκο '+dmMoney(n(t.riskAmt),'')+(t.mgmt&&t.mgmt!=='none'?' · έξοδος: '+(APF_MG[t.mgmt]||t.mgmt):'')+'.'});
     var hasFill=tr.ev.some(function(x){return x.ic==='✅'});if(t.ord==='limit'&&t.filledAt&&!hasFill)E.push({t:t.filledAt,ic:'✅',m:'Η εντολή γέμισε στο '+dmPx(e)+'.'});
-    E=E.concat(tr.ev);
+    E=E.concat(tr.ev);(t.qt||[]).forEach(function(x){E.push({t:x.t,ic:x.s<0?'⚠️':x.k==='mfe'?'📈':'🔄',m:x.m+(x.r!=null?' (θέση '+fR(x.r)+')':'')+'.'})});
     (S.aplog||[]).forEach(function(dd){(dd.ev||[]).forEach(function(x){if(x.c===base&&x.t>=(t.at||0)-15*60000&&x.t<=(t.exitAt||Date.now())&&x.k!=='open'&&x.k!=='scan')var hm=apHuman(x);if(E.some(function(z){return z.m===hm}))return;E.push({t:x.t,ic:x.k==='block'?'🛡️':x.k==='prop'?'💡':'⚠️',m:hm})})});
     if(dmClosed(t)){var st=t.status==='win'?'🎯 Πήρε τον στόχο':t.status==='loss'?(n(t.r)>0?'🔒 Έκλεισε στο μετακινημένο stop με κέρδος':'🛑 Χτύπησε το stop'):t.nofill?'⌛ Έληξε χωρίς να γεμίσει':'⏹ Έκλεισε';
       E.push({t:t.exitAt||t.checkedAt||Date.now(),ic:'🏁',m:st+(t.exit!=null?' στο '+dmPx(n(t.exit)):'')+(isFinite(n(t.r))?' · '+fR(n(t.r)):'')+(isFinite(n(t.pnl))?' · '+dmMoney(n(t.pnl),''):'')+(t.filledAt&&t.exitAt?' · διάρκεια θέσης '+dmDur(t.exitAt-t.filledAt):'')+'.'})}
@@ -4201,7 +4201,7 @@ function dmLogOpen(id){var t=(S.demo||[]).find(function(x){return x.id===id});if
     E.sort(function(x,y){return x.t-y.t});
     var kp='<div class="dmlog-k"><div><span>Μέγιστο υπέρ</span><b class="pos">'+(isFinite(n(t.mfe))?'+'+fmt(n(t.mfe),2)+'R':isFinite(tr.mfe)?'+'+fmt(tr.mfe,2)+'R':'–')+'</b></div><div><span>Μέγιστο κατά</span><b class="neg">'+(isFinite(n(t.mae))?'−'+fmt(n(t.mae),2)+'R':isFinite(tr.mae)?'−'+fmt(Math.min(1,tr.mae),2)+'R':'–')+'</b></div><div><span>Αποτέλεσμα</span><b class="'+cls(n(t.r))+'">'+(dmClosed(t)&&isFinite(n(t.r))?fR(n(t.r)):'ανοιχτή')+'</b></div><div><span>Έλεγχος</span><b style="font-size:.78rem">'+(t.checkedAt?esc(dmHM(t.checkedAt)):'–')+'</b></div></div>';
     var fc=t.fc==='hit'?'Από την ώρα της εντολής η τιμή έφτασε πρώτα στον <b>στόχο</b>.':t.fc==='miss'?'Από την ώρα της εντολής η τιμή έφτασε πρώτα στο <b>stop</b>.':'';
-    bx.innerHTML='<div class="dmlog-card" role="dialog" aria-label="Ιστορικό συναλλαγής">'+head+kp+dmLogSvg(t,r.bars,tr,r.tf)+'<ol class="dmlog-tl">'+E.map(function(x){return '<li'+(x.now?' class="now"':'')+'><span class="dmlog-ic">'+x.ic+'</span><span class="dmlog-t">'+esc(dmHM(x.t))+'</span><span>'+esc(x.m)+'</span></li>'}).join('')+'</ol>'+(fc?'<p class="muted" style="font-size:.8rem;margin:.4rem 0 0">'+fc+'</p>':'')+'<p class="muted" style="font-size:.74rem;margin:.5rem 0 0">Η πορεία ξαναχτίζεται από τα κεριά του αρχείου και του Crypto.com, με τον ίδιο κανόνα που κρίνει τις συναλλαγές (αν στο ίδιο κερί πιάνονται και stop και στόχος, μετράει το stop).</p></div>'})
+    bx.innerHTML='<div class="dmlog-card" role="dialog" aria-label="Ιστορικό συναλλαγής">'+head+kp+qtHtml(t)+dmLogSvg(t,r.bars,tr,r.tf)+'<ol class="dmlog-tl">'+E.map(function(x){return '<li'+(x.now?' class="now"':'')+'><span class="dmlog-ic">'+x.ic+'</span><span class="dmlog-t">'+esc(dmHM(x.t))+'</span><span>'+esc(x.m)+'</span></li>'}).join('')+'</ol>'+(fc?'<p class="muted" style="font-size:.8rem;margin:.4rem 0 0">'+fc+'</p>':'')+'<p class="muted" style="font-size:.74rem;margin:.5rem 0 0">Η πορεία ξαναχτίζεται από τα κεριά του αρχείου και του Crypto.com, με τον ίδιο κανόνα που κρίνει τις συναλλαγές (αν στο ίδιο κερί πιάνονται και stop και στόχος, μετράει το stop).</p></div>'})
   .catch(function(){bx.innerHTML='<div class="dmlog-card">'+head+'<p class="muted">Δεν μπόρεσα να φέρω κεριά για αυτή τη συναλλαγή.</p></div>'})}
 function mktPrice(sym){sym=dmSym(sym);if(!/(USDT|USDC|USD)$/.test(sym)&&CGID[sym])sym+='USDT';var w=typeof DMWS!=='undefined'&&DMWS.px[sym.replace(/(USDT|USDC|USD)$/,'')];if(w&&Date.now()-w.at<15000)return Promise.resolve({px:w.px,src:'Binance (ζωντανά)',at:w.at});
   return bnSpot('symbol='+sym.replace(/(USDT|USDC|USD)$/,'')+'USDT&interval=1m&limit=2').then(function(a){var l=a[a.length-1];if(!l||Date.now()-(+l[0])>3*60000)throw {code:'stale'};return {px:+l[4],src:'Binance spot',at:+l[0]}}).catch(function(){return mktPriceCC(sym)})}
@@ -4604,6 +4604,38 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
   if(a==='kill'||a==='closeall'){if(!rkArm(a)){RKA={a:a,until:Date.now()+5000};riskRender();setTimeout(riskRender,5100);return}RKA={a:'',until:0};if(a==='kill')rkKillNow();else{if(!rkKill())rkKillNow();rkCloseAll()}return}
   if(a==='off'){apStWrite({kill:{on:false,at:Date.now(),by:S.uid}});try{apAdd('','scan','🔓 Ο Αυτόματος ξεκλειδώθηκε.')}catch(x){}toast('🔓 Ο Αυτόματος ξεκλειδώθηκε.');riskRender()}});
 document.addEventListener('change',function(e){var t=e.target;if(!t.matches||!t.matches('[data-rkc]')||!qCanSave())return;var c=rkCfg(),v=+t.value;if(!(v>0))return;c[t.getAttribute('data-rkc')]=v;apStWrite({risk:{ddMax:c.ddMax,maxRisk:c.maxRisk,gDd:c.gDd,gRisk:c.gRisk}});toast('Αποθηκεύτηκε.');riskRender()});
+/* ===== 🔍 Ποιότητα συναλλαγής: τι άλλαξε όσο ήταν ανοιχτή + ετυμηγορία για την ΑΠΟΦΑΣΗ και τη ΔΙΑΧΕΙΡΙΣΗ (όχι μόνο το αποτέλεσμα) ===== */
+var QT={at:0,busy:false};
+/* κάθε 5′, μόνο η σελίδα με το lease: για κάθε ανοιχτή αυτόματη με πλαίσιο εισόδου, καταγράφει αλλαγές δομής 15m, CVD 4ω, OI και funding */
+function qtWatch(){if(QT.busy||Date.now()-QT.at<5*6e4||!qCanSave()||(S.db&&!leaseOk()))return;var L=apMine().filter(function(t){return !dmClosed(t)&&!dmIsPend(t)&&t.auto&&t.auto.qx&&!t.ttl});if(!L.length)return;QT.busy=true;QT.at=Date.now();
+  var G={};L.forEach(function(t){var c=dmSym(t.symbol).replace(/(USDT|USDC|USD)$/,'');(G[c]=G[c]||[]).push(t)});
+  Promise.all(Object.keys(G).map(function(c){return Promise.all([bnBars(c,'15m',Date.now()-3*864e5).catch(function(){return null}),qxFlow(c).catch(function(){return null})]).then(function(r){var sm=r[0]&&r[0].bars.length>60?qxSmc(r[0].bars.slice(-250)):null,of=r[1]||{};
+    G[c].forEach(function(t){var d=t.dir==='short'?-1:1,st=Object.assign({},t.qs||{}),ev=(t.qt||[]).slice(),now=Date.now(),lv=dmLiveR(t),cur=lv?lv.r:n(t.curR),add=function(k,m,s2){ev.push({t:now,k:k,m:m,s:s2,r:isFinite(cur)?+cur.toFixed(2):null})};
+      if(sm){if(st.smc==null)st.smc=t.auto.qx.smc?t.auto.qx.smc.dir:sm.dir;if(sm.dir!==st.smc){if(sm.dir===-d)add('choch','η δομή 15m γύρισε '+(d>0?'καθοδική':'ανοδική')+(sm.ev?' ('+sm.ev.k+')':''),-1);else if(sm.dir===d)add('struct','η δομή 15m ξαναγύρισε υπέρ',1);st.smc=sm.dir}}
+      if(isFinite(of.cvd4)){var cs=of.cvd4*d>0.04?1:of.cvd4*d<-0.06?-1:0;if(st.cvd==null)st.cvd=t.auto.qx.of&&isFinite(t.auto.qx.of.cvd4)?(t.auto.qx.of.cvd4*d>0.04?1:t.auto.qx.of.cvd4*d<-0.06?-1:0):cs;if(cs!==st.cvd&&cs!==0){add('cvd','το CVD 4ω γύρισε '+(cs>0?'υπέρ':'κατά')+' ('+fmt(of.cvd4*100,1)+'%)',cs);st.cvd=cs}else if(cs===0)st.cvd=0}
+      if(isFinite(of.oi4)&&isFinite(of.px4)){var os=of.px4*d<0&&of.oi4>1?-1:of.px4*d>0&&of.oi4>0.5?1:0;if(st.oi==null)st.oi=0;if(os!==st.oi&&os!==0){add('oi',os<0?'χτίζονται θέσεις αντίθετα (OI +'+fmt(of.oi4,1)+'%)':'νέες θέσεις υπέρ (OI +'+fmt(of.oi4,1)+'%)',os);st.oi=os}else if(os===0)st.oi=0}
+      var mf=n(t.mfe);[1,2].forEach(function(m){if(isFinite(mf)&&mf>=m&&!(st.mfe>=m)){add('mfe','έφτασε +'+m+'R υπέρ',1);st.mfe=m}});
+      if(ev.length!==(t.qt||[]).length&&S.db)S.db.collection('demo').doc(t.id).set({qt:ev.slice(-30),qs:st},{merge:true}).catch(function(){})})})})).then(function(){QT.busy=false},function(){QT.busy=false})}
+setInterval(function(){try{qtWatch()}catch(e){}},60000);
+/* ετυμηγορία: μόνο από όσα ήξερε στην είσοδο + όσα άλλαξαν μετά. Χωρίς πλαίσιο εισόδου → «ανεπαρκή δεδομένα». */
+function qtVerdict(t){var a=t.auto||{},o={cat:'nodata',lbl:'Ανεπαρκή δεδομένα',why:[],exit:'',dur:NaN};if(!dmClosed(t)){o.lbl='Ακόμα ανοιχτή';o.cat='open';return o}
+  var e=n(t.entry),s=n(t.stop),rk=Math.abs(e-s),X=isFinite(n(t.target))&&rk>0?Math.abs(n(t.target)-e)/rk:NaN,r=n(t.r),mf=n(t.mfe),ma=n(t.mae),ev=t.qt||[];
+  o.exit=t.nofill?'δεν γέμισε':t.cancelled?'ακυρώθηκε':t.status==='win'?(t.mg?'κινούμενο stop σε κέρδος':'στόχος'):t.status==='loss'?(t.mg?'κινούμενο stop':'stop'):t.status==='expired'?'λήξη':(t.closeSrc||t.evalSrc||'χειροκίνητα');
+  if(t.exitAt&&(t.filledAt||t.at))o.dur=t.exitAt-(t.filledAt||t.at);
+  if(t.nofill||t.cancelled){o.lbl='Δεν άνοιξε';o.cat='none';return o}
+  if(a.score==null){o.why.push('η θέση άνοιξε πριν καταγράφεται το πλαίσιο της απόφασης (βαθμός, timeframes, ροή)');return o}
+  var sc=+a.score,good=sc>=55,weak=sc<45,adverse=ev.filter(function(x){return x.s<0}),advInProfit=adverse.filter(function(x){return x.r!=null&&x.r>0});
+  o.why.push('βαθμός εισόδου '+sc+'/100'+(a.qx&&a.qx.con&&a.qx.con.length?' · κατά: '+a.qx.con.slice(0,2).join(', '):''));
+  if(isFinite(mf))o.why.push('μέγιστο υπέρ +'+fmt(mf,2)+'R'+(isFinite(X)?' από '+fmt(X,1)+'R ως τον στόχο ('+Math.round(Math.min(1,mf/X)*100)+'% της διαδρομής)':''));
+  adverse.slice(0,3).forEach(function(x){o.why.push(x.m+(x.r!=null?' ενώ ήταν '+fR(x.r):''))});
+  var mgWeak=r<0&&(mf>=1||advInProfit.length>0);
+  if(weak){o.cat='weak';o.lbl='Αδύναμη απόφαση'+(r>0?' (κέρδισε, αλλά τα δεδομένα εισόδου ήταν αδύναμα)':'')}
+  else if(mgWeak){o.cat='mgmt';o.lbl=(good?'Σωστή απόφαση':'Οριακή απόφαση')+' · αδύναμη διαχείριση';o.why.push(mf>=1?'ήταν +'+fmt(mf,1)+'R και γύρισε σε ζημιά: ένα break-even ή κλείσιμο μετά την αλλαγή θα την προστάτευε':'κράτησε τη θέση μετά από αντίθετη αλλαγή ενώ ήταν σε κέρδος')}
+  else if(good){o.cat='good';o.lbl='Σωστή απόφαση · σωστή διαχείριση'+(r<0?' (η αγορά δεν επιβεβαίωσε: κανονική ζημιά)':'')}
+  else{o.cat='edge';o.lbl='Οριακή απόφαση'+(r>0?' · κέρδισε':' · έχασε')}
+  return o}
+function qtHtml(t){var v=qtVerdict(t);if(v.cat==='open')return '';var col={good:'pos',mgmt:'warn',weak:'neg',edge:'muted',nodata:'muted',none:'muted'}[v.cat]||'muted';
+  return '<div class="qtv"><div><b>🔍 Ποιότητα:</b> <span class="pill '+(col==='pos'?'gain':col==='neg'?'loss':col==='warn'?'warn':'')+'">'+esc(v.lbl)+'</span> <span class="muted">· έξοδος: '+esc(v.exit)+(isFinite(v.dur)?' · διάρκεια '+dmDur(v.dur):'')+'</span></div>'+(v.why.length?'<ul>'+v.why.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>':'')+'</div>'}
 /* ===== 🔐 Ακεραιότητα: lease με fencing, μοναδικό ID ανά σήμα, κεντρικό risk ledger, ενιαία πηγή τιμών ===== */
 /* 1) Lease: μόνο μία σελίδα (ή ο φύλακας) έχει δικαίωμα να ανοίγει θέσεις. Το παίρνει με transaction, λήγει σε 3′ και ανανεώνεται κάθε λεπτό.
       Κάθε νέα «κράτηση» αυξάνει το epoch (fencing token): μια παλιά σελίδα με παλιό epoch δεν μπορεί να γράψει θέση. */
@@ -4672,7 +4704,7 @@ function bnBars(sym,iv,from){var s=dmSym(sym).replace(/(USDT|USDC|USD)$/,'')+'US
   var page=function(){return bnSpot('symbol='+s+'&interval='+iv+'&startTime='+t+'&limit=1000').then(function(a){a.forEach(function(x){B.push({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]})});pages++;if(a.length===1000&&pages<8){t=+a[a.length-1][0]+ms;return page()}})};
   return page().then(function(){if(B.length>9000)B=B.slice(-9000);BNK[k]={bars:B,at:Date.now()};return {bars:B,src:'Binance spot '+iv,tf:iv}})}
 function bnEvalBars(sym,first,span){return bnBars(sym,span<=4*864e5?'1m':'15m',first-36e5)}
-window.__qx={flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,commit:apCommit,lease:function(){return LEASE},leaseTick:leaseTick,recon:rkReconcile,sig:apSigId,bn:bnBars,pol:rkPol,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
+window.__qx={qtv:qtVerdict,qtw:function(){QT.at=0;return qtWatch()},flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,commit:apCommit,lease:function(){return LEASE},leaseTick:leaseTick,recon:rkReconcile,sig:apSigId,bn:bnBars,pol:rkPol,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
 /* 🎯 βαθμός ↔ πραγματικό αποτέλεσμα */
 function calRender(){var el=$('#calBody');if(!el)return;var L=(S.demo||[]).filter(function(t){return t.src==='auto'&&t.auto&&isFinite(+t.auto.score)&&dmCounts(t)});
   var B=[[0,40,'0–39'],[40,55,'40–54'],[55,70,'55–69'],[70,85,'70–84'],[85,101,'85–100']].map(function(x){var g=L.filter(function(t){return t.auto.score>=x[0]&&t.auto.score<x[1]}),w=g.filter(function(t){return n(t.r)>0}).length,s=sum(g.map(function(t){return n(t.r)}));return {lb:x[2],n:g.length,wr:g.length?w/g.length:NaN,avg:g.length?s/g.length:NaN}});
@@ -4680,8 +4712,8 @@ function calRender(){var el=$('#calBody');if(!el)return;var L=(S.demo||[]).filte
   var mx=Math.max(0.5,Math.max.apply(null,B.map(function(b){return isFinite(b.avg)?Math.abs(b.avg):0}))),W=520,H=150,bw=W/B.length,z=H/2;
   var svg='<svg class="calsvg" viewBox="0 0 '+W+' '+(H+34)+'" role="img" aria-label="Μέσο R ανά ομάδα βαθμού"><line x1="0" x2="'+W+'" y1="'+z+'" y2="'+z+'" class="cz"/>'+B.map(function(b,i){var x=i*bw+bw*0.2,w=bw*0.6;if(!b.n)return '<text x="'+(i*bw+bw/2)+'" y="'+(H+14)+'" class="cl">'+b.lb+'</text><text x="'+(i*bw+bw/2)+'" y="'+(z-6)+'" class="cn">–</text>';var hh=Math.abs(b.avg)/mx*(z-14),y=b.avg>=0?z-hh:z;
     return '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1,hh).toFixed(1)+'" rx="3" class="'+(b.avg>=0?'cp':'cm')+(b.n<20?' few':'')+'"><title>'+b.lb+': '+b.n+' συναλλαγές · επιτυχία '+Math.round(b.wr*100)+'% · μέσο '+fR(b.avg)+'</title></rect><text x="'+(i*bw+bw/2)+'" y="'+(b.avg>=0?y-4:y+hh+12).toFixed(1)+'" class="cv">'+fR(b.avg)+'</text><text x="'+(i*bw+bw/2)+'" y="'+(H+14)+'" class="cl">'+b.lb+'</text><text x="'+(i*bw+bw/2)+'" y="'+(H+28)+'" class="cn">'+b.n+' · '+Math.round(b.wr*100)+'%</text>'}).join('')+'</svg>';
-  var ok=B.filter(function(b){return b.n>=20}).length>=3;
-  el.innerHTML=svg+'<p class="muted" style="font-size:.78rem;margin:.3rem 0 0">Μέσο R ανά ομάδα βαθμού (κάτω: πλήθος · επιτυχία). '+(ok?'Αν οι στήλες ανεβαίνουν προς τα δεξιά, ο βαθμός ξεχωρίζει πραγματικά τις καλές συναλλαγές.':'Ξεθωριασμένες στήλες = λιγότερες από 20 συναλλαγές: ακόμα δεν βγάζουμε συμπέρασμα.')+'</p>'}
+  var ok=B.filter(function(b){return b.n>=20}).length>=3,VC={};L.forEach(function(t){var v=qtVerdict(t);VC[v.lbl.split(' (')[0]]=(VC[v.lbl.split(' (')[0]]||0)+1});
+  el.innerHTML=svg+'<p class="muted" style="font-size:.78rem;margin:.3rem 0 0">Μέσο R ανά ομάδα βαθμού (κάτω: πλήθος · επιτυχία). '+(ok?'Αν οι στήλες ανεβαίνουν προς τα δεξιά, ο βαθμός ξεχωρίζει πραγματικά τις καλές συναλλαγές.':'Ξεθωριασμένες στήλες = λιγότερες από 20 συναλλαγές: ακόμα δεν βγάζουμε συμπέρασμα.')+'</p>'+(Object.keys(VC).length?'<p style="font-size:.8rem;margin:.4rem 0 0"><b>🔍 Ποιότητα αποφάσεων:</b> '+Object.keys(VC).map(function(k){return esc(k)+' <b>'+VC[k]+'</b>'}).join(' · ')+' <span class="muted">(λεπτομέρειες στο 📜 Ιστορικό κάθε συναλλαγής)</span></p>':'')}
 
 function apBlock(it,ctx){var P=apProt(),x=it.x,d=x.d,coin=it.coin,now=Date.now(),sid=sessOf(now);
   if(P.news){var nb=nwBlockNow();if(nb)return nb+' (αναμονή από 30′ πριν ως 1 ώρα μετά)'}
