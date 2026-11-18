@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=300,VERS={sub:null,t:null};
+var APP_VER=301,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -3776,7 +3776,7 @@ function dmBal(uid){var a=dmAcct(uid);return a.start+sum(dmOf(uid).filter(functi
 function dmPx(x){return isFinite(x)?x.toLocaleString('el-GR',{minimumFractionDigits:2,maximumFractionDigits:x<0.01?8:x<1?6:x<100?4:2}):'–'}
 function dmMoney(x,ccy){return isFinite(x)?fmt(x,2)+' '+(ccy||'USDT'):'–'}
 function dmSymCell(t){var sy=String(t.symbol||''),b=sy.replace(/(USDT|USDC|USD|PERP)$/,'');return '<span class="dmsym">'+symIcon(b,18)+'<b>'+esc(sy||'–')+'</b>'+(sy?'<a class="tvl" href="'+esc(exUrl('tv',sy))+'" target="_blank" rel="noopener noreferrer" title="Άνοιξε το '+esc(sy)+' στο TradingView" aria-label="TradingView">TV</a>':'')+'</span>'}
-function dmBar(t){var s0=n(t.stop),tg=n(t.target),e=n(t.entry);if(!isFinite(s0)||!isFinite(tg)||tg===s0)return '';var lq=DM.live&&DM.live[dmSym(t.symbol)],lp=lq&&Date.now()-lq.at<3*60000?lq.px:livePx(t.symbol);if(!isFinite(lp))lp=n(t.lastPx);
+function dmBar(t){var s0=n(t.stop),tg=n(t.target),e=n(t.entry);if(!isFinite(s0)||!isFinite(tg)||tg===s0)return '';var lq=dmLiveQ(t.symbol),lp=lq&&Date.now()-lq.at<3*60000?lq.px:livePx(t.symbol);if(!isFinite(lp))lp=n(t.lastPx);
   var span=tg-s0,pe=Math.max(0,Math.min(1,(e-s0)/span)),pc=isFinite(lp)?(lp-s0)/span:NaN,cl=Math.max(0,Math.min(1,pc)),run=!dmIsPend(t)&&t.status==='open',col=!isFinite(pc)?'#888':pc>pe?'#26a69a':'#ef5350';
   var r=isFinite(lp)?((lp-e)*(t.dir==='short'?-1:1)/Math.abs(e-s0)):NaN;
   return '<div class="dmbarw" title="Stop '+dmPx(s0)+' · Είσοδος '+dmPx(e)+' · Στόχος '+dmPx(tg)+(isFinite(lp)?' · Τώρα '+dmPx(lp):'')+'"><span class="sl">SL</span><div class="dmbar"><b style="left:'+(pe*100).toFixed(1)+'%"></b>'+(isFinite(pc)?'<u style="left:'+(cl*100).toFixed(1)+'%;background:'+col+'"></u>':'')+'</div><span class="tp">TP</span>'+(run&&isFinite(r)?'<em class="'+(r>=0?'pos':'neg')+'">'+(r>=0?'+':'')+fmt(r,2)+'R</em>':'')+'</div>'}
@@ -3945,7 +3945,7 @@ function dmTechOpts(){var sel=$('#dm-tech');if(!sel)return;var v=sel.value,h='<o
   if(S.strategies.length)h+='<optgroup label="Οι στρατηγικές μας">'+S.strategies.map(function(x){return '<option value="st:'+esc(x.id)+'">'+esc(x.name)+'</option>'}).join('')+'</optgroup>';
   sel.innerHTML=h;if(v&&sel.querySelector('option[value="'+v.replace(/"/g,'')+'"]'))sel.value=v;$('#dm-prof').hidden=sel.value.indexOf('cf:')!==0}
 var DMDEF={amt:1000,lev:10};
-function livePx(sym){sym=dmSym(sym);if(!sym)return NaN;var b=sym.replace(/(USDT|USDC|USD|PERP)$/,'');
+function livePx(sym){sym=dmSym(sym);if(!sym)return NaN;var b=sym.replace(/(USDT|USDC|USD|PERP)$/,'');var w=typeof DMWS!=='undefined'&&DMWS.px[b];if(w&&Date.now()-w.at<20000)return w.px;
   if(PC&&PC.raw&&PC.raw.length&&dmSym(PC.sym).replace(/(USDT|USDC|USD|PERP)$/,'')===b){var lb=PC.raw[PC.raw.length-1];if(lb&&isFinite(lb.c))return lb.c}
   var c=CG.mk&&CGID[b]&&CG.mk[CGID[b]];return c&&isFinite(c.currentPrice)?c.currentPrice:NaN}
 function dmPrefill(cf){if(!cf)return;dmPxUnits();var sym=dmSym(cf.market);if(CGID[sym])sym+='USDT';if(sym.length>=3&&!/^(CRYPTO|STOCKS?|FOREX|INDEX|ΜΕΤΟΧ)/.test(sym))$('#dm-sym').value=sym;
@@ -3995,11 +3995,11 @@ function renderDmOpen(){var el=$('#dmOpen');if(!el)return;var uid='prof',all=dmO
   if(!order.length){el.innerHTML='<div class="empty">Καμία ανοιχτή AI συναλλαγή.</div>';return}
   order.sort(function(a,b){return (G[b].length-G[a].length)||String(dmGrpName(a)).localeCompare(String(dmGrpName(b)))});
   if(pf!=='all'&&!G[pf])pf=DM.opf='all';
-  var liveR=function(t){if(dmIsPend(t))return NaN;var lv=dmLiveR(t);return lv?lv.r:(t.checkedAt&&t.curR!=null?n(t.curR):NaN)};
+  try{dmWsSync()}catch(e){}var liveR=dmRowR;
   var sumR=function(L){var r=0,p=0,h=false;L.forEach(function(t){var c=liveR(t);if(isFinite(c)){r+=c;p+=c*n(t.riskAmt);h=true}});return {r:r,p:p,h:h}};
   var L=pf==='all'?all:G[pf],np=L.filter(dmIsPend).length,S0=sumR(L);
   var h='<div class="hbar"><div class="hchips">'+['all'].concat(order).map(function(k){var T=k==='all'?all:G[k],q=sumR(T);return '<button type="button" class="hchip'+(pf===k?' on':'')+(T.length?'':' idle')+'" data-opf="'+esc(k)+'">'+esc(k==='all'?'Όλα':dmGrpName(k))+' <b>'+T.length+'</b>'+(q.h?' <span class="num '+cls(q.r)+'">'+fR(q.r)+'</span>':'')+'</button>'}).join('')+'</div>'+
-    '<div class="hsum"><span><span class="dmdot"></span>τρέχουν <b>'+(L.length-np)+'</b></span><span>⏳ σε αναμονή <b>'+np+'</b></span><span>τώρα <b class="num '+cls(S0.r)+'">'+(S0.h?fR(S0.r):'–')+'</b></span><span>PnL <b class="num '+cls(S0.p)+'">'+(S0.h?(S0.p>0?'+':'')+dmMoney(S0.p,''):'–')+'</b></span></div></div>';
+    '<div class="hsum"><span class="dmlvb" id="dmLvB">'+dmWsBadge()+'</span><span><span class="dmdot"></span>τρέχουν <b>'+(L.length-np)+'</b></span><span>⏳ σε αναμονή <b>'+np+'</b></span><span>τώρα <b class="num hsR '+cls(S0.r)+'">'+(S0.h?fR(S0.r):'–')+'</b></span><span>PnL <b class="num hsP '+cls(S0.p)+'">'+(S0.h?(S0.p>0?'+':'')+dmMoney(S0.p,''):'–')+'</b></span></div></div>';
   if(!L.length){el.innerHTML=h+'<div class="empty">Αυτό το προφίλ δεν έχει ανοιχτή θέση τώρα.</div>';return}
   h+='<div class="htab otab" role="table"><div class="hhd" role="row"><span>Τώρα</span><span>Άνοιξε</span><span>Νόμισμα</span><span>Στρατηγική · προφίλ</span><span class="hc-px">Stop ··· Στόχος</span><span class="r">PnL</span><span></span></div>';
   L.forEach(function(t){var pend=dmIsPend(t),cr=liveR(t),has=isFinite(cr),a=t.auto||{},sy=String(t.symbol||''),b=sy.replace(/(USDT|USDC|USD|PERP)$/,''),open=DM.ox[t.id],pn=has?cr*n(t.riskAmt):NaN,mg=n(t.margin),ro=mg>0&&isFinite(pn)?pn/mg*100:NaN;
@@ -4204,10 +4204,51 @@ function mktPrice(sym){sym=dmSym(sym);if(!/(USDT|USDC|USD)$/.test(sym)&&CGID[sym
   return ccFetchBars(sym,'1m').then(function(r){var b=r.bars.filter(function(x){return !x.approx}),l=b[b.length-1];if(!l||Date.now()-l.t>5*60000)throw {code:'stale'};return {px:l.c,src:'Crypto.com',at:l.t}}).catch(function(){var a=lp();if(a)return a;throw {code:'no_price'}})}
 /* ζωντανό R για τις ανοιχτές: ίδια τιμή με τον «Έλεγχο με πραγματικές τιμές» (κερί 1 λεπτού Crypto.com) */
 DM.live={};
-function dmLiveR(t){var q=DM.live[dmSym(t.symbol)];if(!q||Date.now()-q.at>3*60000||!t.filledAt&&t.ord==='limit')return null;if(t.ttl){var tt=t.ttl,R1=n(tt.uRisk)/(n(t.qty)/(tt.units||1));if(!(R1>0))return null;return {r:(tt.u||[]).reduce(function(a,u){return a+(q.px-n(u.e))*(t.dir==='short'?-1:1)/R1},0),px:q.px}}var e=n(t.entry),risk=Math.abs(e-n(t.stop));if(!(risk>0))return null;return {r:(q.px-e)*(t.dir==='short'?-1:1)/risk,px:q.px}}
-function dmLiveTick(){clearTimeout(DM.lt);DM.lt=setTimeout(dmLiveTick,60000);var sec=$('section[data-panel=demo]');if(!STN.on&&(!sec||sec.hidden)||document.hidden||!CG.mcp)return;
-  var syms={};dmOf('prof').filter(function(t){return !dmClosed(t)&&!dmIsPend(t)}).forEach(function(t){syms[dmSym(t.symbol)]=1});var L=Object.keys(syms);if(!L.length)return;
+function dmLiveR(t){var q=dmLiveQ(t.symbol);if(!q||Date.now()-q.at>3*60000||!t.filledAt&&t.ord==='limit')return null;if(t.ttl){var tt=t.ttl,R1=n(tt.uRisk)/(n(t.qty)/(tt.units||1));if(!(R1>0))return null;return {r:(tt.u||[]).reduce(function(a,u){return a+(q.px-n(u.e))*(t.dir==='short'?-1:1)/R1},0),px:q.px}}var e=n(t.entry),risk=Math.abs(e-n(t.stop));if(!(risk>0))return null;return {r:(q.px-e)*(t.dir==='short'?-1:1)/risk,px:q.px}}
+function dmLiveTick(){clearTimeout(DM.lt);DM.lt=setTimeout(dmLiveTick,60000);try{dmWsSync()}catch(e){}var sec=$('section[data-panel=demo]');if(!STN.on&&(!sec||sec.hidden)||document.hidden||!CG.mcp)return;
+  var syms={};dmOf('prof').filter(function(t){return !dmClosed(t)&&!dmIsPend(t)}).forEach(function(t){syms[dmSym(t.symbol)]=1});var L=Object.keys(syms).filter(function(sy){var w=DMWS.px[sy.replace(/(USDT|USDC|USD|PERP)$/,'')];return !(w&&Date.now()-w.at<20000)});if(!L.length)return;
   Promise.all(L.map(function(sy){return mktPrice(sy).then(function(q){if(q&&!q.old)DM.live[sy]={px:q.px,at:Date.now()}}).catch(function(){})})).then(function(){try{renderDmOpen();renderPf()}catch(e){}})}
+/* ⚡ ζωντανή ροή τιμών για τις ανοιχτές (Binance WebSocket, ίδια πηγή με το Order Flow): R, PnL και μπάρες αλλάζουν με κάθε συναλλαγή της αγοράς */
+var DMWS={ws:null,fx:null,key:'',px:{},t:0,pf:0,try:0,chk:0};
+function dmLiveQ(sym){var s=dmSym(sym),w=DMWS.px[s.replace(/(USDT|USDC|USD|PERP)$/,'')];if(w&&Date.now()-w.at<20000)return w;return DM.live[s]}
+function dmRowR(t){if(dmIsPend(t))return NaN;var lv=dmLiveR(t);return lv?lv.r:(t.checkedAt&&t.curR!=null?n(t.curR):NaN)}
+function dmWsOn(){var k=0,now=Date.now();for(var b in DMWS.px)if(now-DMWS.px[b].at<15000)k++;return k}
+function dmWsBadge(){var k=dmWsOn();return k?'<span class="dmlv on" title="Οι τιμές έρχονται ζωντανά από το Binance (WebSocket), όπως στο Order Flow">⚡ ζωντανά · '+k+' νομ.</span>':'<span class="dmlv" title="Χωρίς ζωντανή ροή: ενημέρωση κάθε λεπτό">⏱ κάθε 1′</span>'}
+function dmWsWant(){var sec=$('section[data-panel=demo]');if(document.hidden||!STN.on&&(!sec||sec.hidden)||!window.WebSocket)return [];var s={};
+  dmOf('prof').filter(function(t){return !dmClosed(t)}).forEach(function(t){var b=dmSym(t.symbol).replace(/(USDT|USDC|USD|PERP)$/,'');if(/^[A-Z0-9]{2,15}$/.test(b))s[b]=1});return Object.keys(s).sort().slice(0,180)}
+function dmWsClose(){[DMWS.ws,DMWS.fx].forEach(function(w){if(w){w.onclose=null;try{w.close()}catch(e){}}});DMWS.ws=DMWS.fx=null;clearTimeout(DMWS.chk)}
+function dmWsMsg(ev){var j;try{j=JSON.parse(ev.data)}catch(e){return}var d=j&&j.data;if(!d||!d.s||!d.p)return;var b=String(d.s).replace(/USDT$/,''),px=+d.p;if(!(px>0))return;
+  var o=DMWS.px[b];if(o&&this!==DMWS.ws&&Date.now()-o.at<5000&&o.src==='s')return;DMWS.px[b]={px:px,at:Date.now(),prev:o?o.px:px,src:this===DMWS.ws?'s':'f'};
+  if(!DMWS.t)DMWS.t=setTimeout(dmLivePatch,250)}
+function dmWsOpen(url,isF){var w;try{w=new WebSocket(url)}catch(e){return null}w.onmessage=dmWsMsg;
+  w.onclose=function(){if(isF){DMWS.fx=null;return}DMWS.ws=null;DMWS.key='';DMWS.try++;dmWsClose();setTimeout(dmWsSync,Math.min(30000,2000*DMWS.try))};
+  w.onopen=function(){if(!isF)DMWS.try=0};return w}
+function dmWsSync(){var L=dmWsWant(),k=L.join(',');if(!L.length){if(DMWS.ws||DMWS.fx)dmWsClose();DMWS.key='';return}if(k===DMWS.key&&DMWS.ws)return;
+  dmWsClose();DMWS.key=k;var st=L.map(function(b){return b.toLowerCase()+'usdt@aggTrade'}).join('/'),H=['wss://stream.binance.com:9443/stream?streams=','wss://data-stream.binance.vision/stream?streams='];
+  DMWS.ws=dmWsOpen(H[DMWS.try%2]+st,false);
+  /* ό,τι δεν έχει spot στο Binance: δοκίμασε τα futures */
+  DMWS.chk=setTimeout(function(){if(DMWS.key!==k)return;var miss=L.filter(function(b){return !DMWS.px[b]||Date.now()-DMWS.px[b].at>60000});if(!miss.length)return;
+    DMWS.fx=dmWsOpen('wss://fstream.binance.com/market/stream?streams='+miss.map(function(b){return b.toLowerCase()+'usdt@aggTrade'}).join('/'),true)},20000)}
+document.addEventListener('visibilitychange',function(){try{dmWsSync()}catch(e){}});
+function dmLivePatch(){DMWS.t=0;var el=$('#dmOpen');if(!el||!el.offsetParent&&!STN.on){dmWsSync();return}
+  var xo=[],all=dmOf('prof').filter(function(t){return !dmClosed(t)}),by={};all.forEach(function(t){by[t.id]=t});
+  var sum=function(L){var r=0,p=0,h=false;L.forEach(function(t){var c=dmRowR(t);if(isFinite(c)){r+=c;p+=c*n(t.riskAmt);h=true}});return {r:r,p:p,h:h}};
+  el.querySelectorAll('.hr[data-ox]').forEach(function(row){var t=by[row.getAttribute('data-ox')];if(!t)return;var pend=dmIsPend(t),cr=dmRowR(t),has=isFinite(cr),pn=has?cr*n(t.riskAmt):NaN,mg=n(t.margin),ro=mg>0&&isFinite(pn)?pn/mg*100:NaN;
+    var w=DMWS.px[dmSym(t.symbol).replace(/(USDT|USDC|USD|PERP)$/,'')],fresh=w&&Date.now()-w.at<1500;
+    var hR=row.querySelector('.hR');if(hR){var tx=pend?'⏳':has?fR(cr):'–';if(hR.textContent!==tx){hR.textContent=tx;if(fresh&&w.px!==w.prev){hR.classList.remove('tku','tkd');void hR.offsetWidth;hR.classList.add((w.px>w.prev)===(t.dir!=='short')?'tku':'tkd')}}}
+    if(!pend){row.classList.toggle('w',has&&cr>=0);row.classList.toggle('l',has&&cr<0)}
+    var hM=row.querySelector('.hM');if(hM){hM.className='hM r num '+cls(pn);hM.innerHTML=(has?(pn>0?'+':'')+dmMoney(pn,''):'')+(isFinite(ro)?'<small>'+(ro>0?'+':'')+fmt(ro,1)+'%</small>':'')}
+    var e=n(t.entry),tg=n(t.target),rk=Math.abs(e-n(t.stop)),X=rk>0&&isFinite(tg)?Math.abs(tg-e)/rk:NaN,pos=has&&isFinite(X)?Math.max(0,Math.min(100,(cr+1)/(X+1)*100)):null,trk=row.querySelector('.otrk');
+    if(trk&&pos!=null){var dot=trk.querySelector('.otn');if(!dot){dot=document.createElement('i');trk.appendChild(dot)}dot.className='otn '+(cr>=0?'pos':'neg');dot.style.left=pos.toFixed(1)+'%'}
+    if(pend){var sm=row.querySelector('.hP small'),lp=livePx(t.symbol),dd=isFinite(lp)?Math.abs(lp-e)/e*100:NaN;if(sm)sm.textContent='περιμένει '+dmPx(e)+(isFinite(dd)?' · απέχει '+fmt(dd,2)+'%':'')}
+    var x=row.nextElementSibling;if(x&&x.classList.contains('hx')&&!pend){var tl=x.querySelector('.dmtl');if(tl){var r0=tl.querySelector('.dmtl-r');if(r0)r0.innerHTML=has?'<b class="num '+cls(cr)+'">'+fR(cr)+'</b><span class="dmtl-pc">'+dmPnlCell(pn,t)+'</span>':'<b class="muted">–</b>';
+      var lv=dmLiveR(t),ms=tl.querySelector('.dmtl-pnl>span.muted');if(ms&&lv)ms.textContent='ζωντανά '+dmPx(lv.px);var bw=tl.querySelector('.dmbarw');if(bw){var nb=dmBar(t);if(nb)bw.outerHTML=nb}tl.classList.toggle('up',has&&cr>=0);tl.classList.toggle('dn',has&&cr<0)}if(x.querySelector('.otcb'))xo.push(t.id)}});
+  if(xo.length&&Date.now()-(DMWS.cr||0)>1000){DMWS.cr=Date.now();xo.forEach(function(id){try{otRedraw(id)}catch(e){}})}
+  el.querySelectorAll('.hchip[data-opf]').forEach(function(c){var k=c.getAttribute('data-opf'),T=k==='all'?all:all.filter(function(t){return dmGrpKey(t)===k}),q=sum(T),sp=c.querySelector('span.num');if(q.h){if(!sp){sp=document.createElement('span');c.appendChild(document.createTextNode(' '));c.appendChild(sp)}sp.className='num '+cls(q.r);sp.textContent=fR(q.r)}});
+  var pf=DM.opf||'all',L=pf==='all'?all:all.filter(function(t){return dmGrpKey(t)===pf}),S0=sum(L),a=el.querySelector('.hsR'),b=el.querySelector('.hsP'),bd=el.querySelector('#dmLvB');
+  if(a){a.className='num hsR '+cls(S0.r);a.textContent=S0.h?fR(S0.r):'–'}if(b){b.className='num hsP '+cls(S0.p);b.textContent=S0.h?(S0.p>0?'+':'')+dmMoney(S0.p,''):'–'}if(bd)bd.innerHTML=dmWsBadge();
+  if(Date.now()-DMWS.pf>5000){DMWS.pf=Date.now();try{renderPf()}catch(e){}}
+  if(Math.random()<0.02)dmWsSync()}
 function dmManualClose(id){var t=(S.demo||[]).find(function(x){return x.id===id});if(!t)return;var btn=document.querySelector('[data-dmx="'+id+'"]'),inp=document.querySelector('[data-dmxin="'+id+'"]'),typed=n(inp&&!inp.hidden&&inp.value);
   if(dmIsPend(t)){if(btn&&!btn.dataset.armed){btn.dataset.armed='1';btn.textContent='Σίγουρα; Πάτα ξανά';setTimeout(function(){if(btn){delete btn.dataset.armed;btn.textContent='Ακύρωσε'}},5000);return}
     var c=dmClean(t);c.status='expired';c.nofill=true;c.exit=null;c.exitAt=Date.now();c.r=0;c.pnl=0;c.evalSrc='χειροκίνητα';c.cancelled=true;c.curR=null;put('demo',id,c).then(function(){toast('Η εντολή ακυρώθηκε (δεν είχε ανοίξει).')}).catch(function(e2){toast(writeErr(e2))});return}
