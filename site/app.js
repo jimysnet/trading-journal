@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=309,VERS={sub:null,t:null};
+var APP_VER=310,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4146,6 +4146,7 @@ function dmTileAny(t,many){var mine=qCanSave();var pend=dmIsPend(t),lv=dmLiveR(t
 function qxTileHtml(t){var a=t.auto||{};if(a.score==null&&!a.tps)return '';var q=a.qx||{},sc=a.score,col=sc>=70?'hi':sc>=50?'mid':'lo',e=n(t.entry),d=t.dir==='short'?-1:1,rk=Math.abs(e-n(t.stop)),mfe=n(t.mfe);
   var tp=(a.tps||[]).map(function(p,i){var R=rk>0?(p-e)*d/rk:NaN,hit=isFinite(mfe)&&isFinite(R)&&mfe>=R-1e-9;return '<span class="qtp'+(hit?' hit':'')+(i===1?' main':'')+'" title="'+(i===1?'ο στόχος της θέσης: εδώ κλείνει':i===0?'πρώτο επίπεδο κέρδους (αναφορά)':'επόμενη ρευστότητα (αναφορά)')+'">TP'+(i+1)+' <b class="num">'+dmPx(p)+'</b><small>'+(isFinite(R)?fmt(R,1)+'R':'')+(hit?' ✓':'')+'</small></span>'}).join('');
   var mt=q.mtf?['d1','h4','h1','m15','m5'].filter(function(k){return q.mtf[k]!=null}).map(function(k){var v=q.mtf[k];return '<span class="qm '+(v===d?'ok':v===-d?'no':'')+'">'+QX_TFN[k]+' '+(v>0?'▲':v<0?'▼':'•')+'</span>'}).join(''):'';
+  var rgx=q.rg?'<span class="qm" title="Κατάσταση αγοράς 4H: ER '+q.rg.er+' · ADX '+q.rg.adx+' · ATR ×'+q.rg.atrRel+'">🌍 '+esc(q.rg.lbl)+'</span>':'';mt=rgx+mt;
   return '<div class="qbox">'+(sc!=null?'<span class="qsc '+col+'" title="Βαθμός από backtest, ιεραρχία timeframes, ροή εντολών και Smart Money. Δεν είναι πιθανότητα επιτυχίας μέχρι να βαθμονομηθεί (δες «Βαθμός ↔ αποτέλεσμα»).">'+sc+'<small>/100</small></span>':'')+'<div class="qtps">'+tp+(a.inv!=null?'<span class="qinv" title="Αν η τιμή κλείσει πέρα από εδώ, το σενάριο έχει ακυρωθεί">✖ ακύρωση <b class="num">'+dmPx(+a.inv)+'</b></span>':'')+'</div>'+(mt?'<div class="qmt">'+mt+'</div>':'')+
     ((q.pro&&q.pro.length)||(q.con&&q.con.length)?'<div class="qpc">'+(q.pro||[]).map(function(x){return '<span class="pos">✓ '+esc(x)+'</span>'}).join('')+(q.con||[]).map(function(x){return '<span class="neg">✗ '+esc(x)+'</span>'}).join('')+'</div>':'')+'</div>'}
 function dmTileMini(t,pend,cr,has,dd){var a=t.auto||{},pf=a.profile&&a.profile.name;
@@ -4522,12 +4523,24 @@ function qxSmc(b){var N=b.length,P=3,o={dir:0,ev:null,sh:null,sl:null,fvg:null,o
 /* κατεύθυνση ενός timeframe: τάση (ADX/EMA) + δομή αγοράς + θέση ως προς EMA50 → −1/0/+1 και δύναμη 0-4 */
 function qxTf(b){if(!b||b.length<30)return null;var I,g=null;try{I=btInd0(b);g=regime(b,I)}catch(e){return null}var sm=qxSmc(b),i=b.length-1,e50=I.e50[i],s=0;
   if(g&&g.kind==='trend')s+=2*g.dir;s+=sm.dir;if(isFinite(e50))s+=b[i].c>e50?1:-1;return {dir:s>=2?1:s<=-2?-1:0,str:Math.abs(s),smc:sm,kind:g&&g.kind}}
-function qxMtf(r){if(r.qm)return r.qm;var b1=(r.bars||[]).filter(function(x){return !x.approx}),m={};try{m.h1=qxTf(b1.slice(-300));m.h4=qxTf(apAgg(b1,144e5).slice(-300));m.d1=qxTf(apAgg(b1,864e5));m.m15=r.b15&&r.b15.length?qxTf(r.b15.filter(function(x){return !x.approx}).slice(-300)):null}catch(e){}r.qm=m;return m}
+/* Market Regime (4H): TRENDING (bull/bear) · RANGING · VOLATILE · TRANSITION, από efficiency ratio, ADX, σχετικό ATR, όγκο και δομή.
+   Συσσώρευση/διανομή ΔΕΝ βαφτίζονται ως γεγονός: εμφανίζονται μόνο ως «πιθανή», όταν το εύρος συνοδεύεται από CVD 24ω σε μία μεριά. */
+var RG_N={trend:'Τάση',range:'Εύρος',vol:'Υψηλή μεταβλητότητα',trans:'Μετάβαση'};
+function qxRegime(b){if(!b||b.length<60)return null;var N=b.length,I;try{I=btInd0(b)}catch(e){return null}var i=N-1,c=b.map(function(x){return x.c}),k=20,mv=0;for(var j=i-k+1;j<=i;j++)mv+=Math.abs(c[j]-c[j-1]);var er=mv>0?Math.abs(c[i]-c[i-k])/mv:0;
+  var at=[];for(var a=Math.max(1,N-120);a<N;a++)at.push((b[a].h-b[a].l)/b[a].c);var cur=(at.slice(-5).reduce(function(x,y){return x+y},0))/5,med=at.slice().sort(function(x,y){return x-y})[Math.floor(at.length/2)]||cur,rel=med>0?cur/med:1;
+  var v5=0,v50=0;for(var q=N-50;q<N;q++){v50+=+b[q].v||0;if(q>=N-5)v5+=+b[q].v||0}var vx=v50>0?(v5/5)/(v50/50):1,adx=I.adx[i],sm=qxSmc(b),e50=I.e50[i],sl=isFinite(I.e50[i-10])?Math.sign(e50-I.e50[i-10]):0;
+  var o={er:+er.toFixed(2),adx:isFinite(adx)?+adx.toFixed(0):null,atrRel:+rel.toFixed(2),volx:+vx.toFixed(2),dir:sm.dir};
+  if(rel>=1.8)o.k='vol';else if(er>=0.35&&adx>=22&&sm.dir!==0&&sm.dir===sl)o.k='trend';else if(er<0.2&&(!(adx>=20))&&rel<1.25)o.k='range';else o.k='trans';
+  if(sm.ev&&sm.ev.k==='CHoCH'&&sm.ev.ago<=3&&o.k!=='vol')o.k='trans';
+  o.lbl=RG_N[o.k]+(o.k==='trend'?(o.dir>0?' (bull)':' (bear)'):'');return o}
+function qxMtf(r){if(r.qm)return r.qm;var b1=(r.bars||[]).filter(function(x){return !x.approx}),m={};try{m.h1=qxTf(b1.slice(-300));m.h4=qxTf(apAgg(b1,144e5).slice(-300));m.d1=qxTf(apAgg(b1,864e5));m.rg=qxRegime(apAgg(b1,144e5).slice(-300));m.m15=r.b15&&r.b15.length?qxTf(r.b15.filter(function(x){return !x.approx}).slice(-300)):null}catch(e){}r.qm=m;return m}
 var QX_TFN={d1:'1D',h4:'4H',h1:'1H',m15:'15m',m5:'5m'};
 /* η αξιολόγηση ενός σήματος: βαθμός 0-100, λόγοι υπέρ/κατά, βέτο */
 function qxEval(it){var x=it.x,d=x.d,tf=it.tf,r=it.r,M=qxMtf(r),pro=[],con=[],veto='',rng=FIT[x.id]==='range'||FIT[x.id]==='squeeze',dn=d>0?'long':'short';
   /* 1) backtest: ως 40 */
-  var tR=+x.test.avgR||0,base=Math.max(0,Math.min(25,tR/0.6*25))+(x.test.n>=20?5:x.test.n>=10?3:0)+(x.grade>=2?10:x.grade===1?5:0);
+  var tR=+x.test.avgR||0,se=x.test&&x.test.c&&x.test.n>1?btSE(x.test):NaN,z=isFinite(se)&&se>0?tR/se:NaN,NT=Math.max(2,(typeof BT!=='undefined'?BT.length:27)*2),zd=isFinite(z)?z-Math.sqrt(2*Math.log(NT)):NaN;
+  /* το πλεονέκτημα μετριέται σε μονάδες αβεβαιότητας (z), όχι σε σκέτο R: 0,3R σε 6 δοκιμές είναι πολύ λιγότερο σίγουρο από 0,3R σε 40 */
+  var base=(isFinite(z)?Math.max(0,Math.min(25,z/3*25)):Math.max(0,Math.min(25,tR/0.6*25)))+(x.test.n>=20?5:x.test.n>=10?3:0)+(x.grade>=2?10:x.grade===1?5:0);
   /* 2) ιεραρχία timeframes */
   var higher=tf==='15m'?['d1','h4','h1']:tf==='1h'?['d1','h4']:['d1'],mt=0,opp=[],agr=[];
   higher.forEach(function(k){var q=M[k];if(!q)return;if(q.dir===d){agr.push(k);mt+=8}else if(q.dir===-d){opp.push(k);mt-=8}});
@@ -4552,9 +4565,15 @@ function qxEval(it){var x=it.x,d=x.d,tf=it.tf,r=it.r,M=qxMtf(r),pro=[],con=[],ve
   if(sm.sweep===d){sp+=1;pro.push('sweep ρευστότητας '+(d>0?'κάτω από χαμηλό':'πάνω από υψηλό'))}else if(sm.sweep===-d){sp-=0.5;con.push('sweep αντίθετα')}
   if(sm.ob&&sm.ob.d===d){sp+=0.5;pro.push('η τιμή είναι σε order block')}if(sm.fvg&&sm.fvg.d===d){sp+=0.5;pro.push('FVG στήριξης κοντά')}
   var h4s=M.h4&&M.h4.smc;if(h4s&&isFinite(h4s.pd)){if(d>0&&h4s.pd<0.5||d<0&&h4s.pd>0.5){sp+=0.5;pro.push(d>0?'σε discount (4H)':'σε premium (4H)')}else if(d>0&&h4s.pd>0.8||d<0&&h4s.pd<0.2){sp-=0.5;con.push(d>0?'ακριβά, σε premium (4H)':'φτηνά, σε discount (4H)')}}
-  var sc=Math.round(Math.max(0,Math.min(100,22+base+mt+op*4+sp*5)));
+  if(isFinite(zd)&&zd<0)con.push('με '+NT+' δοκιμές στρατηγικών, το πλεονέκτημα σε νέα δεδομένα δεν ξεχωρίζει ακόμα από την τύχη (z '+fmt(z,1)+')');
+  var RG=M.rg,rgp=0,fit=FIT[x.id]||'';if(RG){if(RG.k==='vol'){rgp=-10;if(!veto)veto='αγορά σε υψηλή μεταβλητότητα στο 4H (ATR ×'+fmt(RG.atrRel,1)+' του συνηθισμένου)'}
+    else if(RG.k==='trend'&&(fit==='range'||fit==='squeeze')&&RG.dir===-d){rgp=-8;if(!veto)veto='στρατηγική εύρους κόντρα σε καθαρή τάση 4H'}
+    else if(RG.k==='range'&&fit==='trend'){rgp=-6;con.push('στρατηγική τάσης σε αγορά εύρους (4H)')}
+    else if(RG.k==='trans'){rgp=-5;con.push('η αγορά αλλάζει χαρακτήρα στο 4H (μετάβαση)')}
+    else if(RG.k==='trend'&&RG.dir===d&&fit!=='range'){rgp=5;pro.push('τάση 4H προς την ίδια μεριά')}}
+  var sc=Math.round(Math.max(0,Math.min(100,22+base+mt+op*4+sp*5+rgp)));
   var mtf={};['d1','h4','h1','m15'].forEach(function(k){if(M[k])mtf[k]=M[k].dir});if(it.m5)mtf.m5=it.m5.dir;
-  return {score:sc,veto:veto,pro:pro.slice(0,8),con:con.slice(0,8),mtf:mtf,of:O,smc:{dir:sm.dir,ev:sm.ev?sm.ev.k+(sm.ev.d>0?'↑':'↓'):'',sw:sm.sweep,ob:sm.ob?1:0,fvg:sm.fvg?1:0,pd:isFinite(h4s&&h4s.pd)?+h4s.pd.toFixed(2):null},sm:sm,h4:h4s}}
+  return {score:sc,veto:veto,pro:pro.slice(0,8),con:con.slice(0,8),mtf:mtf,of:O,rg:RG?{k:RG.k,lbl:RG.lbl,er:RG.er,adx:RG.adx,atrRel:RG.atrRel}:null,z:isFinite(z)?+z.toFixed(2):null,zd:isFinite(zd)?+zd.toFixed(2):null,smc:{dir:sm.dir,ev:sm.ev?sm.ev.k+(sm.ev.d>0?'↑':'↓'):'',sw:sm.sweep,ob:sm.ob?1:0,fvg:sm.fvg?1:0,pd:isFinite(h4s&&h4s.pd)?+h4s.pd.toFixed(2):null},sm:sm,h4:h4s}}
 function usdK(v){return v>=1e6?'$'+fmt(v/1e6,1)+'M':'$'+fmt(v/1e3,0)+'k'}
 /* 5m επιβεβαίωση εισόδου (μόνο για το σήμα που θα ανοίξει) */
 function qx5m(it){var c=it.coin,q=QX.m5[c];var p=q&&Date.now()-q.at<120000?q.p:null;if(!p){p=fetch('https://data-api.binance.vision/api/v3/klines?symbol='+c+'USDT&interval=5m&limit=80').then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return bnF('/fapi/v1/klines','symbol='+c+'USDT&interval=5m&limit=80')}).then(function(k){var b=k.map(function(x){return {t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]}});var C=b.map(function(x){return x.c}),e9=emaA(C,9),e21=emaA(C,21),i=b.length-1,sm=qxSmc(b),s=(C[i]>e9[i]?1:-1)+(e9[i]>e21[i]?1:-1)+sm.dir;return {dir:s>=2?1:s<=-2?-1:0}}).catch(function(){return null});QX.m5[c]={at:Date.now(),p:p}}
@@ -4890,7 +4909,7 @@ function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:a
   var doc={by:PROF,runBy:S.uid,symbol:coin+'USDT',ex:'cc',dir:d>0?'long':'short',ord:ord,entry:e,stop:stp,target:tg,at:now,date:lday(dt),time:pad2(dt.getHours())+':'+pad2(dt.getMinutes()),
     riskPct:dmR2(riskAmt/bal*100),riskAmt:dmR2(riskAmt),qty:qty,notional:dmR2(notional),lev:lev,margin:dmR2(margin),liq:isFinite(liq)?liq:null,exp:ord==='limit'?Math.max(2,Math.round(3*ms/36e5)):null,
     src:'auto',mgmt:STD?'none':(c.mgmt||'none'),trA:+c.trA||1,trD:+c.trD||1,cfId:null,tech:top.s.mid||'',title:top.s.t,stratId:null,notes:('🤖 '+why).slice(0,500),status:'open',createdAt:now,
-    auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual,std:STD?1:0,score:qq?qq.score:null,qx:qq?{mtf:qq.mtf,of:qq.of,smc:qq.smc,pro:qq.pro,con:qq.con}:null,tps:LV.tps,inv:LV.inv}};
+    auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual,std:STD?1:0,score:qq?qq.score:null,qx:qq?{mtf:qq.mtf,of:qq.of,smc:qq.smc,pro:qq.pro,con:qq.con,rg:qq.rg,z:qq.z,zd:qq.zd}:null,tps:LV.tps,inv:LV.inv}};
   if(exe)doc.exe=exe;var fr0=it.r&&it.r.of&&it.r.of.fund;if(isFinite(fr0))doc.fundRate=+fr0;
   if(dry)return doc;
   var sigId=apSigId(pid||apfTagId({auto:doc.auto}),coin,top.id,d,tf,b[i-top.sig.ago].t),mo=+c.maxOpen||0;AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')]={at:Date.now(),name:AP.rc&&AP.rc.name||'',coin:coin,strat:top.id,dir:d>0?'long':'short'};
