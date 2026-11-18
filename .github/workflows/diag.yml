@@ -1,0 +1,24 @@
+# 🩺 Διάγνωση του Αυτόματου (μόνο ανάγνωση) — τρέχει με το χέρι
+name: diag
+on: workflow_dispatch
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: runner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Εγκατάσταση
+        working-directory: runner
+        run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Διάγνωση
+        working-directory: runner
+        env:
+          TJ_URL: ${{ secrets.TJ_URL }}
+          TJ_BOT_EMAIL: ${{ secrets.TJ_BOT_EMAIL }}
+          TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
+        run: node diag.mjs
