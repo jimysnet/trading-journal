@@ -989,7 +989,7 @@ tr.dup td{opacity:.45}
 .approf{border:1px solid var(--line);border-radius:12px;padding:.6rem .7rem;margin:.2rem 0 .7rem}
 .approf .aph{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:space-between}
 .approf select{max-width:100%}
-.apptabw{overflow-x:auto}
+.apptabw{overflow-x:auto;max-width:100%;min-width:0;-webkit-overflow-scrolling:touch}details.apfx{display:block;min-width:0;max-width:100%}details.apfx>summary{cursor:pointer}details.apfx>.apptabw{width:100%}html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .apptab{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.5rem}
 .apptab th,.apptab td{padding:.3rem .35rem;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 .apptab th:first-child,.apptab td:first-child{text-align:left;white-space:normal;min-width:9rem}
@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=296,VERS={sub:null,t:null};
+var APP_VER=297,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
