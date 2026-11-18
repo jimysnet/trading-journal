@@ -239,6 +239,18 @@
   function DB(fs) { this._fs = fs }
   DB.prototype.collection = function (p) { return new CQ(this._fs.collection(p)) };
   DB.prototype.doc = function (p) { return new DR(this._fs.doc(p)) };
+  /* transactions: ίδιο API με το Firestore, με τα ίδια enc/dec. Χωρίς σύνδεση αποτυγχάνουν (δεν μπαίνουν σε ουρά). */
+  DB.prototype.runTransaction = function (fn) {
+    return this._fs.runTransaction(function (tx) {
+      var T = {
+        get: function (r) { return tx.get(r._r).then(function (s) { return new DS(s) }) },
+        set: function (r, d, o) { if (o) tx.set(r._r, enc(d), o); else tx.set(r._r, enc(d)); return T },
+        update: function (r, d) { tx.update(r._r, enc(d)); return T },
+        delete: function (r) { tx.delete(r._r); return T }
+      };
+      return fn(T);
+    });
+  };
 
   /* ---------- user ---------- */
   var canP = null;

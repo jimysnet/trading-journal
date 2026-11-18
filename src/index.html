@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=305,VERS={sub:null,t:null};
+var APP_VER=306,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7845,7 +7845,7 @@ function bindExLinks(){
 
 /* ================= Demo λογαριασμός ================= */
 var DM={who:null,ev:null,hlim:40};
-var DMEX={cc:'Crypto.com (αυτόματα)',binance:'Binance',mexc:'MEXC',bybit:'Bybit',kraken:'Kraken',htx:'HTX',tv:'TradingView'};
+var DMEX={bn:'Binance spot (αυτόματα)',cc:'Crypto.com (αυτόματα)',binance:'Binance',mexc:'MEXC',bybit:'Bybit',kraken:'Kraken',htx:'HTX',tv:'TradingView'};
 var DMTF=[['1m',6e4],['5m',3e5],['15m',9e5],['1h',36e5],['4h',144e5],['1d',864e5]];
 function dmTfMs(tf){var x=DMTF.find(function(y){return y[0]===tf});return x?x[1]:36e5}
 function dmR2(x){return isFinite(x)?Math.round(x*100)/100:null}
@@ -8286,7 +8286,9 @@ function dmLogOpen(id){var t=(S.demo||[]).find(function(x){return x.id===id});if
     var fc=t.fc==='hit'?'Από την ώρα της εντολής η τιμή έφτασε πρώτα στον <b>στόχο</b>.':t.fc==='miss'?'Από την ώρα της εντολής η τιμή έφτασε πρώτα στο <b>stop</b>.':'';
     bx.innerHTML='<div class="dmlog-card" role="dialog" aria-label="Ιστορικό συναλλαγής">'+head+kp+dmLogSvg(t,r.bars,tr,r.tf)+'<ol class="dmlog-tl">'+E.map(function(x){return '<li'+(x.now?' class="now"':'')+'><span class="dmlog-ic">'+x.ic+'</span><span class="dmlog-t">'+esc(dmHM(x.t))+'</span><span>'+esc(x.m)+'</span></li>'}).join('')+'</ol>'+(fc?'<p class="muted" style="font-size:.8rem;margin:.4rem 0 0">'+fc+'</p>':'')+'<p class="muted" style="font-size:.74rem;margin:.5rem 0 0">Η πορεία ξαναχτίζεται από τα κεριά του αρχείου και του Crypto.com, με τον ίδιο κανόνα που κρίνει τις συναλλαγές (αν στο ίδιο κερί πιάνονται και stop και στόχος, μετράει το stop).</p></div>'})
   .catch(function(){bx.innerHTML='<div class="dmlog-card">'+head+'<p class="muted">Δεν μπόρεσα να φέρω κεριά για αυτή τη συναλλαγή.</p></div>'})}
-function mktPrice(sym){sym=dmSym(sym);if(!/(USDT|USDC|USD)$/.test(sym)&&CGID[sym])sym+='USDT';
+function mktPrice(sym){sym=dmSym(sym);if(!/(USDT|USDC|USD)$/.test(sym)&&CGID[sym])sym+='USDT';var w=typeof DMWS!=='undefined'&&DMWS.px[sym.replace(/(USDT|USDC|USD)$/,'')];if(w&&Date.now()-w.at<15000)return Promise.resolve({px:w.px,src:'Binance (ζωντανά)',at:w.at});
+  return bnSpot('symbol='+sym.replace(/(USDT|USDC|USD)$/,'')+'USDT&interval=1m&limit=2').then(function(a){var l=a[a.length-1];if(!l||Date.now()-(+l[0])>3*60000)throw {code:'stale'};return {px:+l[4],src:'Binance spot',at:+l[0]}}).catch(function(){return mktPriceCC(sym)})}
+function mktPriceCC(sym){
   var lp=function(){var v=livePx(sym);return isFinite(v)&&v>0?{px:v,src:'CoinGecko'}:null};
   if(!CG.mcp){var a=lp();return a?Promise.resolve(a):deepBars(sym,'1h').then(function(r){var b=r.bars[r.bars.length-1];return {px:b.c,src:'τελευταίο κερί 1h',old:true}})}
   return ccFetchBars(sym,'1m').then(function(r){var b=r.bars.filter(function(x){return !x.approx}),l=b[b.length-1];if(!l||Date.now()-l.t>5*60000)throw {code:'stale'};return {px:l.c,src:'Crypto.com',at:l.t}}).catch(function(){var a=lp();if(a)return a;throw {code:'no_price'}})}
@@ -8452,13 +8454,14 @@ function apMineR(){var m=apMine();if(!AP.rc||!AP.rc.id)return m;var id=AP.rc.id;
 var COIN_SWAP={BNB:'HBAR',TRX:'AVAX'};function coinFix(str){return String(str||'').toUpperCase().split(/[\s,;]+/).map(function(x){x=x.replace(/(USDT|USDC|USD)$/,'');return COIN_SWAP[x]||x}).filter(function(x,i,a){return x&&a.indexOf(x)===i}).join(',')}
 function apCoins(){return String(coinFix(apC().coins)||'').toUpperCase().split(/[\s,;]+/).map(function(x){return x.replace(/(USDT|USDC|USD)$/,'').replace(/[^A-Z0-9]/g,'')}).filter(function(x,i,a){return x&&a.indexOf(x)===i}).slice(0,12)}
 function apMine(){return dmOf(PROF).filter(function(t){return t.src==='auto'})}
-function apLock(){/* μία σελίδα σε όλη την ομάδα τρέχει τον λογαριασμό του Καθηγητή */var now=Date.now(),L=AP.state||{};if(S.db&&!AP.stReady)return false;
-  if(S.db&&L.tab&&L.tab!==AP.tab&&now-(L.at||0)<180000)return false;
+function apLock(){/* μία σελίδα σε όλη την ομάδα τρέχει τον λογαριασμό του Καθηγητή: όποια κρατά το lease (transaction, λήγει σε 3′) */var now=Date.now(),L=AP.state||{};if(S.db&&!AP.stReady)return false;
+  if(S.db&&!leaseOk())return false;
   if(!S.db){var k='tj-aplock',v=null;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch(e){}if(v&&v.tab!==AP.tab&&now-v.at<150000)return false;try{localStorage.setItem(k,JSON.stringify({tab:AP.tab,at:now}))}catch(e){}return true}
   apStWrite({runner:S.uid,tab:AP.tab,at:now});return true}
 function apInit(){window.__AP=AP;window.__APX={tag:apProfTag,ids:apStratIds,ev:dmEval,rows:apfRows,apf:APF,lab:LAB,bt:BT,gsp:GENSP};if(AP.cfg)return;if(S.db&&(!S.uid||S.uid==='me')&&!apInit.n){apInit.w=(apInit.w||0)+1;if(apInit.w<30){setTimeout(apInit,2000);return}}apBind();apLoad();apStSub();apfSub();apChgSub();try{aplLoad()}catch(e){}try{labInit()}catch(e){}try{setTimeout(e9Auto,6000)}catch(e){}apRender();apTick();setTimeout(function(){gmDiag().then(apGmRender)},1500)}
 function apTick(){clearTimeout(AP.timer);AP.timer=setTimeout(apTick,60000);
-  if(!AP.cfg||!AP.cfg.on||AP.busy||!qCanSave())return;if(!apLock()){apStatus();return}if(rkKill()){apStatus();return}try{ttlAuto()}catch(e){}
+  if(!AP.cfg||!AP.cfg.on||!qCanSave())return;(S.db&&AP.stReady?leaseTick():Promise.resolve(true)).then(function(){apTick2()})}
+function apTick2(){if(!AP.cfg||!AP.cfg.on||AP.busy||!qCanSave())return;if(!apLock()){apStatus();return}if(rkKill()){apStatus();return}try{ttlAuto()}catch(e){}
   var due=AP.last+AP.cfg.iv*60000;AP.next=due;if(Date.now()>=due)apScan();else apStatus()}
 var AP_TFMS={'15m':9e5,'1h':36e5,'4h':144e5};
 function apTfsOf(c){var t=c&&c.tf;return t==='4h'?['4h']:t==='1h'?['1h']:t==='15m'?['15m']:t==='fast'?['15m','1h']:t==='1h4h'?['1h','4h']:['15m','1h','4h']}
@@ -8486,7 +8489,6 @@ function apMedAtr(ev,b){var I=ev.I,v=[];for(var i=Math.max(0,b.length-200);i<b.l
 /* ---- Προστασίες (όπως οι «protections» των γνωστών bots) ---- */
 function apProt(){var c=apC();return {news:c.pNews!==false,sess:c.sess||'smart',mtf:c.pMtf!==false,btc:c.pBtc!==false,vol:c.pVol!==false,cool:c.pCool!==false,corr:c.pCorr!==false,brk:c.pBrk!==false,lab:!!c.lab,minEdge:isFinite(+c.minEdge)?+c.minEdge:0.1}}
 function apBreaker(){var mine=apMineR().filter(dmCounts).sort(function(a,b){return (a.exitAt||a.at||0)-(b.exitAt||b.at||0)}),td=lday(new Date()),dayR=sum(mine.filter(function(t){return lday(new Date(t.exitAt||t.at||0))===td}).map(function(t){return n(t.r)})),L=mine.slice(-3);
-  if(dayR<=-3)return 'Σήμερα οι αυτόματες έχουν ήδη '+fR(dayR)+'. Παύση νέων ανοιγμάτων μέχρι αύριο.';
   if(L.length===3&&L.every(function(t){return n(t.r)<0})&&Date.now()-(L[2].exitAt||L[2].at||0)<24*36e5)return '3 συνεχόμενες χαμένες αυτόματες. Παύση 24 ωρών από την τελευταία.';return ''}
 
 /* ===== 📅 Ημερήσια αξιολόγηση: κάθε βράδυ γράφεται μία καταγραφή με ό,τι έγινε, για σύγκριση μέρα με τη μέρα ===== */
@@ -8647,7 +8649,7 @@ function qxLevels(it,e,stp,tg){var d=it.x.d,risk=Math.abs(e-stp),X=Math.abs(tg-e
   return {tps:[tp1,tg,tp3].map(function(v){return +(+v).toPrecision(8)}),inv:+(+inv).toPrecision(8)}}
 /* ===== 🛡️ Ρίσκο τώρα ===== */
 var RK_DEF={ddMax:2,maxRisk:6},RKA={a:'',until:0};function rkArm(a){return RKA.a===a&&Date.now()<RKA.until}
-function rkCfg(){return Object.assign({},RK_DEF,(AP.state&&AP.state.risk)||{})}
+function rkCfg(){return rkPol()}
 function rkKill(){return AP.state&&AP.state.kill&&AP.state.kill.on?AP.state.kill:null}
 function rkPf(pid){var L=apMine().filter(function(t){return apfTagId(t)===pid}),bal=apfBal(pid),td=lday(new Date()),op=L.filter(function(t){return !dmClosed(t)}),run=op.filter(function(t){return !dmIsPend(t)});
   var real=sum(L.filter(function(t){return dmClosed(t)&&isFinite(n(t.pnl))&&lday(new Date(t.exitAt||t.at||0))===td}).map(function(t){return n(t.pnl)})),unr=sum(run.map(function(t){var c=dmRowR(t);return isFinite(c)?Math.max(-1.5,Math.min(20,c))*n(t.riskAmt):0}));/* μια λάθος τιμή δεν πρέπει να «σκάσει» το όριο: ως −1,5R ανά θέση */
@@ -8655,7 +8657,8 @@ function rkPf(pid){var L=apMine().filter(function(t){return apfTagId(t)===pid}),
   var notl=sum(run.map(function(t){return n(t.notional)||0})),net=sum(run.map(function(t){return (t.dir==='short'?-1:1)*(n(t.notional)||0)}));
   return {pid:pid,bal:bal,real:real,unr:unr,day:real+unr,dayPct:bal>0?(real+unr)/bal*100:0,risk:risk,riskPct:bal>0?risk/bal*100:0,notl:notl,net:net,n:op.length,run:run,L:L}}
 /* έλεγχος πριν ανοίξει: kill switch, ημερήσιο όριο, συνολικό ανοιχτό ρίσκο */
-function rkBlock(pid,riskAmt,lab){var K=rkKill();if(K)return '⛔ Kill switch ενεργό ('+(K.name||'')+' '+dmHM(K.at)+'). Δεν ανοίγει τίποτα.';if(lab)return '';var c=rkCfg(),p=rkPf(pid);
+function rkBlock(pid,riskAmt,lab){var K=rkKill();if(K)return '⛔ Kill switch ενεργό ('+(K.name||'')+' '+dmHM(K.at)+'). Δεν ανοίγει τίποτα.';var c=rkCfg(),p=rkPf(pid);
+  try{var cap=rkCapital(),dl=rkDayLocal(),gr=0;apMine().filter(function(t){return !dmClosed(t)}).forEach(function(t){gr+=rkPos(t).risk});if(cap.tot>0&&dl.tot/cap.tot*100<=-c.gDd)return 'ημερήσιο όριο απώλειας ΟΛΟΥ του λογαριασμού: '+fmt(dl.tot/cap.tot*100,2)+'% (όριο −'+c.gDd+'%)';if(cap.tot>0&&(gr+riskAmt)/cap.tot*100>c.gRisk+1e-9)return 'ανοιχτό ρίσκο ΟΛΟΥ του λογαριασμού θα γινόταν '+fmt((gr+riskAmt)/cap.tot*100,2)+'% (όριο '+c.gRisk+'%)'}catch(e){}
   if(p.bal>0&&p.dayPct<=-c.ddMax)return 'ημερήσιο όριο απώλειας: σήμερα '+fmt(p.dayPct,2)+'% (όριο −'+c.ddMax+'%). Παύση νέων ανοιγμάτων μέχρι αύριο.';
   if(p.bal>0&&(p.risk+riskAmt)/p.bal*100>c.maxRisk+1e-9)return 'συνολικό ανοιχτό ρίσκο θα γινόταν '+fmt((p.risk+riskAmt)/p.bal*100,1)+'% (όριο '+c.maxRisk+'%)';return ''}
 function riskRender(){var el=$('#apRiskBody'),hb=$('#apRiskKill');if(!el)return;var K=rkKill(),c=rkCfg(),can=qCanSave(),ids={};apMine().forEach(function(t){if(!dmClosed(t)||lday(new Date(t.exitAt||t.at||0))===lday(new Date()))ids[apfTagId(t)]=1});(APF.list||[]).forEach(function(p){if(p.run!==false)ids[p.id]=1});
@@ -8665,14 +8668,15 @@ function riskRender(){var el=$('#apRiskBody'),hb=$('#apRiskKill');if(!el)return;
   var dd=T.bal>0?(T.real+T.unr)/T.bal*100:0,rp=T.bal>0?T.risk/T.bal*100:0,worst=P[0],bar=function(v,lim){var w=Math.max(0,Math.min(100,Math.abs(Math.min(0,v))/lim*100));return '<div class="rkbar"><i style="width:'+w.toFixed(0)+'%" class="'+(w>=100?'x':w>=60?'w':'')+'"></i></div>'};
   var run=[];P.forEach(function(p){run=run.concat(p.run)});var lg=run.filter(function(t){return t.dir!=='short'}),sh=run.filter(function(t){return t.dir==='short'}),byC={};run.forEach(function(t){var k=dmSym(t.symbol).replace(/USDT$/,'')+' '+(t.dir==='short'?'short':'long');byC[k]=(byC[k]||0)+1});
   var dup=Object.keys(byC).filter(function(k){return byC[k]>1}).map(function(k){return k+' ×'+byC[k]});
+  var cap=rkCapital(),dl=rkDayLocal(),gr=0;apMine().filter(function(t){return !dmClosed(t)}).forEach(function(t){gr+=rkPos(t).risk});var gdd=cap.tot>0?dl.tot/cap.tot*100:0,grp=cap.tot>0?gr/cap.tot*100:0;dd=gdd;rp=grp;T.bal=cap.tot;
   var h=(K?'<div class="rkstop">⛔ <b>Kill switch ενεργό</b> από '+esc(K.name||'')+' στις '+esc(dmHM(K.at))+'. Ο Αυτόματος δεν ανοίγει τίποτα σε κανένα προφίλ.'+(K.closed?' Έκλεισαν '+K.closed+' θέσεις.':'')+'</div>':'')+
-    '<div class="rkg"><div><span>Σήμερα (κλειστές + ανοιχτές)</span><b class="num '+cls(dd)+'">'+(dd>0?'+':'')+fmt(dd,2)+'%</b>'+bar(worst?worst.dayPct:0,c.ddMax)+'<small>όριο −'+c.ddMax+'% ανά προφίλ'+(worst&&worst.dayPct<0?' · χειρότερο: '+esc(dmGrpName(worst.pid))+' '+fmt(worst.dayPct,2)+'%':'')+'</small></div>'+
-    '<div><span>Ανοιχτό ρίσκο (αν πιάσουν όλα τα stop)</span><b class="num">'+fmt(rp,2)+'%</b>'+bar(-Math.max.apply(null,P.map(function(p){return p.riskPct}).concat([0])),c.maxRisk)+'<small>'+dmMoney(T.risk,'')+' · όριο '+c.maxRisk+'% ανά προφίλ</small></div>'+
+    '<div class="rkg"><div><span>Σήμερα, όλος ο λογαριασμός (κλειστές + ανοιχτές)</span><b class="num '+cls(dd)+'">'+(dd>0?'+':'')+fmt(dd,2)+'%</b>'+bar(gdd,c.gDd)+'<small>όριο −'+c.gDd+'% συνολικά, −'+c.ddMax+'% ανά προφίλ'+(worst&&worst.dayPct<0?' · χειρότερο: '+esc(dmGrpName(worst.pid))+' '+fmt(worst.dayPct,2)+'%':'')+'</small></div>'+
+    '<div><span>Ανοιχτό ρίσκο, όλος ο λογαριασμός (αν πιάσουν όλα τα stop)</span><b class="num">'+fmt(rp,2)+'%</b>'+bar(-grp,c.gRisk)+'<small>'+dmMoney(gr,'')+' · όριο '+c.gRisk+'% συνολικά, '+c.maxRisk+'% ανά προφίλ</small></div>'+
     '<div><span>Συνολική έκθεση</span><b class="num">x'+fmt(T.bal>0?T.notl/T.bal:0,2)+'</b><small>'+dmMoney(T.notl,'')+' σε θέσεις · κεφάλαιο '+dmMoney(T.bal,'')+'</small></div>'+
     '<div><span>Κατεύθυνση</span><b class="num">'+lg.length+' long · '+sh.length+' short</b><small>καθαρά '+(T.net>=0?'long ':'short ')+dmMoney(Math.abs(T.net),'')+(run.length>=3&&(lg.length===0||sh.length===0)?' · ⚠️ όλα προς μία μεριά: τα crypto κινούνται μαζί':'')+'</small></div></div>'+
-    (dup.length?'<p class="rkwarn">⚠️ Ίδιο νόμισμα, ίδια κατεύθυνση σε πολλά προφίλ: '+esc(dup.join(' · '))+'. Αν κινηθεί αντίθετα, χάνουν όλα μαζί.</p>':'')+
+    '<p class="muted" style="font-size:.76rem;margin:.5rem 0 0">🔐 '+(S.db?(LEASE.mine?'Αυτή η σελίδα έχει τον έλεγχο του Καθηγητή (lease #'+LEASE.epoch+')':'Τον Καθηγητή τον τρέχει '+(AP.state&&AP.state.runner&&AP.state.runner!==S.uid?esc(name(AP.state.runner)||'άλλη σελίδα'):'άλλη σελίδα')+' · μόνο όποιος κρατά το lease μπορεί να ανοίξει θέση'):'τοπική λειτουργία')+' · κάθε σήμα ανοίγει το πολύ μία φορά (μοναδικό ID).</p>'+(dup.length?'<p class="rkwarn">⚠️ Ίδιο νόμισμα, ίδια κατεύθυνση σε πολλά προφίλ: '+esc(dup.join(' · '))+'. Αν κινηθεί αντίθετα, χάνουν όλα μαζί.</p>':'')+
     (P.length?'<details class="rkd"><summary>Ανά προφίλ ('+P.length+')</summary><div class="rkt">'+P.map(function(p){return '<div><b>'+esc(dmGrpName(p.pid))+'</b><span class="num '+cls(p.dayPct)+'">'+(p.dayPct>0?'+':'')+fmt(p.dayPct,2)+'%</span><span class="num">ρίσκο '+fmt(p.riskPct,1)+'%</span><span class="num">'+p.n+' ανοιχτές</span>'+(p.dayPct<=-c.ddMax?'<span class="pill loss">παύση</span>':'')+'</div>'}).join('')+'</div></details>':'')+
-    (can?'<div class="rkset"><label>Ημερήσιο όριο απώλειας <input type="number" min="0.5" max="20" step="0.5" data-rkc="ddMax" value="'+c.ddMax+'">%</label><label>Μέγιστο ανοιχτό ρίσκο <input type="number" min="1" max="50" step="0.5" data-rkc="maxRisk" value="'+c.maxRisk+'">%</label><span class="muted">ανά προφίλ · το 🧪 Συλλογή δεδομένων δεν σταματά (μαζεύει δεδομένα)</span>'+'<button type="button" class="btn small ghost" data-rk="closeall">'+(rkArm('closeall')?'Σίγουρα; Κλείνουν όλες':'Κλείσε όλες τις ανοιχτές αυτόματες τώρα')+'</button>'+'</div>':'');
+    (can?'<div class="rkset"><b>Όλος ο λογαριασμός:</b><label>ημερήσια απώλεια <input type="number" min="0.5" max="20" step="0.5" data-rkc="gDd" value="'+c.gDd+'">%</label><label>ανοιχτό ρίσκο <input type="number" min="0.5" max="50" step="0.5" data-rkc="gRisk" value="'+c.gRisk+'">%</label></div><div class="rkset" style="margin-top:.3rem"><b>Κάθε προφίλ:</b><label>ημερήσια απώλεια <input type="number" min="0.5" max="20" step="0.5" data-rkc="ddMax" value="'+c.ddMax+'">%</label><label>ανοιχτό ρίσκο <input type="number" min="1" max="50" step="0.5" data-rkc="maxRisk" value="'+c.maxRisk+'">%</label><span class="muted">ισχύουν για όλα τα προφίλ, και για το 🧪 Συλλογή δεδομένων · ελέγχονται ξανά μέσα στη βάση τη στιγμή του ανοίγματος</span>'+'<button type="button" class="btn small ghost" data-rk="closeall">'+(rkArm('closeall')?'Σίγουρα; Κλείνουν όλες':'Κλείσε όλες τις ανοιχτές αυτόματες τώρα')+'</button>'+'</div>':'');
   el.innerHTML=h}
 function rkKillNow(){var me=(function(){try{return name(S.uid)||''}catch(e){return ''}})();var pend=apMine().filter(function(t){return !dmClosed(t)&&dmIsPend(t)});apStWrite({kill:{on:true,at:Date.now(),by:S.uid,name:me}});
   pend.forEach(function(t){var c=dmClean(t);c.status='expired';c.nofill=true;c.exit=null;c.exitAt=Date.now();c.r=0;c.pnl=0;c.evalSrc='kill switch';c.cancelled=true;c.curR=null;put('demo',t.id,c).catch(function(){})});
@@ -8682,8 +8686,76 @@ function rkCloseAll(){var L=apMine().filter(function(t){return !dmClosed(t)&&!dm
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-rk]');if(!b||!qCanSave())return;var a=b.getAttribute('data-rk');
   if(a==='kill'||a==='closeall'){if(!rkArm(a)){RKA={a:a,until:Date.now()+5000};riskRender();setTimeout(riskRender,5100);return}RKA={a:'',until:0};if(a==='kill')rkKillNow();else{if(!rkKill())rkKillNow();rkCloseAll()}return}
   if(a==='off'){apStWrite({kill:{on:false,at:Date.now(),by:S.uid}});try{apAdd('','scan','🔓 Ο Αυτόματος ξεκλειδώθηκε.')}catch(x){}toast('🔓 Ο Αυτόματος ξεκλειδώθηκε.');riskRender()}});
-document.addEventListener('change',function(e){var t=e.target;if(!t.matches||!t.matches('[data-rkc]')||!qCanSave())return;var c=rkCfg(),v=+t.value;if(!(v>0))return;c[t.getAttribute('data-rkc')]=v;apStWrite({risk:{ddMax:c.ddMax,maxRisk:c.maxRisk}});toast('Αποθηκεύτηκε.');riskRender()});
-window.__qx={flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
+document.addEventListener('change',function(e){var t=e.target;if(!t.matches||!t.matches('[data-rkc]')||!qCanSave())return;var c=rkCfg(),v=+t.value;if(!(v>0))return;c[t.getAttribute('data-rkc')]=v;apStWrite({risk:{ddMax:c.ddMax,maxRisk:c.maxRisk,gDd:c.gDd,gRisk:c.gRisk}});toast('Αποθηκεύτηκε.');riskRender()});
+/* ===== 🔐 Ακεραιότητα: lease με fencing, μοναδικό ID ανά σήμα, κεντρικό risk ledger, ενιαία πηγή τιμών ===== */
+/* 1) Lease: μόνο μία σελίδα (ή ο φύλακας) έχει δικαίωμα να ανοίγει θέσεις. Το παίρνει με transaction, λήγει σε 3′ και ανανεώνεται κάθε λεπτό.
+      Κάθε νέα «κράτηση» αυξάνει το epoch (fencing token): μια παλιά σελίδα με παλιό epoch δεν μπορεί να γράψει θέση. */
+var LEASE={mine:false,epoch:0,until:0,busy:false,holder:'',err:''},LEASE_MS=180000;
+function leaseRef(){return S.db.collection('apstate').doc('lease')}
+function leaseTick(){if(!S.db||LEASE.busy)return Promise.resolve(LEASE.mine);LEASE.busy=true;
+  return S.db.runTransaction(function(tx){return tx.get(leaseRef()).then(function(sn){var d=sn.exists?sn.data():{},now=Date.now(),me=AP.tab;
+      if(d.holder&&d.holder!==me&&(+d.until||0)>now)return {mine:false,holder:d.holder,until:+d.until,epoch:+d.epoch||0};
+      var ep=d.holder===me&&(+d.until||0)>now?(+d.epoch||1):(+d.epoch||0)+1;
+      tx.set(leaseRef(),{holder:me,uid:S.uid||'',bot:!!window.__TJ_BOT,epoch:ep,until:now+LEASE_MS,at:now});return {mine:true,epoch:ep,until:now+LEASE_MS,holder:me}})})
+    .then(function(r){var was=LEASE.mine;LEASE.mine=r.mine;LEASE.epoch=r.epoch;LEASE.until=r.until;LEASE.holder=r.holder;LEASE.err='';if(r.mine&&!was)try{apAdd('','scan','🔐 Αυτή η σελίδα πήρε τον έλεγχο του Καθηγητή (lease #'+r.epoch+').')}catch(e){}return r.mine})
+    .catch(function(e){LEASE.mine=false;LEASE.err=(e&&(e.code||e.message))||'σφάλμα';return false}).then(function(v){LEASE.busy=false;return v})}
+function leaseOk(){return LEASE.mine&&LEASE.until-15000>Date.now()}
+/* 2) Μοναδικό ID απόφασης: ίδιο σήμα (προφίλ, νόμισμα, στρατηγική, κατεύθυνση, timeframe, κερί σήματος) = ίδιο έγγραφο θέσης */
+function apSigId(pid,coin,strat,d,tf,sigT){return ('a_'+[pid||'p_start',coin,strat,d>0?'L':'S',tf,sigT].join('_')).replace(/[^A-Za-z0-9_\-]/g,'').slice(0,140)}
+/* 3) Κεντρική πολιτική ρίσκου: ανά προφίλ ΚΑΙ για όλο τον λογαριασμό μαζί. Κανένα προφίλ δεν την παρακάμπτει (ούτε η Συλλογή δεδομένων). */
+var RK_POL={ddMax:2,maxRisk:6,gDd:2,gRisk:3};
+function rkPol(){return Object.assign({},RK_POL,(AP.state&&AP.state.risk)||{})}
+function rkLedRef(){return S.db.collection('apstate').doc('ledger')}
+function rkPos(x){var e=n(x.entry),s=n(x.stop),cs=x.curStop!=null?n(x.curStop):s,rk=Math.abs(e-s),ra=n(x.riskAmt)||0,lock=rk>0?(cs-e)*(x.dir==='short'?-1:1)/rk:-1,pend=x.status==='open'&&!x.filledAt&&x.ord==='limit';
+  return {pid:(x.auto&&x.auto.profile&&x.auto.profile.id)||(x.src==='auto'?'p_start':'_man'),coin:dmSym(x.symbol).replace(/(USDT|USDC|USD)$/,''),dir:x.dir==='short'?-1:1,risk:+(pend?ra:Math.max(0,-lock)*ra).toFixed(2),notl:+(n(x.notional)||0).toFixed(2),at:x.at||0,src:x.src||''}}
+function rkCapital(){var ids={};(APF.list||[]).forEach(function(p){if(p.kind!=='ttl')ids[p.id]=1});apMine().filter(function(t){return !dmClosed(t)}).forEach(function(t){ids[apfTagId(t)]=1});var b={},tot=0;Object.keys(ids).forEach(function(id){var v=apfBal(id);if(v>0){b[id]=v;tot+=v}});return {by:b,tot:tot}}
+function rkDayLocal(){var td=lday(new Date()),by={},tot=0;apMine().forEach(function(t){var p=apfTagId(t),v=0;if(dmClosed(t)&&isFinite(n(t.pnl))&&lday(new Date(t.exitAt||t.at||0))===td)v=n(t.pnl);else if(!dmClosed(t)&&!dmIsPend(t)){var c=dmRowR(t);if(isFinite(c))v=Math.max(-1.5,Math.min(20,c))*n(t.riskAmt)}if(v){by[p]=(by[p]||0)+v;tot+=v}});return {by:by,tot:tot}}
+/* το ledger ξαναχτίζεται ΜΕΣΑ στο transaction από τις ίδιες τις θέσεις: όσες έκλεισαν φεύγουν, οι ανοιχτές μετρούν με το τωρινό τους stop */
+function rkLedgerTx(tx,L){var ids=Object.keys((L&&L.open)||{});return Promise.all(ids.map(function(id){return tx.get(S.db.collection('demo').doc(id))})).then(function(ds){var open={},gone=[];
+  ds.forEach(function(sn,i){var x=sn.exists?sn.data():null;if(x&&x.status==='open')open[ids[i]]=rkPos(x);else gone.push(ids[i])});return {open:open,gone:gone}})}
+function rkSum(open,pid){var o={n:0,risk:0,notl:0,coins:{}};Object.keys(open).forEach(function(id){var p=open[id];if(pid&&p.pid!==pid)return;o.n++;o.risk+=p.risk;o.notl+=p.notl;o.coins[p.coin]=1});return o}
+/* το άνοιγμα: ΕΝΑ transaction που ελέγχει lease, μοναδικότητα, όρια, και γράφει θέση + ledger + προσπάθεια μαζί. Χωρίς σύνδεση με τη βάση αποτυγχάνει: τίποτα δεν μένει «στην ουρά». */
+function apCommit(doc,sig,pid,maxOpen){if(!S.db)return put('demo',sig,doc).then(function(){return {ok:true}});
+  var pRef=S.db.collection('demo').doc(sig),aRef=S.db.collection('apatt').doc(sig),pol=rkPol(),cap=rkCapital(),day=rkDayLocal(),np=rkPos(doc),now=Date.now(),lab=!!(apfGet(pid)&&apfGet(pid).cfg&&apfGet(pid).cfg.lab);
+  if(AP.rkHold)return Promise.resolve({ok:false,why:'το ledger ρίσκου βρέθηκε ασύμφωνο σε αυτή τη σάρωση και διορθώθηκε· νέα ανοίγματα από την επόμενη'});
+  if(!leaseOk())return Promise.resolve({ok:false,why:'αυτή η σελίδα δεν έχει τον έλεγχο του Καθηγητή (lease)'});
+  return S.db.runTransaction(function(tx){return Promise.all([tx.get(leaseRef()),tx.get(rkLedRef()),tx.get(pRef),tx.get(aRef)]).then(function(R){
+    var ls=R[0].exists?R[0].data():{},L=R[1].exists?R[1].data():{open:{}},at=R[3].exists?R[3].data():{};
+    if(ls.holder!==AP.tab||+ls.epoch!==LEASE.epoch||!((+ls.until||0)>Date.now()))throw {code:'lease',why:'το lease άλλαξε χέρια (#'+(ls.epoch||'?')+'): δεν γράφω απόφαση με παλιό δικαίωμα'};
+    if(R[2].exists)throw {code:'dup',why:'αυτό το σήμα έχει ήδη θέση ('+sig+')'};
+    return rkLedgerTx(tx,L).then(function(G){var open=G.open,mine=rkSum(open,pid),all=rkSum(open),bal=cap.by[pid]||apfBal(pid),tot=cap.tot||bal,why='';
+      if(mine.coins[np.coin])why='το προφίλ έχει ήδη θέση στο '+np.coin;
+      else if(maxOpen>0&&mine.n>=maxOpen)why='όριο ανοιχτών του προφίλ ('+mine.n+'/'+maxOpen+')';
+      else if(bal>0&&(day.by[pid]||0)/bal*100<=-pol.ddMax)why='ημερήσιο όριο απώλειας προφίλ ('+fmt((day.by[pid]||0)/bal*100,2)+'% · όριο −'+pol.ddMax+'%)';
+      else if(tot>0&&day.tot/tot*100<=-pol.gDd)why='ημερήσιο όριο απώλειας ΟΛΟΥ του λογαριασμού ('+fmt(day.tot/tot*100,2)+'% · όριο −'+pol.gDd+'%)';
+      else if(bal>0&&(mine.risk+np.risk)/bal*100>pol.maxRisk+1e-9)why='ανοιχτό ρίσκο προφίλ θα γινόταν '+fmt((mine.risk+np.risk)/bal*100,1)+'% (όριο '+pol.maxRisk+'%)';
+      else if(tot>0&&(all.risk+np.risk)/tot*100>pol.gRisk+1e-9)why='ανοιχτό ρίσκο ΟΛΟΥ του λογαριασμού θα γινόταν '+fmt((all.risk+np.risk)/tot*100,2)+'% (όριο '+pol.gRisk+'%)';
+      if(why)throw {code:'risk',why:why};
+      var d=Object.assign({},doc,{sig:sig,lease:LEASE.epoch,attempt:(+at.n||0)+1});open[sig]=np;
+      tx.set(pRef,d);tx.set(rkLedRef(),{open:open,at:now,by:AP.tab,ver:(+L.ver||0)+1,risk:+rkSum(open).risk.toFixed(2),n:Object.keys(open).length});
+      tx.set(aRef,{sig:sig,pid:pid,n:(+at.n||0)+1,last:now,ok:true,pos:sig,why:''});return {ok:true}})})})
+  .catch(function(e){var why=(e&&e.why)||('η βάση δεν απάντησε ('+((e&&(e.code||e.message))||'σφάλμα')+'): δεν ανοίγω τίποτα χωρίς επιβεβαίωση');
+    if(!(e&&e.code==='dup'))S.db.collection('apatt').doc(sig).set({sig:sig,pid:pid,last:Date.now(),ok:false,why:why.slice(0,200),n:firebase.firestore.FieldValue.increment(1)},{merge:true}).catch(function(){});
+    return {ok:false,why:why,code:e&&e.code}})}
+/* συμφωνία: σε κάθε σάρωση το ledger συγκρίνεται με τις πραγματικές ανοιχτές θέσεις. Αν λείπει αυτόματη θέση, διορθώνεται και τα ανοίγματα σταματούν για αυτή τη σάρωση. */
+function rkReconcile(){AP.rkHold=false;if(!S.db||!leaseOk())return Promise.resolve();
+  var loc={};(S.demo||[]).filter(function(t){return t.by===PROF&&t.status==='open'&&!t.ttl}).forEach(function(t){loc[t.id]=t});
+  return S.db.runTransaction(function(tx){return tx.get(rkLedRef()).then(function(sn){var first=!sn.exists,L=first?{open:{}}:sn.data();return rkLedgerTx(tx,L).then(function(G){var open=G.open,miss=[];
+    Object.keys(loc).forEach(function(id){if(!open[id]){open[id]=rkPos(loc[id]);miss.push(loc[id])}});
+    var bad=!first&&miss.some(function(t){return t.src==='auto'&&(t.at||0)>(+L.since||0)});
+    if(miss.length||G.gone.length||first)tx.set(rkLedRef(),{open:open,at:Date.now(),by:AP.tab,ver:(+L.ver||0)+1,since:+L.since||Date.now(),risk:+rkSum(open).risk.toFixed(2),n:Object.keys(open).length});
+    return {first:first,miss:miss,gone:G.gone.length,bad:bad}})})}).then(function(r){
+      if(r.bad){AP.rkHold=true;apAdd('','block','🔐 Ασυμφωνία ledger: '+r.miss.length+' ανοιχτή/ές θέση/εις δεν ήταν καταγεγραμμένη/ες ('+r.miss.map(function(t){return dmSym(t.symbol)}).join(', ')+'). Διορθώθηκε· νέα ανοίγματα σταματούν για αυτή τη σάρωση.')}
+      else if(r.first)apAdd('','scan','🔐 Δημιουργήθηκε το κεντρικό ledger ρίσκου με '+r.miss.length+' ανοιχτές θέσεις.')}).catch(function(e){AP.rkHold=true;try{apAdd('','err','🔐 Δεν μπόρεσα να ελέγξω το ledger ρίσκου ('+((e&&(e.code||e.message))||'σφάλμα')+'). Δεν ανοίγω τίποτα σε αυτή τη σάρωση.')}catch(x){}})}
+/* 4) Ενιαία πηγή τιμών: Binance spot (ίδια με το ζωντανό PnL). Κεριά 1 λεπτού με τοπική μνήμη που συμπληρώνει μόνο τα νέα. */
+var BNK={};
+function bnSpot(qs){var u='https://data-api.binance.vision/api/v3/klines?'+qs;return fetch(u).then(function(r){if(!r.ok)throw {status:r.status};return r.json()}).catch(function(e){if(e&&e.status===400)throw e;return fetch('/api/flow?src=bn&h=s&p='+encodeURIComponent('/api/v3/klines')+'&q='+encodeURIComponent(qs)).then(function(r){if(!r.ok)throw {status:r.status};return r.json()})})}
+function bnBars(sym,iv,from){var s=dmSym(sym).replace(/(USDT|USDC|USD)$/,'')+'USDT',k=s+'|'+iv,ms=iv==='1m'?6e4:9e5,C=BNK[k];if(C&&C.bars.length&&C.bars[0].t>from)C=null;var B=C?C.bars.slice():[],t=B.length?B[B.length-1].t:Math.floor(from/ms)*ms,pages=0;
+  if(B.length)B.pop();/* το τελευταίο κερί ήταν ανοιχτό: ξαναφέρνουμε */
+  var page=function(){return bnSpot('symbol='+s+'&interval='+iv+'&startTime='+t+'&limit=1000').then(function(a){a.forEach(function(x){B.push({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]})});pages++;if(a.length===1000&&pages<8){t=+a[a.length-1][0]+ms;return page()}})};
+  return page().then(function(){if(B.length>9000)B=B.slice(-9000);BNK[k]={bars:B,at:Date.now()};return {bars:B,src:'Binance spot '+iv,tf:iv}})}
+function bnEvalBars(sym,first,span){return bnBars(sym,span<=4*864e5?'1m':'15m',first-36e5)}
+window.__qx={flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,commit:apCommit,lease:function(){return LEASE},leaseTick:leaseTick,recon:rkReconcile,sig:apSigId,bn:bnBars,pol:rkPol,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
 /* 🎯 βαθμός ↔ πραγματικό αποτέλεσμα */
 function calRender(){var el=$('#calBody');if(!el)return;var L=(S.demo||[]).filter(function(t){return t.src==='auto'&&t.auto&&isFinite(+t.auto.score)&&dmCounts(t)});
   var B=[[0,40,'0–39'],[40,55,'40–54'],[55,70,'55–69'],[70,85,'70–84'],[85,101,'85–100']].map(function(x){var g=L.filter(function(t){return t.auto.score>=x[0]&&t.auto.score<x[1]}),w=g.filter(function(t){return n(t.r)>0}).length,s=sum(g.map(function(t){return n(t.r)}));return {lb:x[2],n:g.length,wr:g.length?w/g.length:NaN,avg:g.length?s/g.length:NaN}});
@@ -8721,7 +8793,7 @@ function apScan(manual){if(AP.busy)return;if(!qCanSave()){toast('Δεν μπορ
   try{var QC={};apRunners().forEach(function(x){String(coinFix((x.cfg||{}).coins||AP.cfg.coins)||'').split(',').forEach(function(c){if(c)QC[c]=1})});qxWs(Object.keys(QC).sort())}catch(e){}
   var R=apRunners(),k=0,tot=0,BP={},EV={},SH={bars:function(coin){return BP[coin]||(BP[coin]=deepBars(coin+'USDT','1h').then(function(r){if(apTfs().indexOf('15m')<0&&!R.some(function(x){return x.cfg&&apTfsOf(x.cfg).indexOf('15m')>=0}))return r;return histBars(coin+'USDT','15m',20).then(function(q){r.b15=q.bars;return r}).catch(function(){return r})}))},ev:EV,btc:undefined},multi=R.length>1;
   var nx=function(){if(k>=R.length){AP.rc=null;AP.busy=false;AP.cur='';apRender();setTimeout(function(){try{labAuto()}catch(e){}},4000);if(tot){toast('🤖 Ο Αυτόματος Καθηγητής άνοιξε '+tot+' demo'+(multi?' σε '+R.length+' προφίλ':'')+'.');setTimeout(function(){autoEval(true)},2500)}return}
-    var r=R[k++];r.multi=multi;AP.rc=r;apScanOne(r,SH,manual,function(o){tot+=o;setTimeout(nx,200)})};nx()}
+    var r=R[k++];r.multi=multi;AP.rc=r;apScanOne(r,SH,manual,function(o){tot+=o;setTimeout(nx,200)})};rkReconcile().then(nx,nx)}
 function apScanOne(RC,SH,manual,fin){var coins=apCoins(),opened=0,blocked=0,i=0,c=RC.cfg,watch=[],props=[],tfs=apTfs(),ctx={btc:SH.btc||null,openedDir:{}},brk=apProt().brk?apBreaker():'',sid=sessOf(Date.now());apStatus();
   var done=function(){AP.cur='';if(RC.main){AP.watch=watch;AP.props=props.map(function(p){p.pid=RC.id;return p});AP.scanAt=Date.now();AP.brk=brk;try{apStWrite({scanAt:AP.scanAt,watch:watch.slice(0,16).map(function(w){return {coin:w.coin,tf:w.tf,mk:w.mk,name:w.name,dir:w.dir,testR:isFinite(w.testR)?+w.testR.toFixed(2):null,testN:w.testN,allR:isFinite(w.allR)?+w.allR.toFixed(2):null,n:w.n,X:w.X,sig:w.sig,grade:w.grade,weak:w.weak,wait:String(w.wait||'').slice(0,200),block:String(w.block||'').slice(0,160),bestSess:w.bestSess||null,curSess:w.curSess||null}}),props:props.slice(0,6).map(function(p){return {coin:p.coin,tf:p.tf,name:p.x.s.t,dir:p.x.d,testR:+(+p.x.test.avgR).toFixed(2),testN:p.x.test.n}})})}catch(e){}
     }var msg=(RC.multi?'['+RC.name+'] ':'')+'Σάρωση '+coins.length+' νομισμάτων σε '+tfs.join(' + ')+' · '+sessName(sid)+(opened?': άνοιξαν '+opened+' demo.':props.length?': '+props.length+' πρόταση/εις για έγκριση.':': καμία νέα συναλλαγή.')+(blocked?' Οι προστασίες σταμάτησαν '+blocked+' σήμα/τα.':'');
@@ -8860,10 +8932,10 @@ function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:a
     src:'auto',mgmt:STD?'none':(c.mgmt||'none'),trA:+c.trA||1,trD:+c.trD||1,cfId:null,tech:top.s.mid||'',title:top.s.t,stratId:null,notes:('🤖 '+why).slice(0,500),status:'open',createdAt:now,
     auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual,std:STD?1:0,score:qq?qq.score:null,qx:qq?{mtf:qq.mtf,of:qq.of,smc:qq.smc,pro:qq.pro,con:qq.con}:null,tps:LV.tps,inv:LV.inv}};
   if(dry)return doc;
-  apMark(sk);AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')]={at:Date.now(),name:AP.rc&&AP.rc.name||'',coin:coin,strat:top.id,dir:d>0?'long':'short'};
-  put('demo',newId(),doc).then(function(){apRender()}).catch(function(err){apAdd(coin,'err','Δεν αποθηκεύτηκε: '+writeErr(err));apRender()});
+  var sigId=apSigId(pid||apfTagId({auto:doc.auto}),coin,top.id,d,tf,b[i-top.sig.ago].t),mo=+c.maxOpen||0;AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')]={at:Date.now(),name:AP.rc&&AP.rc.name||'',coin:coin,strat:top.id,dir:d>0?'long':'short'};
+  return apCommit(doc,sigId,pid||apfTagId({auto:doc.auto}),mo).then(function(res){apRender();if(!res.ok){if(res.code==='dup')apMark(sk);else delete AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')];A(coin,res.code==='risk'||res.code==='dup'?'block':'err','Σήμα «'+top.s.t+'» '+(d>0?'Long':'Short')+' ('+tf+'): δεν άνοιξε · '+res.why+'.');return false}apMark(sk);
   apAdd(coin,'open',(manual?'Εγκρίθηκε και άνοιξε ':'Άνοιξε ')+(d>0?'Long':'Short')+' ('+(ord==='limit'?'εντολή με όριο':'market')+', '+tf+') με «'+top.s.t+'»: είσοδος '+fmtPx(e)+', stop '+fmtPx(stp)+', στόχος '+fmtPx(tg)+' ('+fmt(X,X%1?1:0)+'R). '+mk+'. Σε νέα δεδομένα '+fR(top.test.avgR)+' σε '+top.test.n+' συναλλαγές.');
-  return true}
+  return true})}
 function dmStdFill(force){var f=function(id,v){var x=$('#'+id);if(!x)return;x.value=String(v);x.dispatchEvent(new Event(x.tagName==='SELECT'?'change':'input',{bubbles:true}))},st=$('#dm-stop'),tg=$('#dm-target');if(!st)return;if(!force&&(st.value||tg.value))return;
   f('dm-stopu','pct');f('dm-stop',STD_SL);f('dm-targetu','pct');f('dm-target',STD_TP);f('dm-mode','amount');f('dm-amt',STD_M);f('dm-lev',STD_LEV)}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#dm-std,#dm-clear');if(!b)return;if(b.id==='dm-std'){dmStdFill(true);toast('📏 Ενιαίο μοτίβο: TP 2% · SL 1% · 1000 · x10')}else if(stdOn())setTimeout(function(){dmStdFill(false)},60)});
@@ -10176,7 +10248,7 @@ function autoEval(force){if(AE.busy||!CG.mcp||!S.uid||!qCanSave())return;if(!for
       /* Το histBars ενώνει αρχείο (μήνες πίσω) + φρέσκα κεριά, άρα δεν χρειάζεται χοντρό πλαίσιο για να «χωρέσει» η θέση: 15m για νέες θέσεις, αλλιώς 1h.
          (Πριν: οι κλειστές θέσεις 7 ημερών που μπαίνουν για πρόβλεψη τραβούσαν το πλαίσιο σε 1D, και με ημερήσια κεριά οι ανοιχτές δεν ελέγχονταν ποτέ.) */
       tf=span<10*36e5?'15m':span<55*864e5?'1h':'4h';
-    var go=function(tf,tries){return histBars(sym,tf,60).then(function(r){var bars=r.bars.filter(function(b){return !b.approx}),retry=false;
+    var go=function(tf,tries,bn){return (bn?bnEvalBars(sym,first,span):histBars(sym,tf,60)).then(function(r){if(bn)tf=r.tf;var ex=bn?'bn':'cc',bars=r.bars.filter(function(b){return !b.approx}),retry=false;if(!bars.length)throw {code:'empty'};
       items.forEach(function(it){if(it.ok)return;
         if(it.k!=='cf'&&!it.t.fc){var fv=dmForecast(it.t,bars);if(fv==='err'){retry=true;return}if(fv){it.t=Object.assign({},it.t,{fc:fv,fcAt:Date.now()});it.fcNew=true}}
         if(it.k==='fc'){it.ok=true;if(it.fcNew){var fd=dmClean(it.t);put('demo',it.t.id,fd).catch(function(){})}return}
@@ -10184,11 +10256,11 @@ function autoEval(force){if(AE.busy||!CG.mcp||!S.uid||!qCanSave())return;if(!for
         if(it.k==='dm'&&v.ord!=='limit'&&!v.filledAt&&!v.ordChecked){var bi=barIdx(bars,v.at),bb=bi>=0?bars[bi]:null,ee=n(v.entry);if(bb&&!(bb.l<=ee*1.0015&&bb.h>=ee*0.9985)){v=it.t=Object.assign({},v,{ord:'limit',ordFix:true})}else if(bb){v=it.t=Object.assign({},v,{ordChecked:true})}}
         var x=dmEval(v,bars);
         if(x.err){if(/μετά την είσοδο/.test(x.err))retry=true;return}it.ok=true;
-        if(it.k==='dm'){if(x.status!=='open'){dmSaveEval(it.t,x,{ex:'cc',tf:tf});done.dm++}else if(it.fcNew||!it.t.checkedAt||it.t.ordFix||Date.now()-it.t.checkedAt>12e4||(!!x.filledAt)!==(!!it.t.filledAt))dmSaveEval(it.t,x,{ex:'cc',tf:tf})}
+        if(it.k==='dm'){if(x.status!=='open'){dmSaveEval(it.t,x,{ex:ex,tf:tf});done.dm++}else if(it.fcNew||!it.t.checkedAt||it.t.ordFix||Date.now()-it.t.checkedAt>12e4||(!!x.filledAt)!==(!!it.t.filledAt))dmSaveEval(it.t,x,{ex:ex,tf:tf})}
         else if(it.k==='pp'){ppSaveEval(it.c,x)}
         else{var o=x.status==='win'||x.status==='loss'?x.status:x.status==='expired'?(x.nofill?'skip':x.r>0?'win':'loss'):null;if(o){cfAutoOutcome(it.c.id,o);done.cf++}}});
-      var k=TF.indexOf(tf);if(retry&&tries<2&&k>=0&&k<TF.length-1)return go(TF[k+1],tries+1)})};
-    go(tf,0).catch(function(){}).then(function(){run(i+1)})};
+      var k=TF.indexOf(tf);if(bn&&retry)return go(span<10*36e5?'15m':span<55*864e5?'1h':'4h',0,false);if(retry&&tries<2&&k>=0&&k<TF.length-1)return go(TF[k+1],tries+1)})};
+    go(tf,0,true).catch(function(){return go(tf,0,false)}).catch(function(){}).then(function(){run(i+1)})};
   run(0)}
 setTimeout(function(){autoEval(true)},9000);setInterval(function(){autoEval(false)},60000);
 var TECHRE=/\[\[tech:([^\]]*)\]\]/g,CF={who:'all',days:10,x:(function(){try{return localStorage.getItem('tj-cfx')==='1'}catch(e){return false}})(),all:false};
