@@ -20,12 +20,13 @@ const out = await page.evaluate(async () => {
   L.push('ΠΡΟΤΑΣΕΙΣ: ' + JSON.stringify(st.props || []));
   const lg = await db.collection('aplog').orderBy('date', 'desc').limit(4).get();
   lg.docs.forEach(d => { const x = d.data(); L.push('ΗΜΕΡΟΛΟΓΙΟ ' + d.id + ': σαρώσεις ' + x.scans + ' · άνοιξε ' + x.opened + ' · προτάσεις ' + x.props + ' · μπλοκ ' + x.blocked + ' · τελευταία ' + T(x.last)); (x.ev || []).slice(0, 25).forEach(e => L.push('   ' + T(e.t) + ' [' + e.k + '] ' + (e.c || '') + ' ' + e.m)) });
-  const dm = await db.collection('demo').orderBy('at', 'desc').limit(60).get();
+  const dm = await db.collection('demo').orderBy('at', 'desc').limit(300).get();
   const D = dm.docs.map(d => d.data()), auto = D.filter(t => t.src === 'auto' || t.auto);
+  { const by = {}; D.filter(t => t.src === 'auto').forEach(t => { const k = (t.auto && t.auto.profile && t.auto.profile.name || '?') + ' | ' + (t.auto && t.auto.tf || '?'); by[k] = (by[k] || 0) + 1 }); Object.keys(by).sort().forEach(k => L.push('TF ' + k + ': ' + by[k])) }
   L.push('DEMO: τελευταίες ' + D.length + ' · αυτόματες ' + auto.length + ' · ανοιχτές αυτόματες ' + auto.filter(t => t.status === 'open' || t.status === 'pending').length);
   auto.slice(0, 12).forEach(t => L.push('   ' + T(t.at) + ' ' + t.symbol + ' ' + t.dir + ' ' + (t.status || '') + ' ' + (t.auto && t.auto.strat || '') + ' ' + (t.auto && t.auto.profile && t.auto.profile.name || '')));
   const pf = await db.collection('approfiles').get().catch(() => null);
-  if (pf) pf.docs.forEach(d => { const x = d.data(); L.push('ΠΡΟΦΙΛ ' + d.id + ': ' + (x.name || '') + ' · run=' + x.run + ' · kind=' + x.kind + ' · on=' + (x.cfg && x.cfg.on)) });
+  if (pf) pf.docs.forEach(d => { const x = d.data(); const c2 = x.cfg || {}; L.push('ΠΡΟΦΙΛ ' + d.id + ': ' + (x.name || '') + ' · run=' + x.run + ' · kind=' + (x.kind || '') + ' · tf=' + c2.tf + ' · strats=' + c2.strats + (c2.pick ? ' (' + c2.pick + ')' : '') + ' · minEdge=' + c2.minEdge + ' · lab=' + !!c2.lab) });
   return L.join('\n');
 }).catch(e => 'σφάλμα: ' + e);
 console.log(out);
