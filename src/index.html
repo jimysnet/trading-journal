@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=307,VERS={sub:null,t:null};
+var APP_VER=308,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -7898,7 +7898,7 @@ function dmEval(t,bars){
   var mg=t.mgmt||'none',cs=s;/* διαχείριση εξόδου: break-even ή trailing, με τη στάθμη του προηγούμενου κεριού (συντηρητικά) */
   var expFill=t.src==='auto';/* στις αυτόματες η λήξη αφορά μόνο την εντολή με όριο που δεν γέμισε: αφού γεμίσει, η θέση μένει μέχρι stop ή στόχο */
   for(var i=i0;i<bars.length;i++){var b=bars[i];if(b.t>=exp&&(!expFill||!filled))break;
-    if(!filled){if(b.l<=e&&b.h>=e){filled=true;fillT=b.t}else continue}
+    if(!filled){var pen=t.src==='auto'?e*0.0002:0;/* εντολή ορίου: γεμίζει όταν η τιμή περάσει την είσοδο (όχι απλώς να την αγγίξει) */if(d>0?(b.l<=e-pen&&b.h>=e-pen):(b.h>=e+pen&&b.l<=e+pen)){filled=true;fillT=b.t}else continue}
     var fav=(d>0?b.h-e:e-b.l)/risk,adv=(d>0?e-b.l:b.h-e)/risk,hitS=d>0?b.l<=cs:b.h>=cs,hitT=isFinite(tg)&&(d>0?b.h>=tg:b.l<=tg);
     if(hitS){var rs=(cs-e)*d/risk;return {conv:conv,status:rs>0?'win':'loss',mg:cs!==s?mg:null,exit:cs,exitAt:b.t,r:rs,mfe:Math.max(mfe,Math.max(0,fav)),mae:Math.max(mae,Math.min(1,Math.max(0,adv))),amb:hitT,filledAt:fillT,moved:cs!==s}}
     if(hitT)return {conv:conv,status:'win',exit:tg,exitAt:b.t,r:(tg-e)*d/risk,mfe:Math.max(mfe,fav),mae:Math.max(mae,Math.max(0,adv)),filledAt:fillT};
@@ -7931,7 +7931,7 @@ function dmCost(t,px){var e=n(t.entry),q=n(t.qty);if(!(q>0))q=n(t.notional)/e;px
   var tg=n(t.target),st=t.curStop!=null?n(t.curStop):n(t.stop),inR=t.ord==='limit'?F.mk:F.tk+FEE_SLIP_IN,
       outR=isFinite(tg)&&Math.abs(px-tg)<=tg*1e-6?F.mk:(isFinite(st)&&Math.abs(px-st)<=st*1e-6?F.tk+FEE_SLIP_SL:F.tk);
   return q*(e*inR+px*outR)}
-function dmApplyCost(t,d,px,rg){var risk=n(t.riskAmt),c=dmCost(t,px),fr=risk>0?c/risk:0;d.rGross=dmR2(rg);d.fees=dmR2(c);d.feeR=dmR2(fr);d.net=true;d.r=dmR2(rg-fr);d.pnl=dmR2((rg-fr)*risk);if(n(t.margin)>0)d.roe=dmR2(d.pnl/n(t.margin)*100);return d}
+function dmApplyCost(t,d,px,rg){var risk=n(t.riskAmt),fu=dmFunding(t,d.exitAt),c=dmCost(t,px)+fu;if(fu)d.fund=dmR2(fu);var fr=risk>0?c/risk:0;d.rGross=dmR2(rg);d.fees=dmR2(c);d.feeR=dmR2(fr);d.net=true;d.r=dmR2(rg-fr);d.pnl=dmR2((rg-fr)*risk);if(n(t.margin)>0)d.roe=dmR2(d.pnl/n(t.margin)*100);return d}
 function cfAutoOutcome(id,st){var c=(S.confirms||[]).find(function(x){return x.id===id});if(!c||c.by!==S.uid||c.outcome)return;var d=dmClean(c);d.outcome=st;d.outAt=Date.now();d.auto=true;c.outcome=st;put('confirms',id,d).catch(function(){})}
 function dmSaveEval(t,x,E){if(t.ttl||!(S.demo||[]).some(function(z){return z.id===t.id}))return Promise.resolve();var d=dmClean(t);d.checkedAt=Date.now();d.evalSrc=(DMEX[E.ex]||E.ex)+(E.ex==='tv'?'':' '+E.tf);d.mfe=dmR2(x.mfe);d.mae=dmR2(Math.min(1,x.mae));
   if(x.conv)d.ord='limit';if(x.filledAt)d.filledAt=x.filledAt;else delete d.filledAt;d.ordChecked=true;
@@ -8779,6 +8779,13 @@ function rkReconcile(){AP.rkHold=false;if(!S.db||!leaseOk())return Promise.resol
     return {first:first,miss:miss,gone:G.gone.length,bad:bad}})})}).then(function(r){
       if(r.bad){AP.rkHold=true;apAdd('','block','🔐 Ασυμφωνία ledger: '+r.miss.length+' ανοιχτή/ές θέση/εις δεν ήταν καταγεγραμμένη/ες ('+r.miss.map(function(t){return dmSym(t.symbol)}).join(', ')+'). Διορθώθηκε· νέα ανοίγματα σταματούν για αυτή τη σάρωση.')}
       else if(r.first)apAdd('','scan','🔐 Δημιουργήθηκε το κεντρικό ledger ρίσκου με '+r.miss.length+' ανοιχτές θέσεις.')}).catch(function(e){AP.rkHold=true;try{apAdd('','err','🔐 Δεν μπόρεσα να ελέγξω το ledger ρίσκου ('+((e&&(e.code||e.message))||'σφάλμα')+'). Δεν ανοίγω τίποτα σε αυτή τη σάρωση.')}catch(x){}})}
+/* 5) Ρεαλιστική εκτέλεση: βιβλίο εντολών Binance spot τη στιγμή της εισόδου. Η market εντολή «τρώει» τα επίπεδα του βιβλίου ως να γεμίσει όλη η ποσότητα. */
+function bnBook(coin){var s=dmSym(coin).replace(/(USDT|USDC|USD)$/,'')+'USDT',qs='symbol='+s+'&limit=100';return fetch('https://data-api.binance.vision/api/v3/depth?'+qs).then(function(r){if(!r.ok)throw {status:r.status};return r.json()}).catch(function(e){if(e&&e.status===400)throw e;return fetch('/api/flow?src=bn&h=s&p='+encodeURIComponent('/api/v3/depth')+'&q='+encodeURIComponent(qs)).then(function(r){if(!r.ok)throw {status:r.status};return r.json()})}).then(function(b){return {bids:(b.bids||[]).map(function(x){return [+x[0],+x[1]]}),asks:(b.asks||[]).map(function(x){return [+x[0],+x[1]]}),at:Date.now()}})}
+function bookFill(bk,d,qty){var L=d>0?bk.asks:bk.bids;if(!L||!L.length||!bk.bids.length||!bk.asks.length)return null;var bb=bk.bids[0][0],ba=bk.asks[0][0],mid=(bb+ba)/2,left=qty,cost=0,lv=0;
+  for(var i=0;i<L.length&&left>1e-12;i++){var q=Math.min(left,L[i][1]);cost+=q*L[i][0];left-=q;lv=i+1}
+  var filled=qty-left,px=filled>0?cost/filled:NaN;return {px:+px.toPrecision(10),mid:+mid.toPrecision(10),spread:+((ba-bb)/mid*100).toFixed(4),slip:+(((px-mid)*d)/mid*100).toFixed(4),lv:lv,full:left<=1e-12,fillPct:+(filled/qty*100).toFixed(1)}}
+/* funding: οι θέσεις με μόχλευση πληρώνουν/εισπράττουν funding κάθε 8 ώρες (00:00, 08:00, 16:00 UTC) με το ποσοστό που ίσχυε στην είσοδο */
+function dmFunding(t,exitAt){var fr=n(t.fundRate);if(!isFinite(fr)||!(n(t.notional)>0))return 0;var a=t.filledAt||t.at||0,b=exitAt||Date.now(),k=0,h=8*36e5;for(var x=Math.ceil(a/h)*h;x<=b;x+=h)k++;return n(t.notional)*fr/100*k*(t.dir==='short'?-1:1)}
 /* 4) Ενιαία πηγή τιμών: Binance spot (ίδια με το ζωντανό PnL). Κεριά 1 λεπτού με τοπική μνήμη που συμπληρώνει μόνο τα νέα. */
 var BNK={};
 function bnSpot(qs){var u='https://data-api.binance.vision/api/v3/klines?'+qs;return fetch(u).then(function(r){if(!r.ok)throw {status:r.status};return r.json()}).catch(function(e){if(e&&e.status===400)throw e;return fetch('/api/flow?src=bn&h=s&p='+encodeURIComponent('/api/v3/klines')+'&q='+encodeURIComponent(qs)).then(function(r){if(!r.ok)throw {status:r.status};return r.json()})})}
@@ -8787,7 +8794,7 @@ function bnBars(sym,iv,from){var s=dmSym(sym).replace(/(USDT|USDC|USD)$/,'')+'US
   var page=function(){return bnSpot('symbol='+s+'&interval='+iv+'&startTime='+t+'&limit=1000').then(function(a){a.forEach(function(x){B.push({t:+x[0],o:+x[1],h:+x[2],l:+x[3],c:+x[4],v:+x[5]})});pages++;if(a.length===1000&&pages<8){t=+a[a.length-1][0]+ms;return page()}})};
   return page().then(function(){if(B.length>9000)B=B.slice(-9000);BNK[k]={bars:B,at:Date.now()};return {bars:B,src:'Binance spot '+iv,tf:iv}})}
 function bnEvalBars(sym,first,span){return bnBars(sym,span<=4*864e5?'1m':'15m',first-36e5)}
-window.__qx={qtv:qtVerdict,qtw:function(){QT.at=0;return qtWatch()},flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,commit:apCommit,lease:function(){return LEASE},leaseTick:leaseTick,recon:rkReconcile,sig:apSigId,bn:bnBars,pol:rkPol,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
+window.__qx={book:bnBook,fill:bookFill,fund:dmFunding,qtv:qtVerdict,qtw:function(){QT.at=0;return qtWatch()},flow:qxFlow,mtf:qxMtf,ev:qxEval,lv:qxLevels,ws:qxWs,live:qxLive,smc:qxSmc,kill:rkKill,block:rkBlock,pf:rkPf,commit:apCommit,lease:function(){return LEASE},leaseTick:leaseTick,recon:rkReconcile,sig:apSigId,bn:bnBars,pol:rkPol,bt:function(){return {BT:BT,FIT:FIT}},demo:function(){return S.demo}};
 /* 🎯 βαθμός ↔ πραγματικό αποτέλεσμα */
 function calRender(){var el=$('#calBody');if(!el)return;var L=(S.demo||[]).filter(function(t){return t.src==='auto'&&t.auto&&isFinite(+t.auto.score)&&dmCounts(t)});
   var B=[[0,40,'0–39'],[40,55,'40–54'],[55,70,'55–69'],[70,85,'70–84'],[85,101,'85–100']].map(function(x){var g=L.filter(function(t){return t.auto.score>=x[0]&&t.auto.score<x[1]}),w=g.filter(function(t){return n(t.r)>0}).length,s=sum(g.map(function(t){return n(t.r)}));return {lb:x[2],n:g.length,wr:g.length?w/g.length:NaN,avg:g.length?s/g.length:NaN}});
@@ -8939,7 +8946,7 @@ function apPreDone(it,ok){try{if(PRE.sid&&AP.state&&AP.state.pre&&AP.state.pre.i
 window.__pre={check:function(it){return apPreCheck(it)},open:function(it,m,d){return apOpen(it,m,d)},entry:function(it,doc){return apPreEntry(it,doc)},done:function(it,ok){apPreDone(it,ok)}};
 function preHide(){if(PRE.el){PRE.el.classList.remove('on')}}
 function apOpenLive(it,manual){/* τιμή αγοράς τώρα (κερί 1 λεπτού) πριν ανοίξει: χωρίς αυτήν μπαίνει μόνο εντολή με όριο */
-  return qx5m(it).catch(function(){}).then(function(){return mktPrice(it.coin+'USDT')}).then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){return apOpen(it,manual)})}
+  return qx5m(it).catch(function(){}).then(function(){return bnBook(it.coin).then(function(bk){it.book=bk}).catch(function(){it.book=null})}).then(function(){return mktPrice(it.coin+'USDT')}).then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){return apOpen(it,manual)})}
 function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:apMark;var c=apC(),pid=AP.rc&&AP.rc.id,coin=it.coin,top=it.x,g=it.g,b=it.b,r=it.r,tf=it.tf,d=top.d,i=b.length-1,ms=AP_TFMS[tf]||36e5,sk=(pid&&AP.rc.multi?pid+'|':'')+coin+'|'+top.id+'|'+d+'|'+tf+'|'+b[i-top.sig.ago].t;
   if(apSeen()[sk]){A(coin,'skip','Το σήμα «'+top.s.t+'» ('+tf+') το έχω ήδη παίξει.');return false}
   var e=g.c,stp=top.sig.stop,risk=Math.abs(e-stp),X=top.best.X,lp=isFinite(it.live)?it.live:NaN,ord='market';if(!isFinite(lp)){ord='limit'}
@@ -8953,7 +8960,11 @@ function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:a
   var ext=d>0?g.hi:g.lo,room=(ext-e)*d/risk;if(!STD&&FIT[top.id]==='range'&&room>0&&room<X){if(room>=1.5)X=Math.floor(room*2)/2;else{A(coin,'skip','«'+top.s.t+'»: μόνο '+fmt(room,1)+'R ως το ακραίο σημείο των 50 κεριών. Λίγος χώρος.');M(sk);return false}}
   var tg=STD?e*(1+d*STD_TP/100):e+d*X*risk,lev=STD?STD_LEV:Math.min(50,Math.max(1,+c.lev||10)),bal=pid?apfBal(pid):dmBal(PROF),used=sum((pid?apMineR():dmOf(PROF)).filter(function(t){return !dmClosed(t)}).map(function(t){return n(t.margin)||n(t.notional)||0}));
   var margin=STD?STD_M:c.size==='risk'?(bal*Math.min(5,Math.max(0.1,+c.riskPct||1))/100/risk*e/lev):(+c.margin||1000);margin=Math.min(margin,bal-used);if(!(margin>=10)){A(coin,'lim','Δεν υπάρχει ελεύθερο κεφάλαιο στον λογαριασμό'+(pid?' του προφίλ':'')+'.');return false}
-  var notional=margin*lev,qty=notional/e,liq=lev>1?e*(d>0?1-1/lev+0.005:1+1/lev-0.005):NaN;
+  var notional=margin*lev,qty=notional/e,exe=null;
+  if(ord==='market'&&it.book&&Date.now()-it.book.at<5*60000){exe=bookFill(it.book,d,qty);if(exe){if(!exe.full){A(coin,'skip','«'+top.s.t+'»: το βιβλίο δεν έχει αρκετή ρευστότητα για '+dmMoney(notional,'')+' (γεμίζει μόνο '+exe.fillPct+'%). Δεν ανοίγω.');M(sk);return false}
+    if(exe.slip>0.4){A(coin,'skip','«'+top.s.t+'»: η είσοδος θα είχε slippage '+fmt(exe.slip,2)+'% (spread '+fmt(exe.spread,3)+'%). Χαμηλή ρευστότητα, δεν ανοίγω.');M(sk);return false}
+    e=exe.px;if(STD){stp=e*(1-d*STD_SL/100)}risk=Math.abs(e-stp);if(!(risk>0))return false;qty=notional/e}}
+  var tg=STD?e*(1+d*STD_TP/100):e+d*X*risk,liq=lev>1?e*(d>0?1-1/lev+0.005:1+1/lev-0.005):NaN;
   if(isFinite(liq)&&(stp-liq)*d<=0){A(coin,'skip','Με '+lev+'x η ρευστοποίηση ('+fmtPx(liq)+') έρχεται πριν το stop.');M(sk);return false}
   var now=Date.now(),dt=new Date(now),riskAmt=qty*risk,mk=regimeText(g)+' · ADX '+fmt(g.adx,0);
   var rkb='';try{rkb=rkBlock(pid||'p_start',riskAmt,!!c.lab)}catch(er){}if(rkb){A(coin,'block','Σήμα «'+top.s.t+'» '+(d>0?'Long':'Short')+' ('+tf+'): '+rkb);return false}
@@ -8963,6 +8974,7 @@ function apOpen(it,manual,dry){var A=dry?function(){}:apAdd,M=dry?function(){}:a
     riskPct:dmR2(riskAmt/bal*100),riskAmt:dmR2(riskAmt),qty:qty,notional:dmR2(notional),lev:lev,margin:dmR2(margin),liq:isFinite(liq)?liq:null,exp:ord==='limit'?Math.max(2,Math.round(3*ms/36e5)):null,
     src:'auto',mgmt:STD?'none':(c.mgmt||'none'),trA:+c.trA||1,trD:+c.trD||1,cfId:null,tech:top.s.mid||'',title:top.s.t,stratId:null,notes:('🤖 '+why).slice(0,500),status:'open',createdAt:now,
     auto:{profile:AP.rc&&AP.rc.id?{id:AP.rc.id,name:AP.rc.name}:apProfTag(),wr:isFinite(top.best.st.winRate)?+top.best.st.winRate.toFixed(3):null,sess:sessOf(now),tf:tf,strat:top.id,X:X,n:top.best.st.n,avgR:+(+top.best.st.avgR).toFixed(3),testR:+(+top.test.avgR).toFixed(3),testN:top.test.n,regime:g.kind,sigT:b[i-top.sig.ago].t,grade:top.grade,manual:!!manual,std:STD?1:0,score:qq?qq.score:null,qx:qq?{mtf:qq.mtf,of:qq.of,smc:qq.smc,pro:qq.pro,con:qq.con}:null,tps:LV.tps,inv:LV.inv}};
+  if(exe)doc.exe=exe;var fr0=it.r&&it.r.of&&it.r.of.fund;if(isFinite(fr0))doc.fundRate=+fr0;
   if(dry)return doc;
   var sigId=apSigId(pid||apfTagId({auto:doc.auto}),coin,top.id,d,tf,b[i-top.sig.ago].t),mo=+c.maxOpen||0;AP.cycOpen=AP.cycOpen||{};AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')]={at:Date.now(),name:AP.rc&&AP.rc.name||'',coin:coin,strat:top.id,dir:d>0?'long':'short'};
   return apCommit(doc,sigId,pid||apfTagId({auto:doc.auto}),mo).then(function(res){apRender();if(!res.ok){if(res.code==='dup')apMark(sk);else delete AP.cycOpen[coin+'|'+(AP.rc&&AP.rc.id||'p_start')];A(coin,res.code==='risk'||res.code==='dup'?'block':'err','Σήμα «'+top.s.t+'» '+(d>0?'Long':'Short')+' ('+tf+'): δεν άνοιξε · '+res.why+'.');return false}apMark(sk);
