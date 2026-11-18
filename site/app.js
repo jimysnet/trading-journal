@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=295,VERS={sub:null,t:null};
+var APP_VER=296,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4289,7 +4289,7 @@ function apStSub(){if(!S.db||AP.stSub)return;try{AP.stSub=S.db.collection('apsta
     /* τα patches που έγιναν πριν φτάσει η κοινή κατάσταση δεν σβήνουν ό,τι υπάρχει: μπαίνουν από πάνω της */
     var pend=AP.stPend||null;AP.stPend=null;AP.state=pend?Object.assign({},d,pend):d;AP.stReady=true;
     if(d.cfg){var co=d.coins||d.cfg.coins;AP.cfg=Object.assign({},AP_DEF,d.cfg);if(co)AP.cfg.coins=coinFix(co);if(AP.chgBase==null)AP.cfgSeen=JSON.stringify(AP.cfg)}else if(AP.cfg&&qCanSave()&&!AP.cfgPushed){AP.cfgPushed=1;AP.state.cfg=AP.cfg;pend=pend||{}}
-    if(pend&&qCanSave())apStWrite({});if(d.last&&d.last>AP.last)AP.last=d.last;apRender();try{renderPf()}catch(e){}},function(){})}catch(e){}}
+    if(pend&&qCanSave())apStWrite({});if(d.last&&d.last>AP.last)AP.last=d.last;try{preWatch(d.pre)}catch(e){}apRender();try{renderPf()}catch(e){}},function(){})}catch(e){}}
 function apStWrite(patch){if(S.db&&!AP.stReady){AP.stPend=Object.assign({},AP.stPend||{},patch);return}AP.state=Object.assign({},AP.state||{},patch);if(!S.db||!qCanSave())return;var d=JSON.parse(JSON.stringify(AP.state));clearTimeout(AP.stT);AP.stT=setTimeout(function(){S.db.collection('apstate').doc('main').set(d).catch(function(){})},400)}
 function apLoad(){var c={};try{c=JSON.parse(localStorage.getItem(apKey(''))||'{}')||{}}catch(e){}AP.cfg=Object.assign({},AP_DEF,c);AP.cfg.coins=coinFix(AP.cfg.coins);try{AP.log=JSON.parse(localStorage.getItem(apKey('log'))||'[]')||[]}catch(e){AP.log=[]}try{AP.last=+localStorage.getItem(apKey('last'))||0}catch(e){}}
 function apSave(){try{apChgCfg()}catch(e){}try{localStorage.setItem(apKey(''),JSON.stringify(AP.cfg))}catch(e){}apStWrite({cfg:AP.cfg,coins:AP.cfg.coins})}
@@ -4472,6 +4472,25 @@ function prePlace(){var el=PRE.el;if(!el)return;var a=preAnchor(),w=Math.min(360
   else{el.style.left=(innerWidth-w-12)+'px';el.style.bottom='12px';el.style.top=''}
   var r2=el.getBoundingClientRect(),w2=el.querySelector('.pre-why');if(w2&&r2.top<8)w2.style.maxHeight=Math.max(70,w2.clientHeight+r2.top-8)+'px'}
 function preBeep(f,d){try{var A=window.AudioContext||window.webkitAudioContext;if(!A)return;var c=FUN.ac||(FUN.ac=new A());if(c.state==='suspended')c.resume();var o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f||880;g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.18,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+(d||.18));o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+(d||.18)+.02)}catch(e){}}
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('[data-tab="demo"]')){try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission()}catch(x){}}});
+/* 👀 Το βλέπουν όλοι: όταν ο Καθηγητής (ή ο φύλακας στο GitHub) ετοιμάζεται να μπει, κάθε ανοιχτή σελίδα δείχνει το ίδιο συννεφάκι */
+var PREW={el:null,id:'',t:null,seen:{}};
+function preWatch(p){
+  if(PRE.res)return;/* αυτή η σελίδα κάνει ήδη τη μέτρηση */
+  var now=Date.now();if(!p||!p.id||(p.done&&now-(p.doneAt||0)>8000)||(!p.done&&p.ends<now-5000)){if(PREW.el)PREW.el.classList.remove('on');clearInterval(PREW.t);return}
+  var el=PREW.el;if(!el){el=PREW.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');el.style.right='12px';el.style.bottom='12px';el.style.left='auto';el.style.width='min(360px,calc(100vw - 24px))';document.body.appendChild(el);
+    el.addEventListener('click',function(e){var b=e.target.closest('[data-prew]');if(!b)return;if(b.getAttribute('data-prew')==='no'){apStWrite({preCancel:PREW.id});toast('Στάλθηκε ακύρωση στον Καθηγητή.');el.classList.remove('on')}else el.classList.remove('on')})}
+  PREW.id=p.id;var d=p.d>0,first=!PREW.seen[p.id];PREW.seen[p.id]=1;el.className='precloud on '+(d?'lg':'sh');
+  var lv=function(){return isFinite(p.e)?'<div class="pre-lv"><div><span>Είσοδος</span><b class="num">'+dmPx(p.e)+'</b><small>'+(p.ord==='market'?'market':'όριο')+'</small></div><div class="sl"><span>Stop loss</span><b class="num">'+dmPx(p.sl)+'</b></div><div class="tp"><span>Take profit</span><b class="num">'+dmPx(p.tp)+'</b><small>'+(isFinite(p.X)?fmt(p.X,p.X%1?1:0)+'R':'')+'</small></div>'+(isFinite(p.margin)?'<div><span>Κεφάλαιο</span><b class="num">'+fmt(p.margin,0)+'</b><small>x'+(p.lev||'')+(isFinite(p.riskAmt)?' · ρίσκο '+fmt(p.riskAmt,0):'')+'</small></div>':'')+'</div>':''};
+  var head=function(txt){return '<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+(p.bot?' · 🤖 φύλακας':'')+'</b><small>'+txt+'</small></div></div>'};
+  var coin='<div class="pre-i"><div class="pre-c">'+symIcon(p.coin,18)+'<b>'+esc(p.coin)+'</b> <span class="'+(d?'pos':'neg')+'">'+(d?'▲ Long':'▼ Short')+'</span></div><div class="pre-s">'+esc(p.name||'')+' · '+esc(p.tf||'')+(p.pf?' · '+esc(p.pf):'')+'</div></div>';
+  clearInterval(PREW.t);
+  if(p.done){el.innerHTML=head(p.done>0?'Μπήκα!':'Τελικά δεν μπήκα')+'<div class="pre-done">'+(p.done>0?'✅ '+esc(p.coin)+' '+(d?'Long':'Short')+' · '+esc(p.name||'')+' · δες τις ανοιχτές AI συναλλαγές.':'Η τιμή ή οι κανόνες άλλαξαν τελευταία στιγμή, ή ακυρώθηκε.')+'</div>';if(p.done>0&&first){preBeep(784,.15);setTimeout(function(){preBeep(1175,.3)},170)}PREW.t=setTimeout(function(){el.classList.remove('on')},8000);return}
+  var draw=function(){var left=Math.max(0,Math.ceil((p.ends-Date.now())/1000));el.innerHTML=head('Ετοιμάζομαι να μπω σε αυτή τη θέση · σε '+left+'″')+'<div class="pre-b">'+coin+'</div>'+lv()+'<div class="pre-a">'+(qCanSave()?'<button type="button" class="btn small ghost" data-prew="no">✕ Ακύρωσε</button>':'')+'<button type="button" class="btn small ghost" data-prew="hide">Απόκρυψη</button></div>';return left};
+  draw();PREW.t=setInterval(function(){if(draw()<=0)clearInterval(PREW.t)},1000);
+  if(first){preBeep(660,.25);setTimeout(function(){preBeep(880,.25)},260);try{profMood('cheer')}catch(e){}
+    try{if(window.Notification&&Notification.permission==='granted'&&document.hidden)new Notification('🧑‍🏫 Ο Καθηγητής μπαίνει σε '+Math.max(0,Math.round((p.ends-Date.now())/1000))+'″',{body:p.coin+' '+(d?'Long':'Short')+' · '+(p.name||'')+(isFinite(p.e)?' · είσοδος '+dmPx(p.e)+' · SL '+dmPx(p.sl)+' · TP '+dmPx(p.tp):''),tag:p.id})}catch(e){}}
+}
 /* έλεγχος «στεγνά» (χωρίς να ανοίξει τίποτα): θα άνοιγε τώρα; Αν όχι, δεν δείχνουμε αντίστροφη μέτρηση */
 function apPreCheck(it){if(!preSecs())return Promise.resolve(null);return mktPrice(it.coin+'USDT').then(function(q){if(q&&!q.old&&isFinite(q.px))it.live=q.px}).catch(function(){}).then(function(){var d=null;try{d=apOpen(it,false,true)}catch(e){d=null}return d||null})}
 function prePlan(it,px){if(PRE.doc&&PRE.it===it){var D=PRE.doc,e0=+D.entry,ri=Math.abs(e0-D.stop);return {e:e0,sl:+D.stop,tp:+D.target,X:ri>0?Math.abs(D.target-e0)/ri:+it.x.best.X,ord:D.ord,lev:D.lev,margin:+D.margin,riskAmt:+D.riskAmt,slp:ri/e0*100,tpp:Math.abs(D.target-e0)/e0*100,c:apC()||AP_DEF}}try{var c=apC()||AP_DEF,top=it.x,g=it.g||{},d=top.d,e=+g.c,stp=+top.sig.stop,X=+top.best.X,ord='market';if(!isFinite(e)||!isFinite(stp))return null;
@@ -4501,11 +4520,13 @@ function apPreEntry(it,doc){var tot=preSecs();if(!tot)return Promise.resolve(tru
       el.addEventListener('change',function(e){if(e.target.matches('[data-presec]')){try{localStorage.setItem('tj-presec',e.target.value)}catch(_){}toast(+e.target.value?'Αντίστροφη μέτρηση '+e.target.value+'″ πριν από κάθε είσοδο.':'Χωρίς αντίστροφη μέτρηση: μπαίνει αμέσως.')}});
       addEventListener('resize',prePlace)}
     PRE.it=it;PRE.res=res;var end=Date.now()+tot*1000,px=NaN;el.className='precloud on '+(it.x.d>0?'lg':'sh');
+    /* κοινή ανακοίνωση: όλοι όσοι έχουν τη σελίδα ανοιχτή βλέπουν το ίδιο συννεφάκι (και μπορούν να ακυρώσουν) */
+    try{var P0=prePlan(it,NaN)||{},pid0='pre_'+Date.now()+'_'+it.coin;PRE.sid=pid0;apStWrite({pre:{id:pid0,coin:it.coin,d:it.x.d,name:it.x.s.t,tf:it.tf,pf:AP.rc&&AP.rc.name||'',e:P0.e,sl:P0.sl,tp:P0.tp,X:P0.X,ord:P0.ord||'',lev:P0.lev,margin:P0.margin,riskAmt:P0.riskAmt,ends:end,at:Date.now(),bot:!!window.__TJ_BOT}})}catch(e){}
     PRE.more=false;var draw=function(){var left=Math.max(0,Math.ceil((end-Date.now())/1000));var sc=el.querySelector('.pre-why');var st=sc?sc.scrollTop:0;el.innerHTML=preHtml(it,left,tot,px);var sc2=el.querySelector('.pre-why');if(sc2)sc2.scrollTop=st;prePlace();return left};PRE.redraw=draw;
     var pb0=$('#profBubble');if(pb0)pb0.hidden=true;draw();preBeep(660,.25);setTimeout(function(){preBeep(880,.25)},260);try{profMood('cheer')}catch(e){}
     mktPrice(it.coin+'USDT').then(function(q){if(q&&isFinite(q.px)){px=q.px;draw()}}).catch(function(){});
-    clearInterval(PRE.t);PRE.t=setInterval(function(){var l=draw();if(l<=3&&l>0)preBeep(1000,.12);if(l<=0){clearInterval(PRE.t);var r0=PRE.res;PRE.res=null;if(r0)r0(true)}},1000)})}
-function apPreDone(it,ok){var el=PRE.el;if(!el||!el.classList.contains('on')||PRE.it!==it)return;var d=it.x.d>0;
+    clearInterval(PRE.t);PRE.t=setInterval(function(){var l=draw();if(l<=3&&l>0)preBeep(1000,.12);var cx=AP.state&&AP.state.preCancel;if(cx&&cx===PRE.sid&&PRE.res){clearInterval(PRE.t);var rc=PRE.res;PRE.res=null;rc(false);preHide();return}if(l<=0){clearInterval(PRE.t);var r0=PRE.res;PRE.res=null;if(r0)r0(true)}},1000)})}
+function apPreDone(it,ok){try{if(PRE.sid&&AP.state&&AP.state.pre&&AP.state.pre.id===PRE.sid)apStWrite({pre:Object.assign({},AP.state.pre,{done:ok?1:-1,doneAt:Date.now()})})}catch(e){}var el=PRE.el;if(!el||!el.classList.contains('on')||PRE.it!==it)return;var d=it.x.d>0;
   el.innerHTML='<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+'</b><small>'+(ok?esc(pstG('Μπήκα!')):'Τελικά δεν μπήκα')+'</small></div></div><div class="pre-done">'+(ok?'✅ '+esc(it.coin)+' '+(d?'Long':'Short')+' · '+esc(it.x.s.t)+' · δες τις ανοιχτές AI συναλλαγές.':'Η τιμή ή οι κανόνες άλλαξαν τελευταία στιγμή. Ο λόγος είναι στο ημερολόγιο του Καθηγητή.')+'</div>';
   if(ok){preBeep(784,.15);setTimeout(function(){preBeep(1175,.3)},170)}prePlace();clearTimeout(PRE.ht);PRE.ht=setTimeout(preHide,ok?7000:6000)}
 window.__pre={check:function(it){return apPreCheck(it)},open:function(it,m,d){return apOpen(it,m,d)},entry:function(it,doc){return apPreEntry(it,doc)},done:function(it,ok){apPreDone(it,ok)}};

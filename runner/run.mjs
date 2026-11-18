@@ -16,7 +16,7 @@ const ts = () => new Date().toISOString().slice(11, 19);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-let page = null, loadedAt = 0, errors = 0;
+let page = null, loadedAt = 0, errors = 0, lastLog = Date.now();
 
 async function open() {
   if (page) { try { await page.context().close() } catch (e) { } }
@@ -52,6 +52,11 @@ while (Date.now() < end) {
   }
   const m = Math.round((Date.now() - t0) / 60000);
   if (m % 10 === 0) console.log(ts(), 'κατάσταση', JSON.stringify(await status()));
+  // ό,τι γράφει ο Αυτόματος στο ημερολόγιό του (άνοιγμα, μπλοκ, προτάσεις, σαρώσεις), για να φαίνεται και εδώ
+  try {
+    const L = await page.evaluate(since => ((window.__AP && window.__AP.log) || []).filter(x => x.t > since).map(x => [x.t, x.k, x.c || '', String(x.m || '').slice(0, 220)]), lastLog);
+    L.reverse().forEach(x => { lastLog = Math.max(lastLog, x[0]); console.log(ts(), 'αυτόματος', '[' + x[1] + ']', x[2], x[3]) });
+  } catch (e) { }
 }
 console.log(ts(), 'τέλος βάρδιας');
 await browser.close();
