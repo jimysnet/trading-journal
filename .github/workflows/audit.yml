@@ -1,0 +1,28 @@
+# 🔎 Βήμα 0: έλεγχος ακεραιότητας (μόνο ανάγνωση) — τρέχει με το χέρι
+name: audit
+on: workflow_dispatch
+permissions:
+  contents: read
+  actions: read
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: runner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Εγκατάσταση
+        working-directory: runner
+        run: npm install --no-audit --no-fund && npx playwright install --with-deps chromium
+      - name: Έλεγχος
+        working-directory: runner
+        env:
+          TJ_URL: ${{ secrets.TJ_URL }}
+          TJ_BOT_EMAIL: ${{ secrets.TJ_BOT_EMAIL }}
+          TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+        run: node audit.mjs
