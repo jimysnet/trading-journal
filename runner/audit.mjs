@@ -85,7 +85,9 @@ const rep = await page.evaluate(async () => {
   /* 4. ελλιπή δεδομένα */
   L.push('## 4. ΕΛΛΙΠΗ ΔΕΔΟΜΕΝΑ');
   const miss = { 'κλειστή χωρίς exitAt': t => closed(t) && !t.nofill && !t.exitAt, 'κλειστή χωρίς R': t => closed(t) && !t.nofill && !isFinite(+t.r), 'κλειστή χωρίς τιμή εξόδου': t => closed(t) && !t.nofill && !t.cancelled && !isFinite(+t.exit), 'χωρίς είσοδο/stop/στόχο': t => !(+t.entry > 0 && +t.stop > 0 && +t.target > 0), 'χωρίς προφίλ': t => !(t.auto && t.auto.profile), 'ανοιχτή πάνω από 7 μέρες': t => !closed(t) && Date.now() - (t.at || 0) > 7 * 864e5, 'limit γεμάτη χωρίς filledAt (ανοιχτή)': t => !closed(t) && t.ord === 'limit' && t.checkedAt && t.curR != null && !t.filledAt, 'χωρίς πλαίσιο απόφασης (βαθμός)': t => !(t.auto && t.auto.score != null) };
-  Object.keys(miss).forEach(k => { const n = A.filter(miss[k]).length; L.push(`${k}: ${n}`) });
+  Object.keys(miss).forEach(k => { const f = A.filter(miss[k]); L.push(`${k}: ${f.length}` + (f.length && f.length <= 6 ? ' · ' + f.map(t => `${pid(t)} ${sym(t)} ${T(t.at)} ${t.status || ''} ${t.ord || ''}${t.ttl ? ' turtle' : ''}${t.src === 'auto' ? '' : ' ' + t.src}`).join(' | ') : '')) });
+  const big = A.filter(t => +t.riskPct > 3); L.push('ρίσκο > 3% του κεφαλαίου: ' + big.map(t => `${pid(t)} ${sym(t)} ${T(t.at)} ${(+t.riskPct).toFixed(2)}% (riskAmt ${(+t.riskAmt).toFixed(0)}, ${t.auto && t.auto.std ? 'μοτίβο' : 'προφίλ'})`).join(' | '));
+  L.push('evalSrc: ' + Object.entries(A.reduce((m, t) => { const k = t.evalSrc || '–'; m[k] = (m[k] || 0) + 1; return m }, {})).map(x => x[0] + ' ' + x[1]).join(' · '));
 
   /* 5. αποτέλεσμα με Binance spot έναντι του καταγεγραμμένου */
   L.push('## 5. SL/TP: BINANCE SPOT ΕΝΑΝΤΙ ΚΑΤΑΓΕΓΡΑΜΜΕΝΟΥ (Crypto.com)');
@@ -95,7 +97,7 @@ const rep = await page.evaluate(async () => {
   const res = { same: 0, diff: 0, none: 0, amb: 0, err: 0, long: 0, dt: [] }, dx = [];
   for (let i = 0; i < S.length; i += 5) {
     await Promise.all(S.slice(i, i + 5).map(async t => {
-      const f = t.filledAt || t.at, a = Math.ceil(f / 60000) * 60000, b = (t.exitAt || 0) + 120000, d = t.dir === 'short' ? -1 : 1, s = +t.stop, g = +t.target;
+      const f = t.filledAt || t.at, a = Math.ceil(f / 60000) * 60000, b = (t.exitAt || 0) + 65 * 60000, d = t.dir === 'short' ? -1 : 1, s = +t.stop, g = +t.target;
       if (b - a > 6000 * 60000) { res.long++; return }
       let bars; try { bars = await kl(sym(t).replace(/(USDT|USDC|USD)$/, '') + 'USDT', a, b) } catch (e) { res.err++; return }
       let hit = null, ht = 0, amb = false;
@@ -110,7 +112,7 @@ const rep = await page.evaluate(async () => {
   L.push(`ίδιο αποτέλεσμα: ${res.same} (${n5 ? Math.round(res.same / n5 * 100) : 0}%) · διαφορετικό: ${res.diff} (${n5 ? Math.round(res.diff / n5 * 100) : 0}%) · δεν άγγιξε τίποτα στο Binance ως την έξοδο: ${res.none} · stop+στόχος στο ίδιο λεπτό: ${res.amb} · πολύ μεγάλες: ${res.long} · σφάλματα: ${res.err}`);
   L.push(`διάμεση διαφορά χρόνου εξόδου (Binance − καταγεγραμμένο), όπου συμφωνούν: ${isFinite(md) ? md.toFixed(1) + '′' : '–'}`);
   dx.forEach(x => L.push('   ' + x));
-  L.push('(σύγκριση: Binance spot κεριά 1m από το πρώτο ολόκληρο λεπτό μετά το γέμισμα ως 2′ μετά την καταγεγραμμένη έξοδο· ίδιος κανόνας: αν πιάνονται και τα δύο στο ίδιο κερί, μετράει το stop)');
+  L.push('(σύγκριση: Binance spot κεριά 1m από το πρώτο ολόκληρο λεπτό μετά το γέμισμα ως 65′ μετά την καταγεγραμμένη έξοδο (ο αξιολογητής γράφει την αρχή του κεριού 15′/1h)· ίδιος κανόνας: αν πιάνονται και τα δύο στο ίδιο κερί, μετράει το stop)');
 
   /* 6. ποιος γράφει: εκτελέσεις από ποια καρτέλα/χρήστη */
   L.push('## 6. ΠΟΙΟΣ ΑΝΟΙΓΕΙ');
