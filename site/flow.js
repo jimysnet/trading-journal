@@ -757,7 +757,7 @@
       it(LX('Βιβλίο ±1%'), isFinite(imb) ? (imb >= 0 ? LX('αγοραστές +') : LX('πωλητές ')) + Math.abs(imb).toFixed(0) + '%' : '–', imb >= 0 ? 'pos' : 'neg') +
       it(T('Ταχύτητα', 'Speed'), (function () { var now = Math.floor(Date.now() / 1000), c = 0; M.tps.forEach(function (x) { if (x[0] > now - 10 && x[0] <= now) c += x[1] }); return (c / 10).toFixed(1) + T('/δευτ.', '/s') })()) +
       it('Big ≥', usd(bigTh()) + (CFG.big ? '' : LX(' (αυτ.)'))) +
-      (M.bhFrom ? it(T('Ιστορικό Big από', 'Big history since'), dm(M.bhFrom) + ' (' + fv(M.bhN) + ')') : '') +
+      (M.bhFrom ? it(T('Ιστορικό Big από', 'Big history since'), dm(M.bhFrom) + ' (' + fv(M.bhN) + (M.bhSrc ? ' · 🏠 ' + M.bhSrc : '') + ')') : '') +
       it(LX('Footprint από'), isFinite(M.fpFrom) ? dm(M.fpFrom) + ' ' + hm(M.fpFrom) : '–') +
       (M.err ? '<span class="neg">' + esc(M.err) + '</span>' : M.status ? '<span><small>' + esc(M.status) + '</small></span>' : '')
   }
@@ -916,7 +916,31 @@
      Όταν ανοίγεις το διάγραμμα, φορτώνονται μαζί με τα κεριά, για όσες μέρες καλύπτουν. */
   function fsdb() { try { return W.firebase && firebase.apps && firebase.apps.length ? firebase.firestore() : null } catch (e) { return null } }
   function dayKey(t) { var d = new Date(t); return d.getUTCFullYear() + ('0' + (d.getUTCMonth() + 1)).slice(-2) + ('0' + d.getUTCDate()).slice(-2) }
+  /* Pi στο σπίτι: αν έχει δηλώσει τη διεύθυνσή του (pi/main) τα τελευταία 45′, το ιστορικό Big trades έρχεται από εκεί */
+  var PIC = { at: 0, p: null };
+  function piCfg() {
+    var db = fsdb(); if (!db) return Promise.resolve(null);
+    if (PIC.p && Date.now() - PIC.at < 20 * 6e4) return PIC.p; PIC.at = Date.now();
+    PIC.p = db.collection('pi').doc('main').get().then(function (sn) { var d = sn.exists ? sn.data() : null; return d && d.url && Date.now() - (+d.at || 0) < 45 * 6e4 ? d : null }).catch(function () { return null });
+    return PIC.p
+  }
+  function piHist(m, pi) {
+    var u = W.firebase && firebase.auth && firebase.auth().currentUser; if (!u) return Promise.reject('auth');
+    var from = m.bars[0].t, to = m.piLo || Date.now() + 864e5; if (m.piLo && from >= m.piLo) return Promise.resolve(true);
+    var min = Math.round(Math.max(5000, bigTh() * 0.5));
+    return u.getIdToken().then(function (tok) { return fetch(pi.url.replace(/\/+$/, '') + '/bigtr?mk=' + m.venue + '&pair=' + m.pair + '&from=' + from + '&to=' + to + '&min=' + min, { headers: { authorization: 'Bearer ' + tok } }) })
+      .then(function (r) { if (!r.ok) throw r.status; return r.json() }).then(function (d) {
+        if (m !== M) return true; m.piLo = from; var seen = {}, n = 0, lo = Infinity; m.big.forEach(function (o) { seen[o.t + '|' + o.s] = 1 });
+        for (var i = 0; i < d.t.length; i++) { var key = d.t[i] + '|' + d.s[i]; if (seen[key]) continue; seen[key] = 1; var p = d.p[i], q = d.q[i]; m.big.push({ t: d.t[i], s: d.s[i], q: q, usd: p * q, p: p, pmin: p, pmax: p, n: 1, h: 1 }); n++; if (d.t[i] < lo) lo = d.t[i] }
+        m.bhSrc = 'Pi'; if (n) { m.big.sort(function (a, b) { return a.t - b.t }); if (m.big.length > 60000) m.big.splice(0, m.big.length - 60000); m.bhFrom = Math.min(lo, m.bhFrom || Infinity); m.bhN = (m.bhN || 0) + n; DIRTY = true; renderHead(); renderSide(true) }
+        return true
+      })
+  }
   function bigHist() {
+    var m0 = M; if (!m0 || !m0.bars.length) return;
+    piCfg().then(function (pi) { if (m0 !== M) return; if (!pi) return bigHistFb(); return piHist(m0, pi).catch(function (e) { try { console.warn('Pi', e) } catch (x) { } bigHistFb() }) })
+  }
+  function bigHistFb() {
     /* όλο το ιστορικό που έχει μαζέψει ο φύλακας, όσο πίσω καλύπτουν τα κεριά (ένα ερώτημα: διαβάζει μόνο τις μέρες που υπάρχουν) */
     var m = M, db = fsdb(); if (!db || !m.bars.length) return;
     var pre = (m.venue === 's' ? 'S_' : '') + m.pair + '_', fp = firebase.firestore.FieldPath.documentId(), lo;
@@ -932,7 +956,10 @@
   var COL = null;
   function collect(coins) {
     /* Futures (έγγραφα BTCUSDT_ημέρα) και Spot (έγγραφα S_BTCUSDT_ημέρα): μία σύνδεση για κάθε αγορά */
-    var db = fsdb(); if (!db || COL) return; COL = { b: {}, th: {}, g: {}, dirty: {}, ws: {}, try: { f: 0, s: 0 } };
+    var db = fsdb(); if (!db || COL) return;
+    if (!collect.go && !collect.wait) { collect.wait = 1; piCfg().then(function (pi) { collect.wait = 0; if (pi) { PIC.at = 0; console.log('[flow] συλλογή Big trades: την κάνει το Pi (' + pi.url + ')'); setTimeout(function () { collect(coins) }, 30 * 6e4) } else { collect.go = 1; collect(coins) } }); return }
+    if (!collect.go) return;
+    COL = { b: {}, th: {}, g: {}, dirty: {}, ws: {}, try: { f: 0, s: 0 } };
     var pairs = coins.map(function (c) { return String(c).toUpperCase().replace(/USDT$/, '') + 'USDT' });
     var pk = function (v, pr) { return (v === 's' ? 'S_' : '') + pr };
     var buf = function (key, pair, day) { var k = key + '_' + day, B = COL.b[k]; if (!B) { B = COL.b[k] = { key: key, pair: pair, day: day, t: [], p: [], q: [], s: [], loaded: false }; db.collection('bigtr').doc(k).get().then(function (sn) { var d = sn.exists ? sn.data() : null; if (d && d.t) { var have = {}; B.t.forEach(function (t, i) { have[t + '|' + B.s[i]] = 1 }); for (var i = 0; i < d.t.length; i++) if (!have[d.t[i] + '|' + d.s[i]]) { B.t.push(d.t[i]); B.p.push(d.p[i]); B.q.push(d.q[i]); B.s.push(d.s[i]) } } B.loaded = true }).catch(function () { B.loaded = true }) } return B };

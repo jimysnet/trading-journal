@@ -1,0 +1,28 @@
+# Trading Journal στο Pi: συλλέκτης + ιστορικό Big trades.
+#   cp .env.example .env   (συμπλήρωσε τα στοιχεία)
+#   docker compose up -d --build
+# Με Cloudflare Tunnel:  docker compose --profile tunnel up -d --build
+services:
+  tj-bigtr:
+    build: .
+    container_name: tj-bigtr
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - TZ=Europe/Athens
+    volumes:
+      - ${DATA_PATH:-./data}:/data
+    ports:
+      - "${HOST_PORT:-8787}:8787"
+    mem_limit: 300m
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: tj-tunnel
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    depends_on: [tj-bigtr]

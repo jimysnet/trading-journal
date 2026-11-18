@@ -5,7 +5,7 @@ if (!U) { console.log('Λείπει το TJ_URL'); process.exit(1) }
 const cfg = await (await fetch(U + '/api/config')).json();
 const pid = cfg.firebase.projectId, key = cfg.firebase.apiKey;
 const base = `https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/`;
-const COLS = ['trades', 'demo', 'chat', 'settings', 'strategies', 'members', 'requests', 'users', 'reviews', 'checkins', 'accounts', 'bigtr'];
+const COLS = ['trades', 'demo', 'chat', 'settings', 'strategies', 'members', 'requests', 'users', 'reviews', 'checkins', 'accounts', 'bigtr', 'pi'];
 let bad = 0;
 let shown = 0;
 const rd = async (c, tok) => { const r = await fetch(base + c + '?pageSize=1', { headers: tok ? { authorization: 'Bearer ' + tok } : {} }); if (r.status === 429 && !shown++) { const j = await r.json().catch(() => ({})); console.log('ℹ️ 429:', (j.error && j.error.message || '').slice(0, 200)) } return r.status };
