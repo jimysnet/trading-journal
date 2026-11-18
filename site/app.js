@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=298,VERS={sub:null,t:null};
+var APP_VER=299,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4394,12 +4394,10 @@ function repRender(){var el=$('#repBody'),sel=$('#repDay');if(!el||!sel)return;v
   if(!REP.day||!L.some(function(r){return r.day===REP.day}))REP.day=L[0].day;
   sel.innerHTML=L.map(function(r){return '<option value="'+esc(r.day)+'"'+(r.day===REP.day?' selected':'')+'>'+esc(dateGr(r.day))+'</option>'}).join('');
   var r=L.find(function(x){return x.day===REP.day}),row=function(x,nm){return '<tr><td>'+esc(nm||x.k)+'</td><td>'+x.n+'</td><td>'+(x.wr!=null?Math.round(x.wr*100)+'%':'–')+'</td><td class="num '+cls(x.avg)+'">'+(x.avg!=null?fR(x.avg):'–')+'</td><td class="num '+cls(x.sum)+'">'+fR(x.sum)+'</td></tr>'};
-  var tbl=function(h,rows){return rows&&rows.length?'<h4 class="lrn-h">'+h+'</h4><div class="apptabw"><table class="apptab"><thead><tr><th></th><th>Θέσεις</th><th>Επιτυχία</th><th>Μέσο R</th><th>Σύνολο R</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>':''};
+  var tbl=function(h,rows){return rows&&rows.length?(h?'<h4 class="lrn-h">'+h+'</h4>':'')+'<div class="apptabw"><table class="apptab"><thead><tr><th></th><th>Θέσεις</th><th>Επιτυχία</th><th>Μέσο R</th><th>Σύνολο R</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>':''};
   el.innerHTML='<div class="lrn-k"><div><span>Έκλεισαν</span><b class="'+cls(r.closed&&r.closed.sum)+'">'+(r.closed?r.closed.n:0)+'</b><small>'+(r.closed&&r.closed.n?fR(r.closed.sum)+' · '+Math.round(r.closed.wr*100)+'%':'—')+'</small></div><div><span>Άνοιξαν</span><b>'+(r.opened||0)+'</b><small>'+(r.log?r.log.scans+' σαρώσεις · '+r.log.blocked+' μπλοκ':'')+'</small></div><div><span>🧪 Συλλογή (σύνολο)</span><b class="'+cls(r.lab&&r.lab.stats.sum)+'">'+(r.lab?r.lab.n:0)+'</b><small>'+(r.lab&&r.lab.n?fR(r.lab.stats.sum)+' · μέσο '+fR(r.lab.stats.avg):'ξεκινά')+'</small></div></div>'+
-    '<p style="margin:.5rem 0;font-size:.9rem">🧑‍🏫 '+esc(r.text||'')+'</p>'+
-    tbl('Ανά προφίλ (κλειστές της μέρας)',(r.byProfile||[]).map(function(x){return row(x,x.name)}))+
-    tbl('Ανά στρατηγική (κλειστές της μέρας)',(r.byStrat||[]).map(function(x){return row(x)}))+
-    tbl('🧪 Πίνακας της συλλογής δεδομένων (όλες οι μέρες, 3+ θέσεις)',(r.lab&&r.lab.board||[]).map(function(x){return row(x)}))}
+    '<p style="margin:.5rem 0;font-size:.9rem">📅 <b>'+esc(dateGr(r.day))+':</b> '+esc(r.text||'')+'</p>'+
+    ((r.byStrat||[]).length?'<details class="apfx"><summary><b>Στρατηγικές της μέρας</b> <span class="muted" style="font-size:.78rem">· '+r.byStrat.length+'</span></summary>'+tbl('',(r.byStrat||[]).map(function(x){return row(x)}))+'</details>':'')}
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='repDay'){REP.day=e.target.value;repRender()}});
 /* ===== 🧠 Μάθηση από τα πραγματικά αποτελέσματα =====
    1) Καθαρά στατιστικά: κάθε σήμα μετράει μία φορά (όσα προφίλ κι αν το άνοιξαν) και χωρίζονται σε «εποχές» (πριν / με ενιαίο μοτίβο).
@@ -4428,9 +4426,7 @@ function lrnRender(){var el=$('#lrnBody');if(!el)return;var L=lrnStats(),A=L.all
   var good=K.filter(function(g){return g.n>=5&&g.avg>=0.2}).sort(function(a,b){return b.sum-a.sum}).slice(0,5);
   var watch=K.filter(function(g){return g.n>=4&&g.n<LRN_MIN&&g.avg<LRN_BAD}).sort(function(a,b){return a.avg-b.avg}).slice(0,5);
   var eraTx=function(k,nm){var x=E[k];return x.n?'<div><span>'+nm+'</span><b class="'+cls(x.avg)+'">'+fR(x.avg)+'</b><small>'+x.n+' θέσεις · '+Math.round(x.wr*100)+'%</small></div>':''};
-  el.innerHTML='<div class="lrn-k"><div><span>Μοναδικά σήματα</span><b>'+A.n+'</b><small>'+(L.dup?L.dup+' διπλά από άλλα προφίλ δεν μετρήθηκαν':'χωρίς διπλά')+'</small></div>'+
-    '<div><span>Επιτυχία</span><b>'+Math.round(A.wr*100)+'%</b><small>σύνολο <b class="'+cls(A.sum)+'">'+fR(A.sum)+'</b></small></div>'+
-    '<div><span>Πρόβλεψη → πράξη</span><b>'+fR(P.p)+' → <span class="'+cls(P.a)+'">'+fR(P.a)+'</span></b><small>'+P.n+' θέσεις με πρόβλεψη</small></div>'+
+  el.innerHTML='<div class="lrn-k"><div><span>Πρόβλεψη → πράξη</span><b>'+fR(P.p)+' → <span class="'+cls(P.a)+'">'+fR(P.a)+'</span></b><small>'+P.n+' θέσεις με πρόβλεψη</small></div>'+
     '<div><span>Διόρθωση πρόβλεψης</span><b class="'+(L.cut?'neg':'')+'">'+(L.cut?'−'+fmt(L.cut,2)+'R':'καμία')+'</b><small>'+(L.cut?'αφαιρείται από κάθε backtest πριν μπει':'θέλει ≥15 θέσεις και υπερεκτίμηση')+'</small></div>'+eraTx('old','Πριν το ενιαίο μοτίβο')+eraTx('std','Με ενιαίο μοτίβο (TP 2% · SL 1%)')+'</div>'+
     (muted.length?'<h4 class="lrn-h">🚫 Σε παύση</h4><ul class="lrn-l">'+muted.map(function(g){var u=g.last+LRN_WAIT;return row(g,' · '+(now<u?'ξαναδοκιμή '+new Date(u).toLocaleString('el-GR',{weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}):'<b>επιτρέπεται 1 δοκιμή τώρα</b>'))}).join('')+'</ul>':'')+
     (watch.length?'<h4 class="lrn-h">⚠️ Υπό παρακολούθηση (λίγες θέσεις ακόμα)</h4><ul class="lrn-l">'+watch.map(function(g){return row(g,' · παύση αν φτάσει '+LRN_MIN+' θέσεις με μέσο κάτω από '+fR(LRN_BAD))}).join('')+'</ul>':'')+
