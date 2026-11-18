@@ -27,6 +27,9 @@ const out = await page.evaluate(async () => {
   auto.slice(0, 12).forEach(t => L.push('   ' + T(t.at) + ' ' + t.symbol + ' ' + t.dir + ' ' + (t.status || '') + ' ' + (t.auto && t.auto.strat || '') + ' ' + (t.auto && t.auto.profile && t.auto.profile.name || '')));
   const pf = await db.collection('approfiles').get().catch(() => null);
   if (pf) pf.docs.forEach(d => { const x = d.data(); const c2 = x.cfg || {}; L.push('ΠΡΟΦΙΛ ' + d.id + ': ' + (x.name || '') + ' · run=' + x.run + ' · kind=' + (x.kind || '') + ' · tf=' + c2.tf + ' · strats=' + c2.strats + (c2.pick ? ' (' + c2.pick + ')' : '') + ' · minEdge=' + c2.minEdge + ' · lab=' + !!c2.lab) });
+  const bt = await db.collection('bigtr').get().catch(() => null);
+  if (bt) { let bytes = 0, n = 0, per = {}; bt.docs.forEach(d => { const x = d.data(); const sz = JSON.stringify(x).length; bytes += sz; n += (x.t || []).length; const dy = x.day || '?'; per[dy] = per[dy] || { docs: 0, n: 0, b: 0 }; per[dy].docs++; per[dy].n += (x.t || []).length; per[dy].b += sz });
+    L.push('BIGTR: ' + bt.size + ' έγγραφα · ' + n + ' συναλλαγές · ~' + (bytes / 1048576).toFixed(2) + ' MB'); Object.keys(per).sort().forEach(k => L.push('   ' + k + ': ' + per[k].docs + ' νομ. · ' + per[k].n + ' συναλ. · ' + (per[k].b / 1024).toFixed(0) + ' KB')) }
   return L.join('\n');
 }).catch(e => 'σφάλμα: ' + e);
 console.log(out);
