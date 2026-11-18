@@ -12,7 +12,8 @@ try {
   const repo = process.env.GITHUB_REPOSITORY, tok = process.env.GH_TOKEN;
   if (repo && tok) {
     const j = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/runner.yml/runs?per_page=100`, { headers: { authorization: 'Bearer ' + tok, accept: 'application/vnd.github+json' } }).then(r => r.json());
-    const R = (j.workflow_runs || []).map(r => ({ id: r.id, a: Date.parse(r.run_started_at || r.created_at), b: r.status === 'completed' ? Date.parse(r.updated_at) : Date.now(), st: r.status, c: r.conclusion })).sort((x, y) => x.a - y.a);
+    /* οι «cancelled» είναι βάρδιες σε αναμονή που αντικαταστάθηκαν (concurrency): δεν έτρεξαν ποτέ, άρα δεν μετρούν */
+    const R = (j.workflow_runs || []).filter(r => r.conclusion !== 'cancelled' || r.status !== 'completed').map(r => ({ id: r.id, a: Date.parse(r.run_started_at || r.created_at), b: r.status === 'completed' ? Date.parse(r.updated_at) : Date.now(), st: r.status, c: r.conclusion })).sort((x, y) => x.a - y.a);
     let ov = [];
     for (let i = 0; i < R.length; i++) for (let k = i + 1; k < R.length && R[k].a < R[i].b; k++) ov.push([R[i], R[k], Math.round((Math.min(R[i].b, R[k].b) - R[k].a) / 60000)]);
     const fail = R.filter(r => r.c && r.c !== 'success' && r.c !== 'cancelled').length;
