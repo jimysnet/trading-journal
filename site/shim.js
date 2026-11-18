@@ -13,12 +13,14 @@
   var BOT = window.__TJ_BOT || null; /* ο αυτόματος «φύλακας» (GitHub Actions) περνάει εδώ τα στοιχεία του */
   var Q = new URLSearchParams(location.search);
   /* μέχρι να επιβεβαιωθεί εγκεκριμένο μέλος, η σελίδα μένει κρυμμένη πίσω από μαύρη οθόνη */
-  if (!BOT) { try { document.documentElement.classList.add('tj-lock'); var lk = document.createElement('style'); lk.id = 'tj-lock-css'; lk.textContent = 'html.tj-lock body>*:not(#tj-login):not(#tj-msg){visibility:hidden!important}html.tj-lock,html.tj-lock body{background:#000!important}'; (document.head || document.documentElement).appendChild(lk) } catch (e) {} }
+  if (!BOT) { try { document.documentElement.classList.add('tj-lock'); var lk = document.createElement('style'); lk.id = 'tj-lock-css'; lk.textContent = 'html.tj-lock body>*:not(#tj-login):not(#tj-msg){visibility:hidden!important}html.tj-lock,html.tj-lock body{background:#000!important}html.tj-lock::after{content:"🔐 ΕΛΕΓΧΟΣ ΠΡΟΣΒΑΣΗΣ…";position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:99998;font:700 13px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.18em;color:#00e5ff;text-shadow:0 0 12px rgba(0,229,255,.6);padding:14px 18px 14px 44px;border:1px solid rgba(0,229,255,.35);border-radius:10px;background:radial-gradient(circle at 22px 50%,transparent 7px,rgba(0,229,255,.9) 8px,transparent 9px) no-repeat,rgba(4,10,16,.9);animation:tjpulse 1.2s ease-in-out infinite}html.tj-lock:has(#tj-login)::after{display:none}@keyframes tjpulse{50%{opacity:.45}}'; (document.head || document.documentElement).appendChild(lk) } catch (e) {} }
   function unlock() { try { document.documentElement.classList.remove('tj-lock') } catch (e) {} }
   var log = function () { try { console.log.apply(console, ['[tj]'].concat([].slice.call(arguments))) } catch (e) {} };
 
   /* ---------- ρυθμίσεις & Firebase ---------- */
-  var cfgP = fetch('/api/config', { cache: 'no-store' }).then(function (r) { return r.json() }).catch(function () { return {} });
+  var cfgNet = fetch('/api/config', { cache: 'no-store' }).then(function (r) { return r.json() }).then(function (c) { try { if (c && c.firebase && c.firebase.apiKey) localStorage.setItem('tj-cfg', JSON.stringify(c)) } catch (e) {} return c }).catch(function () { return {} });
+  var cfgC = null; try { cfgC = JSON.parse(localStorage.getItem('tj-cfg') || 'null') } catch (e) {}
+  var cfgP = cfgC && cfgC.firebase && cfgC.firebase.apiKey ? Promise.resolve(cfgC) : cfgNet;
   var appP = cfgP.then(function (c) {
     if (!c || !c.firebase || !c.firebase.apiKey) throw { code: 'not_configured', message: 'Λείπει το FIREBASE_CONFIG στο Vercel' };
     if (!window.firebase) throw { code: 'not_configured', message: 'Δεν φορτώθηκε το Firebase' };
@@ -59,6 +61,7 @@
      που γράφει members/{uid}. Οι κανόνες του Firestore είναι αυτοί που πραγματικά κλειδώνουν τα δεδομένα. */
   var ADMIN = false;
   var memberP = authP.then(function (u) {
+    try { if (!BOT && localStorage.getItem('tj-ok') === u.uid) unlock() } catch (e) {}
     return appP.then(function (a) {
       return a.fs.collection('meta').doc('wcheck_' + u.uid).set({ at: Date.now() }).then(function () { return true }, function (e) { log('member check', e && e.code); return false })
         .then(function (ok) {
@@ -71,6 +74,7 @@
           }, function () { return true });
         });
     }).then(function (ok) {
+      try { if (ok) localStorage.setItem('tj-ok', u.uid); else { localStorage.removeItem('tj-ok'); document.documentElement.classList.add('tj-lock') } } catch (e) {}
       if (ok) return u;
       return appP.then(function (a) { waitApproval(a, u) }).then(function () { return new Promise(function () {}) });
     });
