@@ -7471,7 +7471,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=315,VERS={sub:null,t:null};
+var APP_VER=316,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8913,8 +8913,11 @@ function preWatch(p){
   var now=Date.now(),mine=PRE.res||(PRE.sid&&p&&p.id===PRE.sid);
   if(mine||!p||!p.id||(p.done&&now-(p.doneAt||0)>8000)||(!p.done&&p.ends<now-5000)){if(PREW.el)PREW.el.classList.remove('on');clearInterval(PREW.t);return}
   var el=PREW.el;if(!el){el=PREW.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');document.body.appendChild(el);
-    el.addEventListener('click',function(e){if(e.target.closest('[data-prewmore]')){PREW.more=!PREW.more;if(PREW.draw)PREW.draw();return}var b=e.target.closest('[data-prew]');if(!b)return;var a=b.getAttribute('data-prew');
-      if(a==='no'){apStWrite({preCancel:PREW.id});toast('Στάλθηκε ακύρωση στον Καθηγητή.');el.classList.remove('on')}else if(a==='go'){apStWrite({preGo:PREW.id});toast('Στάλθηκε «μπες τώρα» στον Καθηγητή.')}else el.classList.remove('on')});
+    /* το παράθυρο ξαναζωγραφίζεται κάθε δευτερόλεπτο· με απλό click το κουμπί μπορεί να αντικατασταθεί ανάμεσα στο πάτημα και το άφημα και το πάτημα να χαθεί → ενεργούμε στο pointerdown */
+    var act=function(e){if(e.type==='click'&&Date.now()-(PREW.pd||0)<800)return;if(e.type==='pointerdown')PREW.pd=Date.now();
+      if(e.target.closest('[data-prewmore]')){PREW.more=!PREW.more;if(PREW.draw)PREW.draw();return}var b=e.target.closest('[data-prew]');if(!b)return;var a=b.getAttribute('data-prew');
+      if(a==='no'){apStWrite({preCancel:PREW.id});PREW.sent={id:PREW.id,a:'no'};toast('Στάλθηκε ακύρωση στον Καθηγητή.');el.classList.remove('on')}else if(a==='go'){apStWrite({preGo:PREW.id});PREW.sent={id:PREW.id,a:'go'};toast('Στάλθηκε «μπες τώρα» στον Καθηγητή.');if(PREW.draw)PREW.draw()}else el.classList.remove('on')};
+    el.addEventListener('pointerdown',act);el.addEventListener('click',act);
     addEventListener('resize',function(){prePlaceEl(PREW.el)})}
   if(PREW.id!==p.id)PREW.more=false;PREW.id=p.id;var d=p.d>0,first=!PREW.seen[p.id];PREW.seen[p.id]=1;el.className='precloud on '+(d?'lg':'sh');
   var head=function(txt){return '<div class="pre-h"><img src="'+esc(prFace())+'" alt=""><div><b>'+esc(prName())+(p.bot?' · 🤖 φύλακας':'')+'</b><small>'+txt+'</small></div></div>'};
@@ -8927,7 +8930,7 @@ function preWatch(p){
       '<div class="pre-i"><div class="pre-c">'+symIcon(p.coin,18)+'<b>'+esc(p.coin)+'</b> <span class="'+(d?'pos':'neg')+'">'+(d?'▲ Long':'▼ Short')+'</span>'+(p.sc!=null?' <span class="qsc mini '+(p.sc>=70?'hi':p.sc>=50?'mid':'lo')+'" title="Βαθμός 0-100">'+p.sc+'</span>':'')+'</div><div class="pre-s">'+esc(p.name||'')+' · '+esc(p.tf||'')+(p.pf?' · '+esc(p.pf):'')+'</div></div></div>'+
       (isFinite(p.e)?'<div class="pre-lv"><div><span>Είσοδος</span><b class="num">'+dmPx(p.e)+'</b><small>'+(p.ord==='market'?'market':'όριο')+'</small></div><div class="sl"><span>Stop loss</span><b class="num">'+dmPx(p.sl)+'</b>'+(isFinite(p.slp)?'<small>−'+pctFmt(p.slp)+'</small>':'')+'</div><div class="tp"><span>Take profit</span><b class="num">'+dmPx(p.tp)+'</b><small>'+(isFinite(p.tpp)?'+'+pctFmt(p.tpp)+' · ':'')+(isFinite(p.X)?fmt(p.X,p.X%1?1:0)+'R':'')+'</small></div>'+(isFinite(p.margin)?'<div><span>Κεφάλαιο</span><b class="num">'+fmt(p.margin,0)+'</b><small>x'+(p.lev||'')+(isFinite(p.riskAmt)?' · ρίσκο '+fmt(p.riskAmt,0):'')+'</small></div>':'')+'</div>':'')+
       (p.why&&p.why.length?'<button type="button" class="pre-more" data-prewmore aria-expanded="'+(PREW.more?'true':'false')+'">'+(PREW.more?'▴ Λιγότερα':'▾ Γιατί και πώς')+'</button>'+(PREW.more?preWhyHtml(p.why):''):'')+
-      '<div class="pre-a">'+(qCanSave()?'<button type="button" class="btn small" data-prew="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-prew="no">✕ Ακύρωσε</button>':'')+'<button type="button" class="btn small ghost" data-prew="hide">Απόκρυψη</button></div>';
+      '<div class="pre-a">'+(PREW.sent&&PREW.sent.id===p.id&&PREW.sent.a==='go'?'<span class="muted" style="align-self:center">⏳ Στάλθηκε «μπες τώρα» · περιμένω τον '+(p.bot?'φύλακα':'Καθηγητή')+'…</span>':qCanSave()?'<button type="button" class="btn small" data-prew="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-prew="no">✕ Ακύρωσε</button>':'')+'<button type="button" class="btn small ghost" data-prew="hide">Απόκρυψη</button></div>';
     var sc2=el.querySelector('.pre-why');if(sc2)sc2.scrollTop=st;prePlaceEl(el);return left};
   draw();PREW.t=setInterval(function(){var l=draw();if(l<=3&&l>0)preBeep(1000,.12);if(l<=0)clearInterval(PREW.t)},1000);
   if(first){preBeep(660,.25);setTimeout(function(){preBeep(880,.25)},260);try{profMood('cheer')}catch(e){}
@@ -8961,7 +8964,9 @@ function preHtml(it,left,tot,px){var d=it.x.d>0,nm=prName(),pf=AP.rc&&AP.rc.name
     '<div class="pre-a"><button type="button" class="btn small" data-pre="go">▶ Μπες τώρα</button><button type="button" class="btn small ghost" data-pre="no">✕ Ακύρωσε</button><label class="pre-sel">αντίστροφη <select data-presec>'+[0,15,30,45,60,90,120].map(function(v){return '<option value="'+v+'"'+(v===preSecs()?' selected':'')+'>'+(v?v+'″':'χωρίς')+'</option>'}).join('')+'</select></label></div>'}
 function apPreEntry(it,doc){var tot=preSecs();if(!tot)return Promise.resolve(true);PRE.doc=doc||null;
   return new Promise(function(res){var el=PRE.el;if(!el){el=PRE.el=document.createElement('div');el.className='precloud';el.setAttribute('role','alertdialog');el.setAttribute('aria-live','assertive');document.body.appendChild(el);
-      el.addEventListener('click',function(e){if(e.target.closest('[data-premore]')||(!e.target.closest('button,select,label')&&e.target.closest('.pre-b,.pre-lv,.pre-h'))){PRE.more=!PRE.more;if(PRE.redraw)PRE.redraw();return}var b=e.target.closest('[data-pre]');if(b&&PRE.res){var r0=PRE.res;PRE.res=null;clearInterval(PRE.t);r0(b.getAttribute('data-pre')==='go');if(b.getAttribute('data-pre')==='no')preHide()}});
+      var act=function(e){if(e.type==='click'&&Date.now()-(PRE.pd||0)<800)return;if(e.type==='pointerdown'){if(e.target.closest('select'))return;PRE.pd=Date.now()}
+        if(e.target.closest('[data-premore]')||(!e.target.closest('button,select,label')&&e.target.closest('.pre-b,.pre-lv,.pre-h'))){PRE.more=!PRE.more;if(PRE.redraw)PRE.redraw();return}var b=e.target.closest('[data-pre]');if(b&&PRE.res){var r0=PRE.res;PRE.res=null;clearInterval(PRE.t);r0(b.getAttribute('data-pre')==='go');if(b.getAttribute('data-pre')==='no')preHide()}};
+      el.addEventListener('pointerdown',act);el.addEventListener('click',act);
       el.addEventListener('change',function(e){if(e.target.matches('[data-presec]')){try{localStorage.setItem('tj-presec',e.target.value)}catch(_){}toast(+e.target.value?'Αντίστροφη μέτρηση '+e.target.value+'″ πριν από κάθε είσοδο.':'Χωρίς αντίστροφη μέτρηση: μπαίνει αμέσως.')}});
       addEventListener('resize',prePlace)}
     PRE.it=it;PRE.res=res;var end=Date.now()+tot*1000,px=NaN;el.className='precloud on '+(it.x.d>0?'lg':'sh');el.style.display='';
