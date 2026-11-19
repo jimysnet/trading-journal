@@ -21,10 +21,12 @@ async function who(req) {
   throw { code: 'not_granted', status: 403 };
 }
 
+/* Οικονομικά από προεπιλογή: Haiku για τη συζήτηση, Sonnet για τις βαριές αναλύσεις (γραφήματα, προτάσεις τεχνικών).
+   Αλλάζουν από το Vercel (AI_MODEL_DEFAULT / AI_MODEL_COMPLEX) χωρίς αλλαγή κώδικα. */
 const MODELS = {
   quick: process.env.AI_MODEL_QUICK || 'claude-haiku-5-5',
-  default: process.env.AI_MODEL_DEFAULT || 'claude-sonnet-5-5',
-  complex: process.env.AI_MODEL_COMPLEX || 'claude-opus-5-5'
+  default: process.env.AI_MODEL_DEFAULT || 'claude-haiku-5-5',
+  complex: process.env.AI_MODEL_COMPLEX || 'claude-sonnet-5-5'
 };
 
 /* απλό όριο ανά μέλος (ανά instance), για να μη φύγει ο λογαριασμός από κάποιο λάθος βρόχο */
@@ -47,7 +49,7 @@ module.exports = async (req, res) => {
   const tier = MODELS[b.tier] ? b.tier : 'default';
   const body = {
     model: MODELS[tier],
-    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || (tier === 'complex' ? 8000 : 4000)),
+    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || (tier === 'complex' ? 3000 : 1500)),
     messages: Array.isArray(b.messages) ? b.messages : [],
     system: 'Είσαι ο «Καθηγητής» σε ένα κοινό ημερολόγιο συναλλαγών μιας παρέας. Ακολούθησε τις οδηγίες του μηνύματος.' + (b.json ? ' Η απάντησή σου πρέπει να είναι μόνο έγκυρο JSON.' : '')
   };
