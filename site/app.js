@@ -2021,7 +2021,12 @@ function confetti(box){var cols=['#f2b705','#14855c','#2f80ed','#e4572e','#9b51e
 function pSize(){if(!PCH.size){try{PCH.size=localStorage.getItem('tj-psize')||'s'}catch(e){PCH.size='s'}}return PCH.size}
 function pSetSize(z){PCH.size=z;try{localStorage.setItem('tj-psize',z)}catch(e){}PCH.full=z==='l';pCompact();try{renderProf()}catch(e){}}
 function pCompact(){var p=$('#profPanel');if(!p)return;var z=pSize();if(z==='l')PCH.full=true;var c=(QZ.tab==='chat'||QZ.tab==='group')&&!PCH.full;p.classList.toggle('compact',c);p.classList.toggle('csm',c&&z==='s');p.classList.toggle('cmd',c&&z==='m');var sh=$('#profShrink');if(sh)sh.hidden=c&&z==='s'||(!c&&!(QZ.tab==='chat'||QZ.tab==='group'));var g=QZ.tab==='group';var t=$('#profTitle'),sb=$('#profSub');if(t)t.textContent=c?(g?'Η παρέα μας':prName()):prName();if(sb)sb.textContent=c?(g?'συζήτηση της ομάδας':'ρώτα ό,τι θες'):'Μάθημα, τεστ και συζήτηση κάθε μέρα';$$('.pswitch [data-psw]').forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-psw')===(g?'group':'chat')?'true':'false')});var w=$('#profWide');if(w&&c){w.textContent='+';w.title=z==='s'?'Μεσαίο':'Μεγάλο (όλο το πάνελ)'}else if(w){w.textContent=$('#profPanel').classList.contains('wide')?'⤡':'⤢';w.title='Πλάτος'}}
-function profOpen(on){var p=$('#profPanel');if(on)P3D.openAt=Date.now();else PCH.full=pSize()==='l';p.hidden=!on;document.body.classList.toggle('prof-on',!!on);$('#profBubble').hidden=true;if(on){renderProf();profMood('wow');setTimeout(function(){profMood('')},900)}}
+/* ελαχιστοποίηση σε μπάρα (σαν τη συζήτηση του Facebook) + μετρητής νέων μηνυμάτων όσο είναι κλειστό */
+function pMsgCount(){return (PCH.msgs||[]).filter(function(m){return m.role==='assistant'}).length+((S.chat||[]).filter(function(m){return m&&m.by!==S.uid}).length)}
+function pMinSet(on){var p=$('#profPanel');if(!p)return;p.classList.toggle('pmin',!!on);/* η μπάρα αντικαθιστά τα κουμπιά ανοίγματος (Καθηγητής/παρέα), οπότε μένουν κρυμμένα */var bd=$('#profMinBadge');clearInterval(PCH.minT);
+  if(on){PCH.minN=pMsgCount();if(bd)bd.hidden=true;PCH.minT=setInterval(function(){if(!p.classList.contains('pmin')||p.hidden){clearInterval(PCH.minT);return}var k=pMsgCount()-PCH.minN;if(bd){bd.hidden=k<=0;bd.textContent=k>9?'9+':String(k)}},1500)}
+  else{if(bd)bd.hidden=true;try{renderProf()}catch(e){}setTimeout(function(){var x=$('#pq')||$('#gq');if(x&&x.offsetParent)x.focus()},120)}}
+function profOpen(on){var p=$('#profPanel');if(p&&p.classList.contains('pmin')){p.classList.remove('pmin');clearInterval(PCH.minT);var mb=$('#profMinBadge');if(mb)mb.hidden=true}if(on)P3D.openAt=Date.now();else PCH.full=pSize()==='l';p.hidden=!on;document.body.classList.toggle('prof-on',!!on);$('#profBubble').hidden=true;if(on){renderProf();profMood('wow');setTimeout(function(){profMood('')},900)}}
 function profDot(){var el=$('#profDot');if(el)el.hidden=true}/* η κόκκινη τελεία («δεν έκανες το τεστ της ημέρας») αφαιρέθηκε: μπέρδευε */
 function renderProf(){
   profDot();
@@ -2173,6 +2178,8 @@ window.__prDbg=function(){return {pool:prPool(),seen:prMe().seen||{}}};
 function bindProf(){
   $('#profBtn').addEventListener('click',function(){if($('#profPanel').hidden)pOpenAsk('');else profOpen(false)});/* ο Καθηγητής ανοίγει κατευθείαν στο chat, με τον κέρσορα έτοιμο */
   $('#profClose').addEventListener('click',function(){profOpen(false)});
+  $('#profMin').addEventListener('click',function(e){e.stopPropagation();pMinSet(true)});
+  $('#profPanel').querySelector('.prof-head').addEventListener('click',function(e){if(!$('#profPanel').classList.contains('pmin'))return;if(e.target.closest('#profClose'))return;pMinSet(false)});
   var pw=function(on){$('#profPanel').classList.toggle('wide',on);var b=$('#profWide');b.setAttribute('aria-pressed',on?'true':'false');b.textContent=on?'⤡':'⤢';b.title=b.getAttribute('aria-label');try{localStorage.setItem('tj-pwide',on?'1':'0')}catch(e){}};
   try{if(localStorage.getItem('tj-pwide')==='1')pw(true)}catch(e){}
   $('#profWide').addEventListener('click',function(){var pp=$('#profPanel');if(pp.classList.contains('compact')){pSetSize(pSize()==='s'?'m':'l');return}pw(!pp.classList.contains('wide'))});
@@ -3388,7 +3395,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=317,VERS={sub:null,t:null};
+var APP_VER=318,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}

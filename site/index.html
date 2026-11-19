@@ -1211,6 +1211,34 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 .prof-panel.compact.cmd{right:16px;bottom:16px;width:min(430px,calc(100vw - 24px))!important;height:min(640px,calc(100vh - 100px))}
 .prof-panel.compact.csm .prof-head .muted{display:none}.prof-panel.compact.csm .pbub{font-size:.86rem}
 .prof-panel.compact.csm .pfoot{display:none}
+/* 💬 v318 Συζήτηση σε στυλ Messenger + ελαχιστοποίηση */
+:root{--msg-me:linear-gradient(160deg,#00b2ff 0%,#006aff 100%);--msg-other:#e4e6eb;--msg-other-fg:#050505;--msg-input:#f0f2f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--msg-other:#303235;--msg-other-fg:#e4e6eb;--msg-input:#26282b}}
+:root[data-theme="dark"]{--msg-other:#303235;--msg-other-fg:#e4e6eb;--msg-input:#26282b}
+.prof-panel.compact{border-radius:14px 14px 14px 14px;background:var(--bg)}
+.prof-panel.compact .prof-head{background:var(--surface);box-shadow:0 1px 0 var(--line),0 6px 12px -10px rgba(0,0,0,.5);cursor:default}
+.prof-panel.compact #profMini{position:relative}
+.prof-panel.compact #profMini::after{content:"";position:absolute;right:1px;bottom:1px;width:11px;height:11px;border-radius:50%;background:#31a24c;border:2px solid var(--surface)}
+.prof-panel.compact .prof-head .btn.small{border:0;background:transparent;border-radius:50%;width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;color:var(--accent);font-size:1rem}
+.prof-panel.compact .prof-head .btn.small:hover{background:color-mix(in srgb,var(--fg) 10%,transparent)}
+.prof-panel.compact .pmsg .pbub{border-radius:18px;padding:.5rem .8rem;box-shadow:none}
+.prof-panel.compact .pmsg.u .pbub{background:var(--msg-me);color:#fff;border:0;border-bottom-right-radius:5px}
+.prof-panel.compact .pmsg.a .pbub{background:var(--msg-other);color:var(--msg-other-fg);border:0;border-bottom-left-radius:5px}
+.prof-panel.compact .pmsg.a .pbub a,.prof-panel.compact .pmsg.a .pbub .linkbtn{color:#0866ff}
+.prof-panel.compact .pinput{align-items:flex-end;gap:.4rem}
+.prof-panel.compact .pinput textarea{border-radius:20px!important;background:var(--msg-input);border:0;padding:.55rem .9rem;resize:none}
+.prof-panel.compact .pinput textarea:focus{outline:2px solid color-mix(in srgb,#0084ff 45%,transparent)}
+.prof-panel.compact .pinput .btn:not(.ghost){border-radius:999px;background:#0084ff;border-color:#0084ff;color:#fff}
+#profMin{font-weight:700;min-width:1.9rem}
+.pminbadge{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#e41e3f;color:#fff;font:700 .72rem/20px system-ui,sans-serif;text-align:center}
+/* ελαχιστοποιημένο: μόνο η μπάρα, κάτω δεξιά, όπως στο Facebook */
+.prof-panel.pmin{top:auto!important;left:auto!important;bottom:0!important;right:16px!important;width:min(300px,calc(100vw - 24px))!important;height:auto!important;border-radius:12px 12px 0 0!important;overflow:hidden;animation:none;box-shadow:0 -4px 18px rgba(0,0,0,.35);border:1px solid var(--line)}
+.prof-panel.pmin #profTabs,.prof-panel.pmin #profBody,.prof-panel.pmin .pswitch,.prof-panel.pmin #profShrink,.prof-panel.pmin #profWide{display:none!important}
+.prof-panel.pmin .prof-head{cursor:pointer;padding:.45rem .6rem;border-bottom:0}
+.prof-panel.pmin .prof-head:hover{background:color-mix(in srgb,var(--surface) 85%,var(--fg))}
+.prof-panel.pmin #profSub{display:block;font-size:.7rem}
+.prof-panel.pmin .prof-head .prof-svg.mini{width:32px!important;height:32px}
+@media (max-width:600px){.prof-panel.pmin{right:8px!important;width:min(260px,calc(100vw - 16px))!important}}
 #profShrink,#profWide{font-weight:700;min-width:1.9rem}
 @media (max-width:600px){.prof-panel.compact.csm,.prof-panel.compact.cmd{left:8px;right:8px;bottom:8px;width:auto!important}.prof-panel.compact.csm{height:min(62vh,520px)}.prof-panel.compact.cmd{height:min(85vh,700px)}#profWide{display:inline-flex!important}}
 
@@ -1884,7 +1912,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
   </div>
   <div class="funmenu" id="funMenu" hidden role="dialog" aria-label="Κέρασμα ή τιμωρία για τον Καθηγητή"></div>
   <aside class="prof-panel" id="profPanel" hidden aria-label="Ο Καθηγητής">
-    <div class="prof-head"><span id="profMini"></span><div><b id="profTitle">Ο Καθηγητής</b><span class="muted" id="profSub">Μάθημα, τεστ και συζήτηση κάθε μέρα</span><span class="pswitch" role="tablist" aria-label="Συζήτηση"><button type="button" data-psw="chat">🎓 Καθηγητής</button><button type="button" data-psw="group">👥 Παρέα</button></span></div><button type="button" class="btn small" id="profShrink" aria-label="Μικρότερο παράθυρο" title="Μικρότερο">−</button><button type="button" class="btn small" id="profWide" aria-label="Μεγαλύτερο παράθυρο" title="Μεγαλύτερο παράθυρο">⤢</button><button type="button" class="btn small" id="profClose" aria-label="Κλείσιμο">×</button></div>
+    <div class="prof-head"><span id="profMini"></span><div><b id="profTitle">Ο Καθηγητής</b><span class="muted" id="profSub">Μάθημα, τεστ και συζήτηση κάθε μέρα</span><span class="pswitch" role="tablist" aria-label="Συζήτηση"><button type="button" data-psw="chat">🎓 Καθηγητής</button><button type="button" data-psw="group">👥 Παρέα</button></span></div><span class="pminbadge" id="profMinBadge" hidden></span><button type="button" class="btn small" id="profMin" aria-label="Ελαχιστοποίηση" title="Ελαχιστοποίηση">—</button><button type="button" class="btn small" id="profShrink" aria-label="Μικρότερο παράθυρο" title="Μικρότερο">⤡</button><button type="button" class="btn small" id="profWide" aria-label="Μεγαλύτερο παράθυρο" title="Μεγαλύτερο παράθυρο">⤢</button><button type="button" class="btn small" id="profClose" aria-label="Κλείσιμο">×</button></div>
     <div class="advtabs" id="profTabs" role="tablist" aria-label="Ο Καθηγητής"><button type="button" data-pt="class" aria-selected="true">🎓 Τάξη</button><button type="button" data-pt="today" aria-selected="false">📝 Τεστ ημέρας</button><button type="button" data-pt="board" aria-selected="false">🏆 Κατάταξη</button><button type="button" data-pt="prac" aria-selected="false">🎯 Εξάσκηση</button><button type="button" data-pt="chat" aria-selected="false">💬 Ρώτα με</button><button type="button" data-pt="props" aria-selected="false">📋 Προτάσεις</button><button type="button" data-pt="group" aria-selected="false">👥 Η παρέα μας</button></div>
     <div class="prof-body" id="profBody"></div>
   </aside>
