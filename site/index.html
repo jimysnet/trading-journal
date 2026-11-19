@@ -1230,6 +1230,18 @@ section[data-panel=demo]>.grid2{align-items:stretch}section[data-panel=demo]>.gr
 .prof-panel.compact .pinput textarea:focus{outline:2px solid color-mix(in srgb,#0084ff 45%,transparent)}
 .prof-panel.compact .pinput .btn:not(.ghost){border-radius:999px;background:#0084ff;border-color:#0084ff;color:#fff}
 #profMin{font-weight:700;min-width:1.9rem}
+/* 🟢 ποιος είναι online */
+.onlbar{display:inline-flex;align-items:center;gap:.35rem;flex:0 0 auto}
+.onlm{position:relative;display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:.15rem .55rem .15rem .2rem;cursor:pointer;font:inherit;font-size:.8rem;color:var(--fg);line-height:1.2}
+.onlm:hover{border-color:var(--accent)}
+.onlm .onlav{position:relative;display:inline-flex}
+.onlm .onlav .gav{flex-basis:24px;width:24px;height:24px}.onlm .onlav .gav i{font-size:.7rem}
+.onlm .onlav::after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#8a96a3;border:2px solid var(--surface)}
+.onlm.on .onlav::after{background:#31a24c}
+.onlm small{color:var(--muted);font-size:.72rem}
+.onlm.on small{color:#31a24c}
+@media (max-width:600px){.onlm b,.onlm small{display:none}.onlm{padding:.15rem}}
+.gsub-on{color:#31a24c;font-weight:600}
 /* συζήτηση Καθηγητή όπως της παρέας: τα μηνύματα «κάθονται» κάτω, ακριβώς πάνω από το πεδίο γραφής, χωρίς κενό από κάτω· το πεδίο μένει πάντα ορατό */
 .prof-body:has(> #pchat){display:flex;flex-direction:column}
 .prof-body > #pchat{flex:1 0 auto;justify-content:flex-end}
@@ -1870,7 +1882,7 @@ main .card h2,main .card .formhead h2,section .card>h2,section .formhead>h2,.pxb
 
 <header class="top pad">
   <div class="inner">
-    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button><button type="button" class="thbtn" id="themeBtn" aria-label="Θέμα εμφάνισης" title="Θέμα: Αυτόματο">🌗</button></div>
+    <div class="brand"><h1>Ημερολόγιο Συναλλαγών</h1><span class="who" id="whoami">Φόρτωση…</span><span class="onlbar" id="onlBar" hidden></span><button type="button" class="askbtn" id="askProf" aria-label="Ρώτα τον Καθηγητή">🎓 <span>Ρώτα τον Καθηγητή</span></button><button type="button" class="thbtn" id="themeBtn" aria-label="Θέμα εμφάνισης" title="Θέμα: Αυτόματο">🌗</button></div>
     <nav class="tabs" role="tablist" aria-label="Ενότητες">
       <button role="tab" data-tab="today" aria-selected="true">🏠 Σήμερα</button>
       <button role="tab" data-tab="demo" aria-selected="false">🤖 AI Bot</button>

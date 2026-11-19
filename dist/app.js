@@ -89,6 +89,7 @@ function subscribe(){
   db.collection('qbank').onSnapshot(function(s){S.qb=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});S.qbMap={};S.qb.forEach(function(g){S.qbMap[g.id]=g});if(QZ.tab==='prac'&&!$('#profPanel').hidden&&(!QZ.prac||QZ.prac.ch!=null))renderQPrac()},onErr);
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
   /* προσωπικές προτιμήσεις του μέλους στη βάση (όχι μόνο στον browser): ο χαρακτήρας του Καθηγητή μένει ίδιος σε κάθε συσκευή και αν σβηστεί η cache */
+  try{prsStart(db)}catch(e){}
   if(S.uid&&S.uid!=='me')db.collection('uprefs').doc(S.uid).onSnapshot(function(sn){var d=sn.exists&&sn.data()||{};UPF.got=1;if(d.pchar&&PCHARS[d.pchar]){if(d.pchar!==prChar())prSetChar(d.pchar,true)}else if(!UPF.seeded){UPF.seeded=1;upfSave()}},function(){});
   db.collection('class').onSnapshot(function(s){S.cls={};s.docs.forEach(function(d){S.cls[d.id]=d.data()});if(!CLS.dirty){var m0=S.cls[clsId()];CLS.me=m0?JSON.parse(JSON.stringify(m0)):null}renderProfIfClass()},onErr);
   db.collection('confirms').orderBy('at','desc').limit(300).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
@@ -3397,7 +3398,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=322,VERS={sub:null,t:null};
+var APP_VER=323,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6463,7 +6464,20 @@ function grpOnData(){var open=grpIsOpen();if(GRPU.init){var nw=(S.chat||[]).filt
   if(open){renderGroup();grpMarkRead()}
   else if(GRPU.init){var fresh=(S.chat||[]).filter(function(m){return m.by&&m.by!==S.uid&&(m.at||0)>GRPU.seen});if(fresh.length)grpToast(fresh[fresh.length-1])}
   GRPU.seen=Math.max(GRPU.seen,grpMaxAt());GRPU.init=true;grpBadge();grpSub();grpTitle()}
-function grpSub(){var el=$('#grpSub');if(!el)return;var mm={};qUsers().forEach(function(u){mm[u]=1});(S.chat||[]).forEach(function(m){if(m.by)mm[m.by]=1});var us=Object.keys(mm).filter(function(u){return u!=='me'||!S.db});el.textContent=us.length>1?us.map(function(u){return u===S.uid?(LANG_RU()?'я':'εγώ'):name(u)}).join(', '):(LANG_RU()?'Общий чат':'Κοινή συζήτηση')}
+function grpSub(){var el=$('#grpSub');if(!el)return;var mm={};qUsers().forEach(function(u){mm[u]=1});(S.chat||[]).forEach(function(m){if(m.by)mm[m.by]=1});var us=Object.keys(mm).filter(function(u){return u!=='me'||!S.db});el.innerHTML=us.length>1?us.map(function(u){return u===S.uid?(LANG_RU()?'я':'εγώ'):(typeof prsOn==='function'&&prsOn(u)?'<span class="gsub-on">🟢 '+esc(name(u))+'</span>':esc(name(u)))}).join(', '):(LANG_RU()?'Общий чат':'Κοινή συζήτηση')}
+/* 🟢 παρουσία: κάθε ανοιχτή σελίδα γράφει «είμαι εδώ» κάθε 2′ (presence/{uid}). Online = τα τελευταία 5′. Ο φύλακας δεν μετράει. */
+var PRS={t:0,r:0};
+function prsBeat(off){if(!S.db||!S.uid||S.uid==='me'||window.__TJ_BOT)return;try{S.db.collection('presence').doc(S.uid).set({at:off?0:Date.now(),seen:Date.now(),by:S.uid},{merge:true}).catch(function(){})}catch(e){}}
+function prsOn(u){var d=(S.pres||{})[u];return !!(d&&d.at&&Date.now()-d.at<5*6e4)}
+function prsAgo(u){var d=(S.pres||{})[u],t=d&&(d.seen||d.at);if(!t)return '';var m=Math.round((Date.now()-t)/6e4);return m<60?'πριν '+Math.max(1,m)+'′':m<1440?'πριν '+Math.round(m/60)+' ώρ.':'πριν '+Math.round(m/1440)+' μέρ.'}
+function prsStart(db){if(PRS.t||!S.uid||S.uid==='me')return;prsBeat();PRS.t=setInterval(function(){prsBeat()},12e4);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)prsBeat()});addEventListener('pagehide',function(){prsBeat(true)});
+  db.collection('presence').onSnapshot(function(sn){var o={};sn.docs.forEach(function(d){o[d.id]=d.data()});S.pres=o;prsRender()},function(){});
+  PRS.r=setInterval(prsRender,3e4)}
+function prsRender(){var el=$('#onlBar');if(!el)return;var mm={};qUsers().forEach(function(u){mm[u]=1});var ask=0;Object.keys(S.pres||{}).forEach(function(u){if(S.names[u])mm[u]=1;else if(u!==S.uid){nameAsk(u);ask=1}});if(ask&&!PRS.na){PRS.na=setTimeout(function(){PRS.na=0;prsRender()},1500)}var us=Object.keys(mm).filter(function(u){return u!==S.uid&&u!=='me'&&S.names[u]&&!/🤖|Φύλακας/.test(S.names[u])});if(!us.length){el.hidden=true;return}
+  el.hidden=false;el.innerHTML=us.map(function(u){var on=prsOn(u),nm=name(u),first=String(nm).split(' ')[0];return '<button type="button" class="onlm'+(on?' on':'')+'" data-onl="'+esc(u)+'" title="'+esc(nm)+(on?' · online τώρα':' · '+(prsAgo(u)?'τελευταία φορά '+prsAgo(u):'offline'))+' · πάτα για μήνυμα"><span class="onlav">'+gAv(u)+'</span><b>'+esc(first)+'</b><small>'+(on?'online':(prsAgo(u)||'offline'))+'</small></button>'}).join('');
+  try{grpSub()}catch(e){}}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-onl]');if(!b)return;var u=b.getAttribute('data-onl'),first=String(name(u)).split(' ')[0];grpOpen(true);var put0=function(){var q=$('#gq');if(!q)return;if(q.value.indexOf('@'+first)<0)q.value='@'+first+' '+q.value;q.focus();try{q.setSelectionRange(q.value.length,q.value.length)}catch(_){}};[150,500,1000].forEach(function(ms){setTimeout(put0,ms)})});
 function grpOpen(on){$('#grpPanel').hidden=true;$('#grpBubble').hidden=true;if(on){QZ.tab='group';GRP.n=-1;GRP.pend=0;profOpen(true);grpMarkRead();grpSub();setTimeout(function(){var q=$('#gq');if(q&&window.innerWidth>600)q.focus()},60)}else if(QZ.tab==='group')profOpen(false)}
 function bindGrp(){
   $('#grpBtn').addEventListener('click',function(){grpOpen(!grpIsOpen())});
