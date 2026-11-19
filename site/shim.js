@@ -294,12 +294,18 @@
         var last = M[M.length - 1], txt = typeof last.content === 'string' ? last.content : '';
         last.content = imgs.map(function (i) { return { type: 'image', source: { type: 'base64', media_type: i.media_type, data: i.data } } }).concat([{ type: 'text', text: txt }]);
       }
-      var steps = 0;
+      var steps = 0, acc = '', noTools = false;
       var loop = function () {
         steps++;
-        return aiCall({ messages: M, tools: schema, tier: opt.modelTier || 'default', effort: opt.effort || null, json: !!opt.__json }, opt.signal).then(function (r) {
-          var content = r.content || [], uses = content.filter(function (b) { return b.type === 'tool_use' });
-          if (uses.length && steps < 10) {
+        return aiCall({ messages: M, tools: schema, tool_choice: noTools ? 'none' : null, tier: opt.modelTier || 'default', effort: opt.effort || null, json: !!opt.__json }, opt.signal).then(function (r) {
+          var content = r.content || [], uses = noTools ? [] : content.filter(function (b) { return b.type === 'tool_use' });
+          var txt0 = content.filter(function (b) { return b.type === 'text' }).map(function (b) { return b.text }).join('');
+          /* κόπηκε στο όριο: ζητάμε τη συνέχεια αντί να δείξουμε μισή απάντηση */
+          if (!uses.length && r.stop_reason === 'max_tokens' && txt0 && steps < 12 && !opt.__json) {
+            acc += txt0; M.push({ role: 'assistant', content: content.filter(function (b) { return b.type === 'text' }) }); M.push({ role: 'user', content: 'Συνέχισε ακριβώς από εκεί που σταμάτησες, χωρίς επανάληψη.' }); return loop();
+          }
+          if (uses.length) {
+            if (steps >= 7) noTools = true; /* πολλά εργαλεία: την επόμενη φορά απαντά με ό,τι έχει, για να μη μείνει η απάντηση στη μέση */
             M.push({ role: 'assistant', content: content });
             return Promise.all(uses.map(function (u) {
               var t = tools.find(function (x) { return x.name === u.name });
@@ -308,7 +314,7 @@
                 .catch(function (e) { return { type: 'tool_result', tool_use_id: u.id, is_error: true, content: String((e && e.message) || e) } });
             })).then(function (res) { M.push({ role: 'user', content: res }); return loop() });
           }
-          var text = content.filter(function (b) { return b.type === 'text' }).map(function (b) { return b.text }).join('');
+          var text = acc + txt0;
           try { opt.onText && opt.onText({ text: text }) } catch (e) {}
           return { text: text, stopReason: r.stop_reason };
         });

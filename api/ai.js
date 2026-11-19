@@ -52,11 +52,12 @@ module.exports = async (req, res) => {
   const tier = Object.prototype.hasOwnProperty.call(MODELS, b.tier) ? b.tier : 'default';
   const body = {
     model: MODELS[tier],
-    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || 2000),
+    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || 6000), /* χρεώνεται μόνο ό,τι γραφτεί· με μικρό όριο οι απαντήσεις κόβονταν στη μέση */
     messages: Array.isArray(b.messages) ? b.messages : [],
     system: 'Είσαι ο «Καθηγητής» σε ένα κοινό ημερολόγιο συναλλαγών μιας παρέας. Ακολούθησε τις οδηγίες του μηνύματος.' + (b.json ? ' Η απάντησή σου πρέπει να είναι μόνο έγκυρο JSON.' : '')
   };
   if (Array.isArray(b.tools) && b.tools.length) body.tools = b.tools.slice(0, 16);
+  if (body.tools && b.tool_choice === 'none') body.tool_choice = { type: 'none' };
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
