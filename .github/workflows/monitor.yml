@@ -1,15 +1,22 @@
-# 🫀 Παρακολούθηση του Καθηγητή κάθε 30′ (μόνο ανάγνωση). Αν κάτι δεν πάει καλά, η εκτέλεση αποτυγχάνει και το GitHub στέλνει email.
+# 🫀 Παρακολούθηση του Καθηγητή (μόνο ανάγνωση): έλεγχος κάθε 30′ μέσα σε μια «βάρδια» ~5,8 ωρών.
+# Το cron του GitHub χάνει συχνά εκτελέσεις, γι' αυτό κάθε βάρδια παρακολούθησης ξεκινά μόνη της την επόμενη (όπως ο φύλακας).
+# Είναι χωριστή από τον φύλακα: αν πέσει ο φύλακας, η παρακολούθηση το βλέπει και στέλνει email (αποτυχία εκτέλεσης).
+# Το cron μένει μόνο ως εφεδρεία, αν σπάσει η αλυσίδα· με concurrency δεν τρέχουν ποτέ δύο μαζί.
 name: monitor
 on:
   schedule:
-    - cron: '7,37 * * * *'
+    - cron: '7 */3 * * *'
   workflow_dispatch:
 permissions:
   contents: read
+  actions: write
+concurrency:
+  group: monitor
+  cancel-in-progress: false
 jobs:
   m:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 358
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,10 +24,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Έλεγχος
+      - name: Παρακολούθηση (κάθε 30′)
         working-directory: runner
         env:
           TJ_URL: ${{ secrets.TJ_URL }}
           TJ_BOT_EMAIL: ${{ secrets.TJ_BOT_EMAIL }}
           TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
+          LOOP_MINUTES: '345'
+          EVERY_MINUTES: '30'
         run: node monitor.mjs
+      - name: Επόμενη βάρδια παρακολούθησης
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run monitor.yml --repo "${{ github.repository }}" --ref "${{ github.ref_name }}"
