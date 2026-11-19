@@ -21,14 +21,13 @@ async function who(req) {
   throw { code: 'not_granted', status: 403 };
 }
 
-/* Οικονομικά από προεπιλογή: Haiku για τη συζήτηση, Sonnet για τις βαριές αναλύσεις (γραφήματα, προτάσεις τεχνικών).
-   Αλλάζουν από το Vercel (AI_MODEL_DEFAULT / AI_MODEL_COMPLEX) χωρίς αλλαγή κώδικα. */
+/* ΠΑΝΤΟΥ το φθηνό μοντέλο (Haiku). Ακριβότερο μόνο όταν το μέλος το διαλέξει ρητά στο «Μυαλό» του Καθηγητή (tier sonnet/opus). */
+const HAIKU = 'claude-haiku-5-5';
 const MODELS = {
-  quick: process.env.AI_MODEL_QUICK || 'claude-haiku-5-5',
-  default: process.env.AI_MODEL_DEFAULT || 'claude-haiku-5-5',
-  complex: process.env.AI_MODEL_COMPLEX || 'claude-sonnet-5-5',
-  /* επιλογή «Μυαλό» στη σελίδα */
-  haiku: 'claude-haiku-5-5',
+  quick: HAIKU,
+  default: HAIKU,
+  complex: HAIKU,
+  haiku: HAIKU,
   sonnet: 'claude-sonnet-5-5',
   opus: 'claude-opus-5-5'
 };

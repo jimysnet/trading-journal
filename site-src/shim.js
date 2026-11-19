@@ -450,6 +450,7 @@
       var p;
       if (name === 'db') p = memberP.then(function () { return appP }).then(function (a) { return new DB(a.fs) });
       else if (name === 'user') p = memberP.then(function (u) { return appP.then(function (a) { return user(a, u) }) });
+      else if (name === 'sample' && BOT) p = Promise.resolve(null); /* ο φύλακας δεν ξοδεύει AI: όλα του είναι κανόνες */
       else if (name === 'sample') p = memberP.then(function () { return cfgNet.then(function (n) { return n && n.firebase ? n : cfgP }) }).then(function (c) { return c && c.ai ? sampleApi() : null }); /* φρέσκιες ρυθμίσεις: αλλιώς ένα νέο κλειδί AI φαίνεται μόνο στη 2η ανανέωση */
       else if (name === 'mcp') p = Promise.resolve(mcpApi());
       else if (name === 'assets') p = memberP.then(function () { return appP }).then(function (a) { return assetsApi(a) });
