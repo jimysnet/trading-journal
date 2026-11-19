@@ -88,6 +88,8 @@ function subscribe(){
   db.collection('props').onSnapshot(function(s){S.props=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(QZ.tab==='props'&&!$('#profPanel').hidden)renderProps();if(!PP.bf){PP.bf=true;setTimeout(ppBackfill,4000)}},onErr);
   db.collection('qbank').onSnapshot(function(s){S.qb=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});S.qbMap={};S.qb.forEach(function(g){S.qbMap[g.id]=g});if(QZ.tab==='prac'&&!$('#profPanel').hidden&&(!QZ.prac||QZ.prac.ch!=null))renderQPrac()},onErr);
   db.collection('prac').onSnapshot(function(s){S.prac={};s.docs.forEach(function(d){S.prac[d.id]=d.data()});if(!PR.dirty){var m=S.prac[prId()];PR.me=m?JSON.parse(JSON.stringify(m)):null}if(QZ.tab==='prac'||QZ.tab==='board')renderProf()},onErr);
+  /* προσωπικές προτιμήσεις του μέλους στη βάση (όχι μόνο στον browser): ο χαρακτήρας του Καθηγητή μένει ίδιος σε κάθε συσκευή και αν σβηστεί η cache */
+  if(S.uid&&S.uid!=='me')db.collection('uprefs').doc(S.uid).onSnapshot(function(sn){var d=sn.exists&&sn.data()||{};UPF.got=1;if(d.pchar&&PCHARS[d.pchar]){if(d.pchar!==prChar())prSetChar(d.pchar,true)}else if(!UPF.seeded){UPF.seeded=1;upfSave()}},function(){});
   db.collection('class').onSnapshot(function(s){S.cls={};s.docs.forEach(function(d){S.cls[d.id]=d.data()});if(!CLS.dirty){var m0=S.cls[clsId()];CLS.me=m0?JSON.parse(JSON.stringify(m0)):null}renderProfIfClass()},onErr);
   db.collection('confirms').orderBy('at','desc').limit(300).onSnapshot(function(s){S.confirms=s.docs.map(function(d){return Object.assign({id:d.id},d.data())});renderConfirms();if(QZ.tab==='chat'&&!$('#profPanel').hidden&&!PCH.busy&&$('#pchat'))renderChat();loadNames()},onErr);
   arcSub();verSub();setTimeout(function(){try{repSub();aplLoad()}catch(e){}},15000);setInterval(function(){try{repTick()}catch(e){}},10*60000);if(window.__TJ_BOT)setTimeout(flowCollect,30000);setTimeout(function(){try{arcBackfill()}catch(e){}},25000);
@@ -3395,7 +3397,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=318,VERS={sub:null,t:null};
+var APP_VER=319,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5892,7 +5894,9 @@ function pAvTiny(ch){var c=PCHARS[ch]?ch:prChar();return '<span class="prof-svg 
 function prRigHtml(){pstCur();if(prChar()==='sandra')return '<span class="prig c3 '+pstCls()+'"><span class="prig-h"><img class="c3b" src="c3_body.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>';
   if(prChar()==='cigar')return '<span class="prig c2 '+pstCls()+'"><span class="prig-h"><img class="c2b" src="c2_body.webp" alt="" draggable="false"><img class="c2smk" src="c2_smoke.webp" alt="" draggable="false"><span class="c2puff"><i></i><i></i><i></i></span><i class="c2emb"></i><span class="c2ex"><i></i><i></i></span><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>';
   return '<span class="prig '+pstCls()+'"><img class="prig-b" src="prof_body2.webp" alt="" draggable="false"><span class="prig-h"><img src="prof_head2.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>'}
-function prSetChar(c){if(!PCHARS[c])return;try{localStorage.setItem('tj-pchar',c)}catch(e){}
+var UPF={got:0,seeded:0};
+function upfSave(){if(!S.db||!S.uid||S.uid==='me'||window.__TJ_BOT)return;try{S.db.collection('uprefs').doc(S.uid).set({pchar:prChar(),by:S.uid,at:Date.now()},{merge:true}).catch(function(){})}catch(e){}}
+function prSetChar(c,fromDb){if(!PCHARS[c])return;try{localStorage.setItem('tj-pchar',c)}catch(e){}if(!fromDb)upfSave();
   $$('.prig').forEach(function(r){var t=document.createElement('span');t.innerHTML=prRigHtml();r.replaceWith(t.firstChild)});
   $$('.prof-svg img[src="prof_face.jpg"],.prof-svg img[src="c2_face.jpg"],.prof-svg img[src="c3_face.jpg"],img.pface').forEach(function(i){if(!i.closest('.pavfix'))i.src=prFace()});try{pCompact()}catch(e){}try{pstApply()}catch(e){}}
 
