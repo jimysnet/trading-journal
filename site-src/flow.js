@@ -82,7 +82,7 @@
       return loadBars().then(function () { connect(); backfill(); bigHist(); loadOI(); idbLoad(); OPT.lv = null; if (CFG.sh.opt) optLevels(); if (CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && !W.__E9.mpRows() && W.__E9.mp() } catch (x) { } } })
     }).catch(function (e) { if (m === M) { m.err = LX('Δεν ήρθαν δεδομένα από το Binance (') + (e && e.status || LX('δίκτυο')) + ').'; renderHead() } });
   }
-  function stop() { if (M) { M.dead = true; (M.wss || []).forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); clearTimeout(M.rt); clearInterval(M.wd); clearInterval(M.hi); clearInterval(M.oit); idbSave() } }
+  function stop() { if (M) { M.dead = true; (M.wss || []).forEach(function (w) { try { w.onclose = null; w.close() } catch (e) { } }); clearTimeout(M.rt); clearInterval(M.wd); clearInterval(M.hi); clearInterval(M.oit); clearInterval(M.si); clearTimeout(M.book && M.book.rsT); idbSave() } }
 
   function loadBars() {
     var m = M, ms = TF[m.tf];
@@ -142,7 +142,7 @@
     var m = M;
     if (d.e === 'aggTrade') { addTrade(+d.p, +d.q, +d.T, !!d.m, false); return }
     if (d.e === 'depthUpdate') { onDepth(d); return }
-    if (d.e === 'forceOrder') { var o = d.o; m.liq.push({ t: +o.T, side: o.S === 'SELL' ? 'L' : 'S', p: +o.ap || +o.p, q: +o.z || +o.q, usd: (+o.ap || +o.p) * (+o.z || +o.q) }); if (m.liq.length > 800) m.liq.shift(); DIRTY = true; renderSide(); return }
+    if (d.e === 'forceOrder') { var o = d.o; if (m.liq.length && +o.T < m.liq[m.liq.length - 1].t) m.liq._u = 1; m.liq.push({ t: +o.T, side: o.S === 'SELL' ? 'L' : 'S', p: +o.ap || +o.p, q: +o.z || +o.q, usd: (+o.ap || +o.p) * (+o.z || +o.q) }); if (m.liq.length > 800) m.liq.shift(); DIRTY = true; renderSide(); return }
     if (d.e === 'markPriceUpdate') { m.mark = { p: +d.p, i: +d.i, r: +d.r, T: +d.T }; return }
     if (d.e === '24hrTicker') { m.t24 = { lastPrice: d.c, priceChangePercent: d.P, quoteVolume: d.q }; return }
   }
@@ -155,9 +155,14 @@
     b.u = d.lastUpdateId; b.last = 0; b.ok = true;
     var buf = b.buf; b.buf = []; buf.forEach(function (e) { if (e.u >= b.u) applyDepth(e) })
   }
+  /* νέο αντίγραφο του βιβλίου. Όσο περιμένουμε (και στο όριο των 3″ μεταξύ αιτημάτων) οι ενημερώσεις ΚΡΑΤΙΟΥΝΤΑΙ στην άκρη και
+     εφαρμόζονται πάνω στο αντίγραφο· αν το αίτημα αργήσει ή αποτύχει, ξαναδοκιμάζει μόνο του */
   function resync() {
-    var m = M; if (m.book.sync && Date.now() - m.book.sync < 3000) return; m.book.sync = Date.now(); m.book.ok = false;
-    bn(m.venue, m.venue === 'f' ? '/fapi/v1/depth' : '/api/v3/depth', 'symbol=' + m.pair + '&limit=1000').then(function (d) { if (m === M) bookSnap(d) }).catch(function () { })
+    var m = M, b = m.book; b.ok = false;
+    var later = function (ms) { if (b.rsT) return; b.rsT = setTimeout(function () { b.rsT = 0; if (m === M && !m.dead && !b.ok) resync() }, ms) };
+    var wait = b.sync ? 3000 - (Date.now() - b.sync) : 0; if (wait > 0) { later(wait + 20); return }
+    b.sync = Date.now();
+    bn(m.venue, m.venue === 'f' ? '/fapi/v1/depth' : '/api/v3/depth', 'symbol=' + m.pair + '&limit=1000').then(function (d) { if (m === M) bookSnap(d) }).catch(function () { if (m === M) later(3000) })
   }
   function onDepth(e) {
     var b = M.book; if (!b.ok) { b.buf.push(e); if (b.buf.length > 400) b.buf.shift(); return }
@@ -209,10 +214,10 @@
     var m = M; m.sizes.push(g.usd); if (m.sizes.length > 4000) m.sizes.splice(0, 1000);
     if (m.sizes.length % 500 === 0 && m.sizes.length >= 1500) { var s = m.sizes.slice().sort(function (a, b) { return a - b }), nv = s[Math.floor(s.length * 0.995)]; m.bigAuto = m.bigAuto ? m.bigAuto * 0.8 + nv * 0.2 : nv }
     var th = bigTh(), o = { t: g.T, s: g.s, q: g.q, usd: g.usd, p: g.usd / g.q, pmin: g.pmin, pmax: g.pmax, n: g.n };
-    if (g.usd >= th) { m.big.push(o); if (m.big.length > 60000) { m.big.sort(function (a, b) { return a.t - b.t }); m.big.splice(0, m.big.length - 50000) } var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
+    if (g.usd >= th) { if (m.big.length && o.t < m.big[m.big.length - 1].t) m.big._u = 1; m.big.push(o); if (m.big.length > 60000) { m.big.sort(function (a, b) { return a.t - b.t }); m.big.splice(0, m.big.length - 50000) } var t1 = Math.floor(g.T / 6e4) * 6e4; m.bd1[t1] = (m.bd1[t1] || 0) + (g.s ? g.q : -g.q) }
     if (g.live && CFG.al.big && !CFG.al.off && g.usd >= th * (CFG.al.bigx || 3)) fire((g.s ? '🟢 ' : '🔴 ') + T('Μεγάλη ', 'Big ') + (g.s ? T('αγορά ', 'buy ') : T('πώληση ', 'sell ')) + usd(g.usd) + ' @ ' + (g.usd / g.q).toFixed(m.dec), 1)
     var lv = Math.round((g.pmax - g.pmin) / (m.tick || m.bucket)) + 1;
-    if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; m.sw.push(o); if (m.sw.length > 3000) { m.sw.sort(function (a, b) { return a.t - b.t }); m.sw.splice(0, m.sw.length - 2000) } }
+    if (lv >= 4 && g.usd >= th * 0.35) { o.lv = lv; if (m.sw.length && o.t < m.sw[m.sw.length - 1].t) m.sw._u = 1; m.sw.push(o); if (m.sw.length > 3000) { m.sw.sort(function (a, b) { return a.t - b.t }); m.sw.splice(0, m.sw.length - 2000) } }
   }
   /* iceberg: σε ένα επίπεδο εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο, και το επίπεδο ακόμα κρατά */
   function iceCheck(p, q, side, T) {
@@ -229,12 +234,20 @@
   function idbKey() { return M.venue + '|' + M.pair + '|' + M.bucket }
   function idbLoad() {
     var m = M; idb().then(function (db) { var tx = db.transaction('fp', 'readonly'), r = tx.objectStore('fp').get(idbKey()); r.onsuccess = function () { if (m !== M || !r.result) return; var o = r.result, cut = Date.now() - 3 * 864e5; for (var t in o) { if (+t < cut || m.fp1[t]) continue; m.fp1[t] = o[t]; if (+t < m.fpFrom) m.fpFrom = +t } m.fpVer = (m.fpVer || 0) + 1; rebuildFp(); DIRTY = true } }).catch(function () { });
-    clearInterval(m.si); m.si = setInterval(idbSave, 60000)
+    clearInterval(m.si); m.si = setInterval(function () { if (m !== M) { clearInterval(m.si); return } idbSave(); prune() }, 60000)
   }
   function idbSave() {
     var m = M; if (!m || !m.bucket) return; var o = {}, cut = Date.now() - 3 * 864e5, now = Math.floor(Date.now() / 6e4) * 6e4;
     for (var t in m.fp1) if (+t >= cut && +t < now) o[t] = m.fp1[t];
     idb().then(function (db) { var tx = db.transaction('fp', 'readwrite'); tx.objectStore('fp').put(o, m.venue + '|' + m.pair + '|' + m.bucket) }).catch(function () { })
+  }
+  /* η μνήμη δεν μεγαλώνει χωρίς όριο όσο μένει ανοιχτή η καρτέλα: κρατά 3 μέρες footprint (έως 7, όσο δείχνουν τα κεριά σε μεγάλο TF) */
+  function prune() {
+    var m = M; if (!m) return; var now = Date.now(), b0 = m.bars.length ? m.bars[0].t : now, cut = Math.max(now - 7 * 864e5, Math.min(now - 3 * 864e5, b0)), n = 0;
+    for (var t in m.fp1) if (+t < cut) { delete m.fp1[t]; n++ }
+    for (var t2 in m.bd1) if (+t2 < cut) delete m.bd1[t2];
+    if (m.tf !== '1m') { var bc = barT(cut, m.tf); for (var t3 in m.fp) if (+t3 < bc) { delete m.fp[t3]; n++ } }
+    if (n) { if (m.fpFrom < cut) m.fpFrom = cut; m.rc = {}; m.fpVer++; DIRTY = true }
   }
   function rebuildFp() { var m = M; if (m.tf === '1m') return; var ms = TF[m.tf]; m.fp = {}; for (var t in m.fp1) { var bt = barT(+t, m.tf), f = m.fp[bt] || (m.fp[bt] = { l: {} }), L = m.fp1[t].l; for (var k in L) { var c = f.l[k] || (f.l[k] = [0, 0]); c[0] += L[k][0]; c[1] += L[k][1] } } }
   function fpOf(t) { return M.tf === '1m' ? M.fp1[t] : M.fp[t] }
@@ -544,18 +557,22 @@
     if (SIDE === 'al') renderSide(true)
   }
   function inView(t) { var x = xOfT(t); return x > -20 && x < Lay.R + 20 }
+  /* μόνο ό,τι φαίνεται: οι λίστες είναι ταξινομημένες κατά ώρα, βρίσκουμε με δυαδική αναζήτηση την αρχή και σταματάμε στο τέλος της οθόνης */
+  function tSpan() { var b = M.bars, ms = TF[M.tf]; if (!b.length) return [0, -1]; return [b[0].t + (iOfX(-60) - 1) * ms, b[0].t + (iOfX(Lay.R + 60) + 2) * ms] }
+  function lbT(A, t) { var lo = 0, hi = A.length; while (lo < hi) { var mid = (lo + hi) >> 1; if (A[mid].t < t) lo = mid + 1; else hi = mid } return lo }
+  function eachVis(A, fn) { if (!A.length) return; if (A._u || A[A.length - 1].t < (A._lt || 0)) { A.sort(function (a, b) { return a.t - b.t }); A._u = 0 } A._lt = A[A.length - 1].t; var r = tSpan(); for (var i = lbT(A, r[0]); i < A.length && A[i].t <= r[1]; i++) { if (inView(A[i].t)) fn(A[i]) } }
   function drawBig(g) {
-    var th = bigTh(); M.big.forEach(function (o) {
-      if (!inView(o.t) || o.usd < th) return; var x = xOfT(o.t), y = yOf(o.p), r = clamp(5 * Math.sqrt(o.usd / th), 4, 34);
+    var th = bigTh(); eachVis(M.big, function (o) {
+      if (o.usd < th) return; var x = xOfT(o.t), y = yOf(o.p), r = clamp(5 * Math.sqrt(o.usd / th), 4, 34);
       g.beginPath(); g.arc(x, y, r, 0, 7); g.fillStyle = o.s ? 'rgba(34,194,127,.42)' : 'rgba(239,79,95,.42)'; g.fill(); g.strokeStyle = o.s ? '#6dffb8' : '#ff8f9b'; g.stroke();
       if (r >= 13) { g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(usd(o.usd), x, y) }
     })
   }
-  function drawSweeps(g) { M.sw.forEach(function (o) { if (!inView(o.t)) return; var x = xOfT(o.t), ya = yOf(o.s ? o.pmin : o.pmax), yb = yOf(o.s ? o.pmax : o.pmin); g.strokeStyle = C.sw; g.lineWidth = 2; g.beginPath(); g.moveTo(x, ya); g.lineTo(x, yb); g.stroke(); g.beginPath(); var d = o.s ? -1 : 1; g.moveTo(x - 5, yb - d * 7); g.lineTo(x, yb); g.lineTo(x + 5, yb - d * 7); g.stroke(); g.lineWidth = 1 }) }
+  function drawSweeps(g) { eachVis(M.sw, function (o) { var x = xOfT(o.t), ya = yOf(o.s ? o.pmin : o.pmax), yb = yOf(o.s ? o.pmax : o.pmin); g.strokeStyle = C.sw; g.lineWidth = 2; g.beginPath(); g.moveTo(x, ya); g.lineTo(x, yb); g.stroke(); g.beginPath(); var d = o.s ? -1 : 1; g.moveTo(x - 5, yb - d * 7); g.lineTo(x, yb); g.lineTo(x + 5, yb - d * 7); g.stroke(); g.lineWidth = 1 }) }
   function drawIce(g) { M.ice.forEach(function (o) { if (!inView(o.t)) return; var x = xOfT(o.t), y = yOf(o.p); g.strokeStyle = C.ice; g.lineWidth = 1.5; g.strokeRect(x - 5, y - 5, 10, 10); g.beginPath(); g.moveTo(x - 5, y); g.lineTo(x + 5, y); g.stroke(); g.lineWidth = 1 }) }
   function drawLiq(g) {
-    M.liq.forEach(function (o) {
-      if (!inView(o.t)) return; var x = xOfT(o.t), y = yOf(o.p), r = clamp(4 * Math.sqrt(o.usd / 20000), 4, 22);
+    eachVis(M.liq, function (o) {
+      var x = xOfT(o.t), y = yOf(o.p), r = clamp(4 * Math.sqrt(o.usd / 20000), 4, 22);
       g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); g.fillStyle = o.side === 'L' ? 'rgba(255,176,32,.75)' : 'rgba(94,240,255,.6)'; g.fill(); g.strokeStyle = '#000'; g.stroke();
       if (r >= 12) { g.fillStyle = '#000'; g.textAlign = 'center'; g.fillText(fv(o.usd), x, y) }
     })
