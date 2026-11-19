@@ -26,7 +26,11 @@ async function who(req) {
 const MODELS = {
   quick: process.env.AI_MODEL_QUICK || 'claude-haiku-5-5',
   default: process.env.AI_MODEL_DEFAULT || 'claude-haiku-5-5',
-  complex: process.env.AI_MODEL_COMPLEX || 'claude-sonnet-5-5'
+  complex: process.env.AI_MODEL_COMPLEX || 'claude-sonnet-5-5',
+  /* επιλογή «Μυαλό» στη σελίδα */
+  haiku: 'claude-haiku-5-5',
+  sonnet: 'claude-sonnet-5-5',
+  opus: 'claude-opus-5-5'
 };
 
 /* απλό όριο ανά μέλος (ανά instance), για να μη φύγει ο λογαριασμός από κάποιο λάθος βρόχο */
@@ -46,10 +50,10 @@ module.exports = async (req, res) => {
   try { me = await who(req) } catch (e) { res.status((e && e.status) || 401).send(JSON.stringify({ error: { code: 'not_granted' } })); return }
   if (!rate(me.uid)) { res.status(429).send('{"error":{"code":"rate_limited"}}'); return }
   const b = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-  const tier = MODELS[b.tier] ? b.tier : 'default';
+  const tier = Object.prototype.hasOwnProperty.call(MODELS, b.tier) ? b.tier : 'default';
   const body = {
     model: MODELS[tier],
-    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || (tier === 'complex' ? 3000 : 1500)),
+    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || (/complex|sonnet|opus/.test(tier) ? 3000 : 2000)),
     messages: Array.isArray(b.messages) ? b.messages : [],
     system: 'Είσαι ο «Καθηγητής» σε ένα κοινό ημερολόγιο συναλλαγών μιας παρέας. Ακολούθησε τις οδηγίες του μηνύματος.' + (b.json ? ' Η απάντησή σου πρέπει να είναι μόνο έγκυρο JSON.' : '')
   };

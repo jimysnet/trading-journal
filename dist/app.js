@@ -1162,7 +1162,7 @@ function nowAI(){
     (window.I18N&&I18N.lang==='ru'?'Γράψε στα ρωσικά (на русском языке),':'Γράψε στα ελληνικά,')+' απλό κείμενο χωρίς markdown, έως 180 λέξεις.\n\nΔΕΔΟΜΕΝΑ (JSON):\n'+JSON.stringify(data);
   if(nowCtl)nowCtl.abort();nowCtl=new AbortController();
   box.hidden=false;btn.disabled=true;box.textContent='Ο Claude εξετάζει την πρόταση…';
-  S.sample(prompt,{onText:function(u){box.textContent=u.text},signal:nowCtl.signal,modelTier:'default',cache:false})
+  S.sample(prompt,{onText:function(u){box.textContent=u.text},signal:nowCtl.signal,modelTier:aiTier(),cache:false})
    .then(function(r){box.textContent=r.text})
    .catch(function(e){if(e&&e.name==='AbortError')return;var c=e&&e.code;if(c==='not_granted'){btn.hidden=true;box.hidden=true;return}
      box.textContent=c==='rate_limited'?'Πολλά αιτήματα. Ξαναδοκίμασε σε λίγα λεπτά.':'Η ανάλυση δεν ολοκληρώθηκε. Ξαναδοκίμασε αργότερα.'})
@@ -2159,7 +2159,7 @@ function prGen(manual){if(!S.sample||QZ.genBusy)return;QZ.genBusy=true;if(QZ.tab
     'Να είναι ακριβείς, με μία σαφώς σωστή απάντηση και 3 εύλογες λάθος. Χωρίς τρέχουσες τιμές και χωρίς συμβουλές αγοράς. ΜΗΝ επαναλάβεις ούτε να παραφράσεις αυτές που υπάρχουν ήδη:\n- '+have.slice(-60).map(function(x){return String(x).slice(0,110)}).join('\n- ')+
     '\n\nΓλώσσα: '+(LANG_RU()?'ρωσικά':'ελληνικά')+'. Απάντησε ΜΟΝΟ με JSON πίνακα: [{"q":"ερώτηση","o":["α","β","γ","δ"],"a":0,"e":"εξήγηση 1-2 προτάσεις","lv":1}]. "a" ο δείκτης της σωστής (0-3), ανακάτεψε τη θέση της. "lv" 1, 2 ή 3.';
   var known={};have.forEach(function(x){known[prNorm(x)]=1});
-  S.sample(prompt,{modelTier:'default',effort:'low',cache:false}).then(function(r){
+  S.sample(prompt,{modelTier:aiTier(),effort:'low',cache:false}).then(function(r){
     var t=String(r.text||''),m=t.match(/\[[\s\S]*\]/),arr=[];try{arr=JSON.parse(m?m[0]:t)}catch(e){}
     arr=(arr||[]).filter(function(x){return x&&typeof x.q==='string'&&Array.isArray(x.o)&&x.o.length===4&&x.a>=0&&x.a<4&&!known[prNorm(x.q)]}).slice(0,6);
     if(!arr.length)throw {code:'parse'};
@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=312,VERS={sub:null,t:null};
+var APP_VER=313,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5388,7 +5388,7 @@ function labPrompt(){var mk=(AP.watch||[]).slice(0,10).map(function(w){return w.
    '\n\nΑπάντησε JSON: {"ideas":[{"name":"σύντομο ελληνικό όνομα","why":"1-2 προτάσεις στα ελληνικά: τι εκμεταλλεύεται και γιατί τώρα","src":"από ποιον αναλυτή/ιδέα εμπνεύστηκε","fit":"trend|range","dir":"both|long|short","bl":[["block_key",{"param":τιμή}]],"st":["atr",{"k":1.5}],"X":2}]}'}
 function labRunAI(){if(LAB.busy)return;if(!S.sample){toast('Χρειάζεται το Claude μέσα στη σελίδα, που δεν είναι διαθέσιμο εδώ.');return}if(!qCanSave()){toast('Χρειάζεσαι δικαίωμα Editor.');return}
   LAB.busy=true;LAB.ctl={stop:false};labRender();labProg('Ο Claude διαβάζει αγορά, ειδήσεις και tips αναλυτών…');var fee=0.15,ideas;
-  S.sample.json(labPrompt(),{modelTier:'default',cache:false}).then(function(r){ideas=(r&&r.ideas||[]).slice(0,6);if(!ideas.length)throw {code:'invalid_json'};labProg('Δοκιμάζω '+ideas.length+' ιδέες σε πραγματικά κεριά…');return labData(labProg)})
+  S.sample.json(labPrompt(),{modelTier:aiTier(),cache:false}).then(function(r){ideas=(r&&r.ideas||[]).slice(0,6);if(!ideas.length)throw {code:'invalid_json'};labProg('Δοκιμάζω '+ideas.length+' ιδέες σε πραγματικά κεριά…');return labData(labProg)})
   .then(function(D){if(D.length<3)throw {code:'no_data',m:'Λίγα κεριά'};var made=0,passed=0,bad=0;
     ideas.forEach(function(it){var sp=genClean(it);if(!sp){bad++;return}var res=labJudge(sp,D,fee);var id=labSave(sp,'ai',{name:it.name,why:it.why,src:it.src,fit:it.fit==='range'?'range':it.fit==='trend'?'trend':genFit(sp)},res);if(id){made++;if(res.pass)passed++}});
     labLog('🎓 Ο Claude πρότεινε '+ideas.length+' ιδέες'+(bad?' ('+bad+' άκυρες)':'')+'. Δοκιμάστηκαν '+made+', πέρασαν το τελικό τεστ: '+passed+'.');toast(passed?'🧪 '+passed+' ιδέα/ες του Claude πέρασαν το τεστ και μπήκαν στον Αυτόματο.':'🧪 Οι ιδέες δοκιμάστηκαν. Καμία δεν πέρασε το τελικό τεστ.')})
@@ -5884,6 +5884,7 @@ function prSetChar(c){if(!PCHARS[c])return;try{localStorage.setItem('tj-pchar',c
   $$('.prig').forEach(function(r){var t=document.createElement('span');t.innerHTML=prRigHtml();r.replaceWith(t.firstChild)});
   $$('.prof-svg img[src="prof_face.jpg"],.prof-svg img[src="c2_face.jpg"],.prof-svg img[src="c3_face.jpg"],img.pface').forEach(function(i){if(!i.closest('.pavfix'))i.src=prFace()});try{pCompact()}catch(e){}try{pstApply()}catch(e){}}
 
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='pBrain'){PCH.vset.brain=e.target.value;pVsave();try{toast(e.target.value==='h'?'🟢 Ο Καθηγητής σε οικονομική λειτουργία.':'Ο Καθηγητής θα απαντά με '+AIB[aiBrain()][1]+'. Θυμήσου να τον γυρίσεις στο Οικονομικό.')}catch(_){}}});
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='pChar'){prSetChar(e.target.value);try{toast(e.target.value==='cigar'?'🚬 Ο Καθηγητής με το πούρο ήρθε.':'👔 Γύρισε ο κλασικός Καθηγητής.')}catch(_){}}});
 function prHeads(){return Array.prototype.filter.call(document.querySelectorAll('.prig-h'),function(h){return h.offsetParent})}
 function prStart(){if(PR.on)return;try{PR.reduce=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}PR.on=true;
@@ -6653,6 +6654,10 @@ function gPick(files){
 var PCH={imgs:[],imgCap:null,msgs:[],busy:false,ctl:null,voice:false,lastVoice:false,rec:null,listening:false,toolsOk:null,vset:{voice:'',rate:1,convo:false},vopen:false,speaking:false};
 try{var _vs=JSON.parse(localStorage.getItem('tj-pvset')||'null');if(_vs)PCH.vset=Object.assign(PCH.vset,_vs)}catch(e){}
 function pVsave(){try{localStorage.setItem('tj-pvset',JSON.stringify(PCH.vset))}catch(e){}}
+/* «Μυαλό» του Καθηγητή: Οικονομικό (Haiku) από προεπιλογή· ο χρήστης το ανεβάζει όποτε θέλει (κρατιέται σε αυτή τη συσκευή) */
+var AIB={h:['haiku','🟢 Οικονομικό (Haiku)'],s:['sonnet','🟡 Έξυπνο (Sonnet · ~20× ακριβότερο)'],o:['opus','🔴 Πολύ έξυπνο (Opus · ~40× ακριβότερο)']};
+function aiBrain(){var b=PCH&&PCH.vset&&PCH.vset.brain;return AIB[b]?b:'h'}
+function aiTier(){return AIB[aiBrain()][0]}
 function pOS(){var u=navigator.userAgent||'';return /iPhone|iPad|iPod/.test(u)?'ios':/Android/.test(u)?'android':/Mac/.test(u)?'mac':/Win/.test(u)?'win':'other'}
 function pDictHint(){var o=pOS();return o==='win'?'Πάτα <b>Win + H</b> (φωνητική πληκτρολόγηση των Windows) και μίλα.':o==='mac'?'Πάτα <b>δύο φορές το Fn</b> (ή 🌐) για υπαγόρευση και μίλα.':o==='ios'?'Πάτα το <b>μικρόφωνο του πληκτρολογίου</b> (κάτω δεξιά) και μίλα.':o==='android'?'Πάτα το <b>μικρόφωνο του πληκτρολογίου</b> (Gboard) και μίλα.':'Χρησιμοποίησε την υπαγόρευση του συστήματός σου και μίλα.'}
 function pVoices(){var vs=window.speechSynthesis?speechSynthesis.getVoices():[],lg=LANG_RU()?'ru':'el';return vs.slice().sort(function(a,b){var A=(a.lang||'').toLowerCase().indexOf(lg)===0?0:1,B=(b.lang||'').toLowerCase().indexOf(lg)===0?0:1;return A-B||(a.name>b.name?1:-1)})}
@@ -6872,7 +6877,7 @@ function renderChat(){
   if(PCH.busy)h+='<div class="pmsg a"><span class="pav">'+profSvg('tiny talk')+'</span><div class="pbub ud" id="pLive"><span class="pdots"><i></i><i></i><i></i></span></div></div>';
   h+='</div>'+(PCH.imgs.length?'<div class="pprev">'+PCH.imgs.map(function(x,i){return '<span class="thumb"><img src="'+x.thumb+'" alt=""><button type="button" class="x" data-unimg="'+i+'" aria-label="Αφαίρεση εικόνας">×</button></span>'}).join('')+'</div>':'')+'<div class="pinput"><textarea id="pq" rows="3" placeholder="'+(PCH.imgs.length?'Τι θες να δω στην εικόνα; (προαιρετικό)':'Ρώτα τον Καθηγητή…')+'" aria-label="Ερώτηση στον Καθηγητή"></textarea>'+
     '<div class="pbtns"><div class="row" style="gap:.3rem;flex-wrap:nowrap">'+(PCH.imgCap?'<label class="pmic pimg" aria-label="Στείλε εικόνα">'+imgIcon()+'<input type="file" id="pFile" accept="'+esc(PCH.imgCap.join(','))+'" multiple hidden></label>':'')+emoBtn('pq')+'<button type="button" class="pmic'+(PCH.listening?' on':'')+'" id="pMic" aria-label="Μίλα στον Καθηγητή">'+micIcon()+'</button></div><button type="button" class="btn primary" id="pSend" aria-label="Στείλε" title="Στείλε (Enter)"'+(PCH.busy?' disabled':'')+'>Στείλε</button></div></div>'+
-    '<button type="button" class="btn small pstop" id="pStop" hidden>⏹ Σταμάτα</button><div class="row pfoot"><label class="check" style="gap:.3rem">Μηνύματα Καθηγητή <select id="pNudge" class="dmsel" style="padding:.15rem .3rem"><option value="few"'+(nudgeMode()==='few'?' selected':'')+'>Λίγα (έως 2 τη μέρα)</option><option value="normal"'+(nudgeMode()==='normal'?' selected':'')+'>Κανονικά</option><option value="off"'+(nudgeMode()==='off'?' selected':'')+'>Καθόλου</option></select></label><label class="check"><input type="checkbox" id="pVoice"'+(PCH.voice?' checked':'')+'> <span>Ο Καθηγητής απαντάει και με φωνή</span></label><button type="button" class="linkbtn" id="pVset">⚙️ Ρυθμίσεις φωνής</button><label class="check" style="gap:.3rem">Χαρακτήρας <select id="pChar" class="dmsel" style="padding:.15rem .3rem">'+Object.keys(PCHARS).map(function(k){return '<option value="'+k+'"'+(prChar()===k?' selected':'')+'>'+PCHARS[k].n+'</option>'}).join('')+'</select></label>'+(PCH.msgs.length?'<button type="button" class="linkbtn" id="pNew">Νέα συζήτηση</button>':'')+'</div>'+pVpanel()+
+    '<button type="button" class="btn small pstop" id="pStop" hidden>⏹ Σταμάτα</button><div class="row pfoot"><label class="check" style="gap:.3rem">Μηνύματα Καθηγητή <select id="pNudge" class="dmsel" style="padding:.15rem .3rem"><option value="few"'+(nudgeMode()==='few'?' selected':'')+'>Λίγα (έως 2 τη μέρα)</option><option value="normal"'+(nudgeMode()==='normal'?' selected':'')+'>Κανονικά</option><option value="off"'+(nudgeMode()==='off'?' selected':'')+'>Καθόλου</option></select></label><label class="check"><input type="checkbox" id="pVoice"'+(PCH.voice?' checked':'')+'> <span>Ο Καθηγητής απαντάει και με φωνή</span></label><button type="button" class="linkbtn" id="pVset">⚙️ Ρυθμίσεις φωνής</button><label class="check" style="gap:.3rem">Χαρακτήρας <select id="pChar" class="dmsel" style="padding:.15rem .3rem">'+Object.keys(PCHARS).map(function(k){return '<option value="'+k+'"'+(prChar()===k?' selected':'')+'>'+PCHARS[k].n+'</option>'}).join('')+'</select></label><label class="check" style="gap:.3rem">Μυαλό <select id="pBrain" class="dmsel" style="padding:.15rem .3rem">'+Object.keys(AIB).map(function(k){return '<option value="'+k+'"'+(aiBrain()===k?' selected':'')+'>'+AIB[k][1]+'</option>'}).join('')+'</select></label>'+(PCH.msgs.length?'<button type="button" class="linkbtn" id="pNew">Νέα συζήτηση</button>':'')+'</div>'+pVpanel()+
     '<p class="muted pnote" id="pNote"></p>';
   var keep=$('#pq')?$('#pq').value:'',prevTop=body.scrollTop;
   body.innerHTML=h;$('#pq').value=keep;if(keep){var qq=$('#pq');qq.style.height='auto';qq.style.height=Math.min(qq.scrollHeight+2,window.innerHeight*.45)+'px'}if(PCH.dict){var d0=PCH.dict;PCH.dict=null;pDictMode();PCH.dict.base=d0.base;PCH.dict.last=d0.last}pScrollChat(body,prevTop);pStopVis();
@@ -6919,7 +6924,7 @@ function pAsk(q,byVoice){
   if(PCH.ctl)PCH.ctl.abort();PCH.ctl=new AbortController();
   var go=function(useTools){
     var heavy=imgs.length>0||/τεχνικ|πρότειν|προτειν|ανάλυσ|αναλυσ|setup|σενάρι|είσοδ|stop|στόχ|επίπεδ|long|short|γράφημα|chart|analy|предлож|техник|анализ/i.test(q);
-    var opt={signal:PCH.ctl.signal,modelTier:heavy?'complex':'default',effort:heavy?'medium':'low',fast:'auto',cache:false,onText:function(u){var el=$('#pLive');if(el)el.innerHTML=pLinkify(techStrip(u.text));if(el&&!PCH.liveTop){PCH.liveTop=1;var b=$('#profBody');if(b)pScrollTo(b,el.closest('.pmsg'))}}};
+    var opt={signal:PCH.ctl.signal,modelTier:aiTier(),effort:heavy?'medium':'low',fast:'auto',cache:false,onText:function(u){var el=$('#pLive');if(el)el.innerHTML=pLinkify(techStrip(u.text));if(el&&!PCH.liveTop){PCH.liveTop=1;var b=$('#profBody');if(b)pScrollTo(b,el.closest('.pmsg'))}}};
     if(useTools)opt.tools=useTools;if(imgs.length)opt.images=imgs.map(function(x){return x.blob});
     return S.sample(msgs,opt);
   };
@@ -7394,7 +7399,7 @@ document.addEventListener('click',function(e){
   if(b.id==='rvAsk'){
     if(!S.sample){revCopy(revSumPrompt());return}
     REV.sumBusy=true;REV.live='Ο Καθηγητής διαβάζει όλο το ημερολόγιο…';revRender();var scope=(REV.who==='all'?'όλη η παρέα':REV.who==='me'?name(S.uid):name(REV.who))+' · '+(REV.per==='all'?'όλο το ιστορικό':REV.per+' μέρες');
-    S.sample(revSumPrompt(),{onText:function(u){REV.live=u.text;var o=$('#rvOut');if(o){o.hidden=false;o.textContent=u.text}},modelTier:'complex',cache:false}).then(function(r){REV.live='';return put('reviews','sum_'+Date.now()+'_'+safeSeg(S.uid||'me'),{kind:'sum',by:S.uid||'',ai:String(r.text||'').slice(0,12000),scope:scope,at:Date.now()})})
+    S.sample(revSumPrompt(),{onText:function(u){REV.live=u.text;var o=$('#rvOut');if(o){o.hidden=false;o.textContent=u.text}},modelTier:aiTier(),cache:false}).then(function(r){REV.live='';return put('reviews','sum_'+Date.now()+'_'+safeSeg(S.uid||'me'),{kind:'sum',by:S.uid||'',ai:String(r.text||'').slice(0,12000),scope:scope,at:Date.now()})})
      .catch(function(x){REV.live=x&&x.code==='not_granted'?'Ο Καθηγητής-AI δεν είναι ενεργός (χρειάζεται κλειδί Anthropic στο Vercel). Χρησιμοποίησε το «📋 Για το claude.ai».':'Ο απολογισμός δεν ολοκληρώθηκε. Ξαναδοκίμασε σε λίγο.'}).then(function(){REV.sumBusy=false;revRender()});return}
   var id=b.getAttribute('data-rvmark')||b.getAttribute('data-rvsave')||b.getAttribute('data-rvai')||b.getAttribute('data-rvcopy'),t=S.trades.find(function(x){return x.id===id});if(!t)return;
   if(b.hasAttribute('data-rvmark')){var rv=revGet(t),marks=(rv&&rv.marks?rv.marks:revScan([t])[t.id].f).slice(),m=b.getAttribute('data-m'),i=marks.indexOf(m);if(i>=0)marks.splice(i,1);else marks.push(m);var les=document.querySelector('[data-rvles="'+id+'"]');revSave(t,{marks:marks,lesson:les?les.value.slice(0,2000):(rv&&rv.lesson||'')}).then(function(){revRender()}).catch(function(x){toast(writeErr(x))});return}
@@ -7403,7 +7408,7 @@ document.addEventListener('click',function(e){
   if(b.hasAttribute('data-rvai')){
     if(!S.sample){revCtx(t).then(function(ctx){revCopy(revTradePrompt(t,ctx))});return}
     REV.busy[id]='Ο Καθηγητής κοιτάζει τα κεριά της στιγμής…';revRender();
-    revCtx(t).then(function(ctx){return S.sample(revTradePrompt(t,ctx),{onText:function(u){REV.busy[id]=u.text;var o=document.getElementById('rvAi_'+id);if(o){o.hidden=false;o.textContent=u.text}},modelTier:'default',cache:false})})
+    revCtx(t).then(function(ctx){return S.sample(revTradePrompt(t,ctx),{onText:function(u){REV.busy[id]=u.text;var o=document.getElementById('rvAi_'+id);if(o){o.hidden=false;o.textContent=u.text}},modelTier:aiTier(),cache:false})})
      .then(function(r){delete REV.busy[id];var ta=document.querySelector('[data-rvles="'+id+'"]');return revSave(t,{ai:String(r.text||'').slice(0,6000),lesson:ta?ta.value.slice(0,2000):undefined})})
      .catch(function(x){REV.busy[id]=x&&x.code==='not_granted'?'Ο Καθηγητής-AI δεν είναι ενεργός. Πάτα «📋 Για το claude.ai».':'Δεν ολοκληρώθηκε. Ξαναδοκίμασε σε λίγο.';setTimeout(function(){delete REV.busy[id]},8000)}).then(function(){revRender()});return}
 });
@@ -7428,7 +7433,7 @@ function runAI(){
     'Αν τα δεδομένα δεν αρκούν για κάποιο συμπέρασμα, πες το.\n\nΔΕΔΟΜΕΝΑ (JSON):\n'+JSON.stringify(data);
   if(aiCtl)aiCtl.abort();aiCtl=new AbortController();
   btn.disabled=true;out.textContent='Ο Claude διαβάζει το ημερολόγιο…';
-  S.sample(prompt,{onText:function(u){out.textContent=u.text},signal:aiCtl.signal,modelTier:'default',cache:false})
+  S.sample(prompt,{onText:function(u){out.textContent=u.text},signal:aiCtl.signal,modelTier:aiTier(),cache:false})
    .then(function(r){out.textContent=r.text})
    .catch(function(e){
      if(e&&e.name==='AbortError')return;
