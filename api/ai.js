@@ -21,15 +21,15 @@ async function who(req) {
   throw { code: 'not_granted', status: 403 };
 }
 
-/* ΠΑΝΤΟΥ το φθηνό μοντέλο (Haiku). Ακριβότερο μόνο όταν το μέλος το διαλέξει ρητά στο «Μυαλό» του Καθηγητή (tier sonnet/opus). */
+/* ΠΑΝΤΟΥ και ΜΟΝΟ το φθηνό μοντέλο (Haiku), ό,τι κι αν ζητήσει η σελίδα. */
 const HAIKU = 'claude-haiku-5-5';
 const MODELS = {
   quick: HAIKU,
   default: HAIKU,
   complex: HAIKU,
   haiku: HAIKU,
-  sonnet: 'claude-sonnet-5-5',
-  opus: 'claude-opus-5-5'
+  sonnet: HAIKU,
+  opus: HAIKU
 };
 
 /* απλό όριο ανά μέλος (ανά instance), για να μη φύγει ο λογαριασμός από κάποιο λάθος βρόχο */
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
   const tier = Object.prototype.hasOwnProperty.call(MODELS, b.tier) ? b.tier : 'default';
   const body = {
     model: MODELS[tier],
-    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || (/complex|sonnet|opus/.test(tier) ? 3000 : 2000)),
+    max_tokens: Math.min(16000, +process.env.AI_MAX_TOKENS || 2000),
     messages: Array.isArray(b.messages) ? b.messages : [],
     system: 'Είσαι ο «Καθηγητής» σε ένα κοινό ημερολόγιο συναλλαγών μιας παρέας. Ακολούθησε τις οδηγίες του μηνύματος.' + (b.json ? ' Η απάντησή σου πρέπει να είναι μόνο έγκυρο JSON.' : '')
   };
