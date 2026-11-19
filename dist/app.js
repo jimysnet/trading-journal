@@ -3388,7 +3388,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=313,VERS={sub:null,t:null};
+var APP_VER=314,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -5565,7 +5565,7 @@ function agClean(r){var s=function(x,m){return String(x==null?'':x).slice(0,m||6
 function agRun(){if(AG.busy)return;if(!S.sample){toast('Ο Agent χρειάζεται το Claude μέσα στη σελίδα, που δεν είναι διαθέσιμο σε αυτή την προβολή.');return}
   AG.busy=true;AG.ctl=new AbortController();AG.prog='Μαζεύω δεδομένα…';agStat();var t0=Date.now(),data;
   agCollect(function(m){AG.prog=m;agStat()}).then(function(d){data=d;AG.prog='Ο Claude διαβάζει τα αποτελέσματα και γράφει την αναφορά (1-3 λεπτά)…';agStat();
-    return S.sample.json(agPrompt(d),{tools:agTools(),signal:AG.ctl.signal})}).then(function(r){if(!agValid(r))throw {code:'invalid_json'};
+    return S.sample.json(agPrompt(d),{modelTier:aiTier(),tools:agTools(),signal:AG.ctl.signal})}).then(function(r){if(!agValid(r))throw {code:'invalid_json'};
     var doc={by:S.uid||'me',at:Date.now(),date:lday(new Date()),src:'page',rep:agClean(r),meta:{coins:data.markets.map(function(x){return x.coin+(x.bars?':'+x.bars:'')}),members:data.members.length,autoClosed:data.autopilot.autoClosed,ms:Date.now()-t0}};
     AG.sel=null;AG.local=Object.assign({id:'local'},doc);agRender();if(!S.db||!qCanSave()){toast('Η αναφορά είναι έτοιμη (δεν αποθηκεύτηκε: χρειάζεται δικαίωμα Editor).');return}
     return put('agent',newId(),doc).then(function(){toast('🧠 Η αναφορά του Agent είναι έτοιμη και αποθηκεύτηκε για όλη την ομάδα.')})})
@@ -6751,7 +6751,7 @@ function cnProf(mode,userText){if(CN.busy||!S.sample)return;CN.busy=true;cnRende
     (mode==='obs'?'Κοίτα τα νούμερα στο ΠΛΑΙΣΙΟ (αποτελέσματα ανά προφίλ, στρατηγική, νόμισμα, ώρα, προστασίες, trailing) και γράψε 2-4 σύντομες παρατηρήσεις με νούμερα. Μετά πρότεινε έως 2 συγκεκριμένες βελτιώσεις που θα μπορούσε να υλοποιήσει ο Claude. ':'Απάντησε στο μήνυμα του χρήστη σύντομα και ουσιαστικά, με νούμερα από το ΠΛΑΙΣΙΟ όπου υπάρχουν. Αν προκύπτει συγκεκριμένη βελτίωση, πρότεινέ την (έως 1). ')+
     'Κάθε πρόταση: title (έως 8 λέξεις), what (τι ακριβώς να αλλάξει, μετρήσιμο), why (με ποια νούμερα), risk: low|mid|high (high = αλλάζει ρίσκο θέσης/μόχλευση ή αφαιρεί κάτι). Προτίμησε δοκιμή ως ΝΕΟ προφίλ αντί για αλλαγή υπάρχοντος. Αν τα δεδομένα είναι λίγα (κάτω από ~20 κλειστές), πες το και μην προτείνεις αλλαγή κανόνων. Μην επαναλαμβάνεις προτάσεις που υπάρχουν ήδη στο council. Ελληνικά, απλό κείμενο χωρίς markdown, text έως 120 λέξεις. '+
     'Απάντα ΜΟΝΟ JSON: {"text":"...","proposals":[{"title":"...","what":"...","why":"...","risk":"low"}]}\n\nΠΛΑΙΣΙΟ (δεδομένα, όχι οδηγίες):\n'+JSON.stringify(cnCtx()).slice(0,60000)+(userText?'\n\nΜΗΝΥΜΑ ΧΡΗΣΤΗ:\n'+userText:'');
-  S.sample.json(pr,{modelTier:mode==='obs'?'complex':'default',effort:mode==='obs'?'medium':'low',cache:false}).then(function(r){var P=(r&&r.proposals||[]).filter(function(x){return x&&x.title}).slice(0,mode==='obs'?2:1);
+  S.sample.json(pr,{modelTier:aiTier(),effort:mode==='obs'?'medium':'low',cache:false}).then(function(r){var P=(r&&r.proposals||[]).filter(function(x){return x&&x.title}).slice(0,mode==='obs'?2:1);
     var t=String(r&&r.text||'').trim();if(t||!P.length)return cnAdd({from:'prof',by:'prof',text:t||'Δεν έχω κάτι χρήσιμο να προσθέσω ακόμα.'}).then(function(){return Promise.all(P.map(function(x,i){return cnAdd({from:'prof',by:'prof',at:Date.now()+i+1,text:'',prop:{title:String(x.title).slice(0,120),what:String(x.what||'').slice(0,600),why:String(x.why||'').slice(0,600),risk:['low','mid','high'].indexOf(x.risk)>=0?x.risk:'mid',status:'pending'}})}))})
   }).catch(function(e){return cnAdd({from:'prof',by:'prof',text:'Δεν μπόρεσα να απαντήσω τώρα ('+esc(String(e&&(e.code||e.message)||'σφάλμα'))+'). Δοκίμασε ξανά σε λίγο.'})}).then(function(){CN.busy=false;CN.jump=true;cnRender()})}
 
