@@ -15,13 +15,25 @@ const t0 = Date.now(), end = t0 + MINUTES * 60000;
 const ts = () => new Date().toISOString().slice(11, 19);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-const browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-let page = null, loadedAt = 0, errors = 0, lastLog = Date.now();
+// Μνήμη από βάρδια σε βάρδια: με TJ_PROFILE ο browser κρατά φάκελο προφίλ (IndexedDB του Firebase, σύνδεση, ρυθμίσεις).
+// Η νέα βάρδια ξεκινά με τα δεδομένα της προηγούμενης και ο Firebase κατεβάζει μόνο ό,τι άλλαξε, όχι χιλιάδες έγγραφα από την αρχή.
+const PROFILE = process.env.TJ_PROFILE || '';
+const OPTS = { viewport: { width: 1280, height: 900 }, locale: 'el-GR', timezoneId: 'Europe/Athens' };
+const browser = PROFILE ? null : await chromium.launch({ args: ['--disable-dev-shm-usage'] });
+let pctx = null, page = null, loadedAt = 0, errors = 0, lastLog = Date.now();
+if (PROFILE) { const fs = await import('fs'); console.log(ts(), 'μνήμη φύλακα:', fs.existsSync(PROFILE + '/Default') ? 'βρέθηκε από την προηγούμενη βάρδια' : 'καινούρια (πρώτη φορά ή χάθηκε)') }
 
 async function open() {
-  if (page) { try { await page.context().close() } catch (e) { } }
-  const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'el-GR', timezoneId: 'Europe/Athens' });
-  await ctx.addInitScript(([e, p]) => { window.__TJ_BOT = { email: e, password: p } }, [EMAIL, PASS]);
+  let ctx;
+  if (PROFILE) {
+    if (page) { try { await page.close() } catch (e) { } }
+    if (!pctx) { pctx = await chromium.launchPersistentContext(PROFILE, Object.assign({ args: ['--disable-dev-shm-usage'] }, OPTS)); await pctx.addInitScript(([e, p]) => { window.__TJ_BOT = { email: e, password: p } }, [EMAIL, PASS]); for (const pg of pctx.pages()) { try { await pg.close() } catch (e) { } } }
+    ctx = pctx;
+  } else {
+    if (page) { try { await page.context().close() } catch (e) { } }
+    ctx = await browser.newContext(OPTS);
+    await ctx.addInitScript(([e, p]) => { window.__TJ_BOT = { email: e, password: p } }, [EMAIL, PASS]);
+  }
   page = await ctx.newPage();
   page.on('console', m => { const t = m.text(); if (m.type() === 'error' || /^\[tj\]|Αυτόματος|Turtle|apScan/.test(t)) console.log(ts(), m.type(), t.slice(0, 300)) });
   page.on('pageerror', e => console.log(ts(), 'pageerror', String((e && (e.message || e.code)) || e).slice(0, 300)));
@@ -59,4 +71,5 @@ while (Date.now() < end) {
   } catch (e) { }
 }
 console.log(ts(), 'τέλος βάρδιας');
-await browser.close();
+// κλείσιμο με τάξη, ώστε να γραφτεί σωστά η μνήμη στον δίσκο
+if (pctx) { try { await page.close() } catch (e) { } await sleep(3000); await pctx.close() } else await browser.close();

@@ -34,14 +34,49 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           npx playwright install --with-deps chromium
+      # Μνήμη από βάρδια σε βάρδια: το προφίλ του browser (δεδομένα Firebase + σύνδεση) αποθηκεύεται κρυπτογραφημένο
+      # (το repo είναι δημόσιο), και η επόμενη βάρδια ξεκινά από εκεί αντί να κατεβάζει τα πάντα ξανά.
+      - name: Μνήμη φύλακα (επαναφορά)
+        uses: actions/cache/restore@v4
+        with:
+          path: runner/profile.enc
+          key: tj-profile-${{ github.run_id }}
+          restore-keys: tj-profile-
+      - name: Μνήμη φύλακα (άνοιγμα)
+        working-directory: runner
+        env:
+          K: ${{ secrets.TJ_BOT_PASSWORD }}
+        run: |
+          if [ -f profile.enc ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:K -in profile.enc | tar xz && echo "μνήμη: $(du -sh .profile | cut -f1)" || { echo "η μνήμη δεν άνοιξε, ξεκινά καινούρια"; rm -rf .profile; }
+            rm -f profile.enc
+          else echo "δεν υπάρχει αποθηκευμένη μνήμη"; fi
       - name: Βάρδια
         working-directory: runner
         env:
+          TJ_PROFILE: .profile
           TJ_URL: ${{ secrets.TJ_URL }}
           TJ_BOT_EMAIL: ${{ secrets.TJ_BOT_EMAIL }}
           TJ_BOT_PASSWORD: ${{ secrets.TJ_BOT_PASSWORD }}
           RUN_MINUTES: '350'
         run: node run.mjs
+      - name: Μνήμη φύλακα (κλείδωμα)
+        if: always()
+        working-directory: runner
+        env:
+          K: ${{ secrets.TJ_BOT_PASSWORD }}
+        run: |
+          if [ -d .profile/Default ]; then
+            rm -rf .profile/Default/Cache .profile/Default/"Code Cache" .profile/Default/GPUCache .profile/Default/"Service Worker"/CacheStorage .profile/GrShaderCache .profile/ShaderCache
+            tar czf - .profile | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:K -out profile.enc
+            echo "μνήμη: $(du -sh .profile | cut -f1) → κρυπτογραφημένη $(du -sh profile.enc | cut -f1)"
+          fi
+      - name: Μνήμη φύλακα (αποθήκευση)
+        if: always() && hashFiles('runner/profile.enc') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: runner/profile.enc
+          key: tj-profile-${{ github.run_id }}
       # Το GitHub «χάνει» συχνά τις προγραμματισμένες εκτελέσεις (π.χ. 5 ώρες κενό τη νύχτα).
       # Γι' αυτό κάθε βάρδια, μόλις τελειώσει, ζητά μόνη της την επόμενη: η αλυσίδα δεν σπάει ποτέ.
       - name: Επόμενη βάρδια
