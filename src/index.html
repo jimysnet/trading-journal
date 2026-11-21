@@ -7534,7 +7534,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=327,VERS={sub:null,t:null};
+var APP_VER=328,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -10923,7 +10923,7 @@ function pOrderFlow(coin){var c=String(coin||'').toUpperCase().replace(/[^A-Z0-9
     if(o.funding_pct==null&&!o.tape&&!o.book)throw new Error('Δεν ήρθαν δεδομένα από τη Binance για '+c);return o})}
 var PTOOLS=[
  {name:'turtle_status',description:'Ακριβή στοιχεία των ανοιχτών θέσεων 🐢 Turtle 1D: πού κλείνει κάθε θέση (υψηλό/χαμηλό 20 ημερών = κανάλι εξόδου), stop 2N, μονάδες, επόμενη μονάδα, απόσταση από την έξοδο. Κάλεσέ το ΠΑΝΤΑ πριν απαντήσεις για το πότε/πού κλείνει μια θέση Turtle.',
-  inputSchema:{type:'object',properties:{coin:{type:'string'}}},execute:function(i){var c=String(i&&i.coin||'').toUpperCase().replace(/USDT$/,''),L=(S.demo||[]).filter(function(t){return !dmClosed(t)&&ttlIsPos(t)&&(!c||dmSym(t.symbol)===c)});
+  inputSchema:{type:'object',properties:{coin:{type:'string'}}},execute:function(i){var base=function(v){return dmSym(v).replace(/(USDT|USDC|USD|PERP)$/,'')},c=base(i&&i.coin),L=(S.demo||[]).filter(function(t){return !dmClosed(t)&&ttlIsPos(t)&&(!c||base(t.symbol)===c)});/* «BTC» και «BTCUSDT» είναι το ίδιο νόμισμα */
     if(!L.length)return Promise.resolve({open_turtle_positions:0,note:'Καμία ανοιχτή θέση Turtle'+(c?' στο '+c:'')});
     return Promise.all(L.map(function(t){return otTtlExitP(t).catch(function(){return NaN}).then(function(x){var f=ttlFacts(t,x);return Object.assign({symbol:t.symbol,dir:t.dir,opened:new Date(t.at||0).toISOString().slice(0,10),entry:t.entry,last_price:t.lastPx||null,R_now:brR(n(t.curR))},f)})})).then(function(R){return {open_turtle_positions:R.length,positions:R}})}},
  {name:'order_flow',description:'Ζωντανή ροή εντολών για ένα crypto από τα Binance Futures (τα ίδια δεδομένα που βλέπει ο Αυτόματος και η καρτέλα Order Flow). Επιστρέφει: funding, μεταβολή Open Interest 4h/24h, CVD (καθαρές αγορές−πωλήσεις) 4h/24h, ταινία συναλλαγών των τελευταίων λεπτών (αγορές vs πωλήσεις, μεγαλύτερες εντολές), βιβλίο εντολών (προσφορά/ζήτηση κοντά στην τιμή, μεγαλύτερα «τείχη»), και μεγάλες εντολές/ρευστοποιήσεις όσο τρέχει ο Αυτόματος. coin π.χ. BTC, ETH, SOL.',
