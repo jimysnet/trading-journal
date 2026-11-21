@@ -624,6 +624,39 @@
     g.fillStyle = C.panel; g.fillRect(Lay.R, T0 - 2, Lay.ax, H + 4);
     if (s.k === 'stat') { var rl = [T('Όγκος', 'Volume'), 'Delta', 'Delta %', T('Συναλλ.', 'Trades'), 'Max Δ', 'Min Δ'], rh5 = (H - 2) / 6; g.fillStyle = C.axis; g.textAlign = 'left'; rl.forEach(function (t5, r5) { g.fillText(t5, Lay.R + 5, T0 + 1 + r5 * rh5 + rh5 / 2) }) }
   }
+  /* 🔎 ποια φούσκα / ρευστοποίηση / sweep / iceberg είναι κάτω από το ποντίκι (μόνο όσα φαίνονται, με δυαδική αναζήτηση) */
+  function hitObj(x, y) {
+    var best = null, cand = function (k, o, d, r) { var sc = d / Math.max(r, 1); if (d <= r && (!best || sc < best.sc)) best = { k: k, o: o, sc: sc, r: r } };
+    if (CFG.sh.big) { var th = bigTh(); eachVis(M.big, function (o) { if (o.usd < th) return; var r = clamp(5 * Math.sqrt(o.usd / th), 4, 34); cand('big', o, Math.hypot(xOfT(o.t) - x, yOf(o.p) - y), r + 4) }) }
+    if (CFG.sh.liq && M.venue === 'f') eachVis(M.liq, function (o) { var r = clamp(4 * Math.sqrt(o.usd / 20000), 4, 22); cand('liq', o, Math.hypot(xOfT(o.t) - x, yOf(o.p) - y), r + 4) });
+    if (CFG.sh.ice) M.ice.forEach(function (o) { if (inView(o.t)) cand('ice', o, Math.hypot(xOfT(o.t) - x, yOf(o.p) - y), 9) });
+    if (CFG.sh.sw) eachVis(M.sw, function (o) { var xs = xOfT(o.t), y1 = yOf(o.pmax), y2 = yOf(o.pmin); if (Math.abs(xs - x) <= 7 && y >= y1 - 7 && y <= y2 + 7) cand('sw', o, Math.abs(xs - x), 8) });
+    return best
+  }
+  function barOfT(t) { var b = M.bars, lo = 0, hi = b.length - 1, ms = TF[M.tf]; while (lo <= hi) { var mid = (lo + hi) >> 1; if (b[mid].t + ms <= t) lo = mid + 1; else if (b[mid].t > t) hi = mid - 1; else return b[mid] } return null }
+  function hitLines(h, dec) {
+    var o = h.o, L = [], cn = M.sym, ex = function (v) { return '$' + Math.round(v).toLocaleString('el-GR') }, when = dm(o.t) + ' ' + hm(o.t, 1);
+    if (h.k === 'big') {
+      L.push((o.s ? '🟢 ' + T('Επιθετική ΑΓΟΡΑ', 'Aggressive BUY') : '🔴 ' + T('Επιθετική ΠΩΛΗΣΗ', 'Aggressive SELL')) + '  ' + ex(o.usd));
+      L.push(T('Ποσότητα ', 'Size ') + fv(o.q) + ' ' + cn + ' · ' + T('μέση τιμή ', 'avg ') + o.p.toFixed(dec));
+      if (o.pmax > o.pmin) L.push(T('Έφαγε από ', 'Swept ') + o.pmin.toFixed(dec) + ' ' + T('ως', 'to') + ' ' + o.pmax.toFixed(dec));
+      L.push(T('Ώρα ', 'Time ') + when + (o.n > 1 ? ' · ' + o.n + T(' γεμίσματα μαζί', ' fills together') : ''));
+      var k = barOfT(o.t); if (k && k.v > 0) L.push(T('= ', '= ') + Math.round(o.q / k.v * 100) + T('% του όγκου του κεριού', '% of the candle volume'));
+      L.push((o.usd / bigTh()).toFixed(1) + '× ' + T('το όριο Big', 'the Big threshold') + ' · ' + (o.h ? T('από το ιστορικό', 'from history') : T('ζωντανά', 'live')));
+    } else if (h.k === 'liq') {
+      L.push('💥 ' + T('Ρευστοποίηση ', 'Liquidation ') + (o.side === 'L' ? 'LONG' : 'SHORT') + '  ' + ex(o.usd));
+      L.push(fv(o.q) + ' ' + cn + ' @ ' + o.p.toFixed(dec) + ' · ' + when);
+    } else if (h.k === 'ice') {
+      L.push('🧊 Iceberg: ' + T('κρυφή εντολή ', 'hidden ') + (o.s ? T('ΠΩΛΗΣΗΣ', 'SELL') : T('ΑΓΟΡΑΣ', 'BUY')) + ' @ ' + o.p.toFixed(dec));
+      L.push(T('Εκτελέστηκαν ', 'Filled ') + fv(o.q) + ' (' + ex(o.usd) + ')' + T(' ενώ φαίνονταν ', ' while showing ') + fv(o.shown));
+      L.push(T('Ώρα ', 'Time ') + when);
+    } else if (h.k === 'sw') {
+      L.push('⚡ Sweep ' + (o.s ? T('προς τα πάνω', 'up') : T('προς τα κάτω', 'down')) + '  ' + ex(o.usd));
+      L.push((o.lv || '') + T(' επίπεδα σε ένα χτύπημα: ', ' levels in one hit: ') + o.pmin.toFixed(dec) + '–' + o.pmax.toFixed(dec));
+      L.push(T('Ώρα ', 'Time ') + when);
+    }
+    return L
+  }
   function drawCross(g, step, dec) {
     if (V.mx < 0 || V.my < 0 || V.mx > Lay.R || V.my > Lay.B) return; var x = V.mx, y = V.my;
     g.strokeStyle = 'rgba(214,226,238,.35)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x + 0.5, 0); g.lineTo(x + 0.5, Lay.h); g.moveTo(0, y + 0.5); g.lineTo(Lay.R, y + 0.5); g.stroke(); g.setLineDash([]);
@@ -631,9 +664,12 @@
     var i = Math.round(iOfX(x)), k = M.bars[i]; if (!k) return;
     var d = 2 * k.bv - k.v, lines = [dm(k.t) + ' ' + hm(k.t) + ' · ' + M.tf, 'O ' + k.o.toFixed(M.dec) + '  H ' + k.h.toFixed(M.dec), 'L ' + k.l.toFixed(M.dec) + '  C ' + k.c.toFixed(M.dec), LX('Όγκος ') + fv(k.v) + ' (' + usd(k.usd || k.v * k.c) + ')', 'Delta ' + (d > 0 ? '+' : '') + fv(d)];
     var f = fpOf(k.t); if (f) { var R = fpRows(f, step), r = Math.floor(p / step + 1e-9), c = R[r]; if (c) lines.push(LX('Στο ') + (r * step).toFixed(dec) + ': ' + fv(c[0]) + ' × ' + fv(c[1])) }
+    /* πάνω σε φούσκα: πρώτα τα στοιχεία της (ποσό, ποσότητα, τιμή…), μετά του κεριού· και λευκό περίγραμμα για να φαίνεται ποια διαβάζεις */
+    var hh = hitObj(x, y), hl = 0; if (hh) { var HL = hitLines(hh, Math.max(dec, M.dec)); hl = HL.length; lines = HL.concat(['']).concat(lines);
+      var ho = hh.o; g.strokeStyle = '#fff'; g.lineWidth = 2; g.beginPath(); if (hh.k === 'sw') { g.moveTo(xOfT(ho.t), yOf(ho.pmax) - 4); g.lineTo(xOfT(ho.t), yOf(ho.pmin) + 4) } else g.arc(xOfT(ho.t), yOf(ho.p), hh.r - 2, 0, 7); g.stroke(); g.lineWidth = 1 }
     var tw = 0; lines.forEach(function (l) { tw = Math.max(tw, g.measureText(l).width) }); var bx = x + 14 + tw + 16 > Lay.R ? x - tw - 30 : x + 14, by = Math.min(y + 14, Lay.B - lines.length * 15 - 10);
     g.fillStyle = 'rgba(14,20,27,.94)'; g.strokeStyle = '#2a3a4a'; g.fillRect(bx, by, tw + 16, lines.length * 15 + 8); g.strokeRect(bx + 0.5, by + 0.5, tw + 15, lines.length * 15 + 7);
-    g.fillStyle = C.txt; g.textAlign = 'left'; lines.forEach(function (l, j) { g.fillText(l, bx + 8, by + 11 + j * 15) })
+    g.textAlign = 'left'; lines.forEach(function (l, j) { g.fillStyle = j === 0 && hl ? (hh.k === 'big' ? (hh.o.s ? '#6dffb8' : '#ff8f9b') : '#ffd27a') : j < hl ? '#e8eef5' : C.txt; if (j === 0 && hl) g.font = 'bold ' + g.font.replace(/^bold /, ''); g.fillText(l, bx + 8, by + 11 + j * 15); if (j === 0 && hl) g.font = g.font.replace(/^bold /, '') })
   }
 
   /* ---------- DOM (σκάλα τιμών) ---------- */
@@ -1028,6 +1064,6 @@
       DIRTY = true; if (!RAF) loop()
     },
     hide: function () { VIS = false; clearTimeout(HIDE_T); HIDE_T = setTimeout(function () { if (!VIS) stop() }, 20 * 6e4) },
-    _m: function () { return M }, _v: V, _cfg: CFG
+    _m: function () { return M }, _v: V, _cfg: CFG, _xy: function (t, p) { return [xOfT(t), yOf(p)] }
   };
 })();
