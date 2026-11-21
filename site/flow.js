@@ -12,7 +12,7 @@
   var FONT = '11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';
 
   /* ---------- ρυθμίσεις (ανά browser) ---------- */
-  var CFG = { lang: 'el', lines: {}, al: { big: 0, bigx: 3, off: 0 }, csMin: 0, sym: 'BTC', venue: 'f', tf: '1m', mode: 'fp_ba', mult: 'auto', big: 0, sub: { delta: 1, cvd: 1, oi: 1, spd: 0, stat: 1 }, sh: { heat: 1, big: 1, liq: 1, sw: 1, ice: 1, vp: 1, vwap: 1, mlv: 1, opt: 1, imb: 1, stk: 1, cs: 1, sig: 1, vpd: 1, fvg: 1, ob: 1, bos: 1, liqd: 1 }, view: 'chart', oc: 'BTC', oexp: 'all', tapeMin: 0 };
+  var CFG = { follow: false, lang: 'el', lines: {}, al: { big: 0, bigx: 3, off: 0 }, csMin: 0, sym: 'BTC', venue: 'f', tf: '1m', mode: 'fp_ba', mult: 'auto', big: 0, sub: { delta: 1, cvd: 1, oi: 1, spd: 0, stat: 1 }, sh: { heat: 1, big: 1, liq: 1, sw: 1, ice: 1, vp: 1, vwap: 1, mlv: 1, opt: 1, imb: 1, stk: 1, cs: 1, sig: 1, vpd: 1, fvg: 1, ob: 1, bos: 1, liqd: 1 }, view: 'chart', oc: 'BTC', oexp: 'all', tapeMin: 0 };
   function cfgMerge(sv) { if (sv) { for (var k in sv) if (k in CFG) CFG[k] = (typeof CFG[k] === 'object' && !Array.isArray(CFG[k]) && CFG[k]) ? Object.assign({}, CFG[k], sv[k]) : sv[k] } }
   var CFG_AT = 0;
   try { var sv = JSON.parse(localStorage.getItem('tj-flow') || 'null'); cfgMerge(sv); CFG_AT = +localStorage.getItem('tj-flow-at') || 0 } catch (e) { }
@@ -79,7 +79,7 @@
 
   /* ---------- φόρτωση ---------- */
   function start() {
-    stop(); M = newM(); var m = M; V.off = 0; V.yAuto = true; DIRTY = true; renderHead();
+    stop(); M = newM(); var m = M; V.off = 0; V.yAuto = true; V.follow = !!CFG.follow; DIRTY = true; renderHead();
     var p1 = bn(m.venue, m.venue === 'f' ? '/fapi/v1/depth' : '/api/v3/depth', 'symbol=' + m.pair + '&limit=1000').then(function (d) {
       if (m !== M) return; var bp = (d.bids || []).map(function (x) { return +x[0] }), mid = bp[0] || NaN, tk = Infinity;
       for (var i = 1; i < Math.min(60, bp.length); i++) { var df = Math.abs(bp[i - 1] - bp[i]); if (df > 0 && df < tk) tk = df }
@@ -266,7 +266,7 @@
   function fpOf(t) { return M.tf === '1m' ? M.fp1[t] : M.fp[t] }
 
   /* =================================================================== ΓΡΑΦΗΜΑ */
-  var V = { bw: 12, off: 0, yAuto: true, y0: 0, y1: 1, mx: -1, my: -1, drag: null };
+  var V = { follow: false, bw: 12, off: 0, yAuto: true, y0: 0, y1: 1, mx: -1, my: -1, drag: null };
   var cv, cx, dom, dx, Lay = {};
   function layout() {
     var r = cv.getBoundingClientRect(), dpr = W.devicePixelRatio || 1, w = Math.max(300, r.width), h = Math.max(260, r.height);
@@ -296,8 +296,12 @@
     g.fillStyle = C.bg; g.fillRect(0, 0, w, h); g.font = FONT; g.textBaseline = 'middle';
     var bars = M.bars, n = bars.length;
     if (!n) { g.fillStyle = C.mut; g.textAlign = 'center'; g.fillText(M.err || M.status || LX('φόρτωση…'), w / 2, h / 2); return }
+    var fb = ROOT && ROOT.querySelector('.ffol'); if (fb && (fb !== V.fsEl || V.fs !== V.follow)) { fb.classList.toggle('on', V.follow); V.fsEl = fb; V.fs = V.follow }
+    /* ● Live: το τελευταίο κερί στο ~60% του πλάτους και η τρέχουσα τιμή στη μέση του ύψους, σε κάθε καρέ */
+    if (V.follow) { V.off = Math.max(-60, -(Lay.R * 0.4 - Lay.pad - V.bw / 2) / V.bw); V.yAuto = true }
     var vr = visRange(), a = vr[0], b = vr[1];
-    if (V.yAuto) { var lo = Infinity, hi = -Infinity; for (var i = a; i <= b; i++) { lo = Math.min(lo, bars[i].l); hi = Math.max(hi, bars[i].h) } if (!isFinite(lo)) { lo = bars[n - 1].l; hi = bars[n - 1].h } var pd = (hi - lo) * 0.06 || hi * 0.002; V.y0 = lo - pd; V.y1 = hi + pd }
+    if (V.follow) { var flo = Infinity, fhi = -Infinity; for (var fi = a; fi <= b; fi++) { flo = Math.min(flo, bars[fi].l); fhi = Math.max(fhi, bars[fi].h) } var fc = M.last || bars[n - 1].c; if (!isFinite(flo)) { flo = bars[n - 1].l; fhi = bars[n - 1].h } var fh = Math.max(fhi - fc, fc - flo) * 1.1 || fc * 0.002; V.y0 = fc - fh; V.y1 = fc + fh }
+    else if (V.yAuto) { var lo = Infinity, hi = -Infinity; for (var i = a; i <= b; i++) { lo = Math.min(lo, bars[i].l); hi = Math.max(hi, bars[i].h) } if (!isFinite(lo)) { lo = bars[n - 1].l; hi = bars[n - 1].h } var pd = (hi - lo) * 0.06 || hi * 0.002; V.y0 = lo - pd; V.y1 = hi + pd }
     var step = rowStep(), dec = Math.max(M.dec, pdec(step));
     // πλέγμα τιμών
     var gs = nice((V.y1 - V.y0) / Math.max(3, (Lay.B - Lay.T) / 60)), gdec = Math.max(pdec(gs), 0);
@@ -744,7 +748,7 @@
     '#flowRoot .fhd{display:flex;flex-wrap:wrap;gap:.25rem 1.1rem;padding:.45rem .7rem;border-bottom:1px solid var(--fln);font-size:.8rem;align-items:baseline}#flowRoot .fhd b{font-size:1.15rem;font-variant-numeric:tabular-nums}#flowRoot .fhd small{color:var(--fmu);margin-right:.3rem}#flowRoot .fhd .pos{color:#22c27f}#flowRoot .fhd .neg{color:#ef4f5f}' +
     '#flowRoot .fdot{display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:#ef4f5f;margin-right:.3rem}#flowRoot .fdot.on{background:#22c27f;box-shadow:0 0 8px #22c27f}' +
     '#flowRoot .fgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:0}#flowRoot .fmain{position:relative;height:min(78vh,820px);min-height:420px;border-right:1px solid var(--fln)}#flowRoot .fmain canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}' +
-    '#flowRoot .fzm{position:absolute;right:82px;top:8px;display:flex;gap:.25rem;z-index:2}#flowRoot .fzm button{width:1.9rem;height:1.7rem;border-radius:7px;border:1px solid var(--fln);background:rgba(14,20,27,.85);color:var(--ftx);font-weight:800;cursor:pointer}' +
+    '#flowRoot .fzm{position:absolute;right:82px;top:8px;display:flex;gap:.25rem;z-index:2}#flowRoot .fzm .ffol{width:auto!important;padding:0 .5rem;font-size:.74rem;color:#8fa1b3}#flowRoot .fzm .ffol.on{background:rgba(34,194,127,.22);border-color:#22c27f;color:#6dffb8}#flowRoot .fzm button{width:1.9rem;height:1.7rem;border-radius:7px;border:1px solid var(--fln);background:rgba(14,20,27,.85);color:var(--ftx);font-weight:800;cursor:pointer}' +
     '#flowRoot .fside{display:flex;flex-direction:column;min-height:0;height:min(78vh,820px);min-height:420px}#flowRoot .fdom{flex:0 0 46%;position:relative;border-bottom:1px solid var(--fln)}#flowRoot .fdom canvas{position:absolute;inset:0;width:100%;height:100%}' +
     '#flowRoot .ftabs{display:flex;border-bottom:1px solid var(--fln)}#flowRoot .ftabs button{flex:1;background:transparent;border:0;color:var(--fmu);padding:.4rem .2rem;font:inherit;font-size:.74rem;font-weight:800;cursor:pointer;border-bottom:2px solid transparent}#flowRoot .ftabs button.on{color:#fff;border-bottom-color:#2f8fe8}' +
     '#flowRoot .flist{flex:1;overflow:auto;font:11.5px ui-monospace,Menlo,Consolas,monospace}#flowRoot .flist div{display:grid;grid-template-columns:4.6em 1fr 1fr 1fr;gap:.3rem;padding:.12rem .5rem;border-bottom:1px solid rgba(29,41,53,.6);cursor:pointer}#flowRoot .flist div:hover{background:#111b25}#flowRoot .flist .b{color:#5ff0a8}#flowRoot .flist .s{color:#ff8f9b}#flowRoot .flist .hl{background:rgba(255,196,67,.08);font-weight:800}#flowRoot .flist .hd{color:var(--fmu);cursor:default;position:sticky;top:0;background:var(--fbg)}#flowRoot .flist .em{display:block;color:var(--fmu);padding:.8rem;font-family:inherit;cursor:default}' +
@@ -780,7 +784,7 @@
       '<div class="fbar" style="padding-top:.35rem;padding-bottom:.35rem">' + tg('heat', '🌡️ Heatmap', LX('Ιστορικό βάθους βιβλίου εντολών (από τη στιγμή που άνοιξε η σελίδα)')) + tg('big', '🫧 Big Trades', LX('Μεγάλες εντολές αγοράς/πώλησης')) + tg('sw', '⚡ Sweeps', LX('Εντολές που «σάρωσαν» πολλά επίπεδα μαζί')) + tg('ice', '🧊 Icebergs', LX('Κρυφές εντολές: εκτελέστηκε πολύ περισσότερο από όσο έδειχνε το βιβλίο')) + tg('liq', '💥 Stop runs / Liq.', LX('Ρευστοποιήσεις futures')) + tg('vp', '📶 Volume Profile', LX('Προφίλ όγκου ορατού εύρους με POC/VAH/VAL')) + tg('vwap', 'VWAP', LX('VWAP ημέρας')) + tg('imb', 'Imbalance', LX('Διαγώνιες ανισορροπίες ×3 στο footprint')) + tg('mlv', LX('M/POC μήνα'), LX('Επίπεδα μηνιαίου Market Profile (καρτέλα Αγορές)')) + tg('opt', 'Options levels', 'Call/Put wall, Max pain, Gamma flip (BTC, ETH)') + tg('fvg', 'FVG / iFVG', T('Fair Value Gaps: κενά τιμής ανάμεσα σε 3 κεριά (πράσινο/κόκκινο). Κίτρινο διακεκομμένο = αντεστραμμένο (iFVG)', 'Fair Value Gaps: price gaps across 3 bars (green/red). Yellow dashed = inverted (iFVG)')) + tg('ob', 'Order Blocks', T('Το τελευταίο αντίθετο κερί πριν από σπάσιμο δομής: ζώνη θεσμικών εντολών', 'The last opposite candle before a structure break: institutional order zone')) + tg('bos', 'BOS / CHoCH', T('Σπάσιμο δομής (BOS = συνέχεια τάσης, CHoCH = αλλαγή τάσης)', 'Break of structure (BOS = continuation, CHoCH = change of character)')) + tg('liqd', T('💧 Ρευστότητα', '💧 Liquidity'), T('PDH/PDL, PWH/PWL, άνοιγμα ημέρας, ίσα υψηλά/χαμηλά (EQH/EQL) όπου κάθονται stop', 'PDH/PDL, PWH/PWL, day open, equal highs/lows (EQH/EQL) where stops sit')) + tg('stk', '▤ Stacked imb.', T('3+ διαδοχικές ανισορροπίες στο ίδιο κερί: ζώνη στήριξης/αντίστασης μέχρι να σπάσει', '3+ consecutive imbalances in one bar: support/resistance zone until broken')) + tg('cs', '◎ Cluster search', T('Τα κελιά με τον μεγαλύτερο όγκο (κορυφαίο 1%)', 'Cells with the highest volume (top 1%)')) + tg('sig', T('A ÷ Σήματα', 'A ÷ Signals'), T('A = απορρόφηση (absorption) · ÷ = απόκλιση delta', 'A = absorption · ÷ = delta divergence')) + tg('vpd', T('Δ στο VP', 'Δ in VP'), T('Delta ανά τιμή δίπλα στο Volume Profile', 'Delta per price next to the Volume Profile')) +
       '<span style="width:.6rem"></span>' + sb('delta', 'Delta') + sb('cvd', 'CVD') + sb('oi', 'OI') + sb('spd', T('Ταχύτητα', 'Speed')) + sb('stat', T('Στατιστικά', 'Statistics')) + '</div>' +
       '<div class="fhd" id="fHead"></div><div id="fToast" class="ftoast" hidden></div>' +
-      LX('<div class="fgrid"><div class="fmain"><canvas id="fCv"></canvas><div class="fzm"><button data-fz="-" title="Σμίκρυνση">−</button><button data-fz="+" title="Μεγέθυνση">+</button><button data-fz="y" title="Αυτόματη κλίμακα τιμής">↕</button><button data-fz="0" title="Επαναφορά">⟲</button></div><button class="ffs" data-ffull title="Πλήρης οθόνη (Esc για έξοδο)">⛶</button></div>') +
+      LX('<div class="fgrid"><div class="fmain"><canvas id="fCv"></canvas><div class="fzm"><button data-fz="-" title="Σμίκρυνση">−</button><button data-fz="+" title="Μεγέθυνση">+</button><button data-fz="y" title="Αυτόματη κλίμακα τιμής">↕</button><button data-fz="0" title="Επαναφορά">⟲</button><button data-fz="f" class="ffol" title="Live: κεντράρει την τιμή και την ακολουθεί μόνο του (για να το αφήνεις σαν οθόνη παρακολούθησης). Σταματά αν σύρεις το διάγραμμα.">● Live</button></div><button class="ffs" data-ffull title="Πλήρης οθόνη (Esc για έξοδο)">⛶</button></div>') +
       '<div class="fside"><div class="fdom"><canvas id="fDom"></canvas></div><div class="ftabs">' + [['tape', 'Tape'], ['big', 'Big'], ['sw', 'Sweeps'], ['ice', 'Iceberg'], ['liq', 'Liq.'], ['al', '🔔']].map(function (x) { return '<button data-fside="' + x[0] + '"' + (SIDE === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>' }).join('') + '</div><div class="flist" id="fList"></div></div></div>' +
       LX('<div class="fleg"><span><i style="color:#ff8f9b">Bid</i> × <i style="color:#6dffb8">Ask</i>: πωλήσεις × αγορές «στην αγορά» σε κάθε τιμή</span><span><i style="color:#ffc443">▭</i> POC κεριού</span><span><i style="color:#6dffb8">έντονο</i> = ανισορροπία ×3</span><span>🫧 Big trade</span><span><i style="color:#ff6bd6">↕</i> Sweep</span><span><i style="color:#5ef0ff">⊟</i> Iceberg</span><span><i style="color:#ffb020">◆</i> ρευστοποίηση long · <i style="color:#5ef0ff">◆</i> short</span><span><i style="color:#c77dff">—</i> VWAP</span><span><i style="color:#5cb3ff">VAH</i> · <i style="color:#ffc443">POC</i> · <i style="color:#d08bff">VAL</i></span></div>') +
       LX('<div class="fnote">Ροδέλα: ζουμ στον χρόνο · Ctrl/⌘ + ροδέλα ή σύρσιμο στον άξονα τιμών: ζουμ στην τιμή · σύρσιμο: μετακίνηση · διπλό κλικ: επαναφορά. Τα αριθμητικά footprint εμφανίζονται όταν μεγεθύνεις (+). Το footprint χτίζεται από τις πραγματικές συναλλαγές (aggTrades): τα τελευταία λεπτά φορτώνονται αμέσως, και όσο η καρτέλα μένει ανοιχτή φυλάγεται στον browser για 3 μέρες. Το heatmap καταγράφει το βάθος από τη στιγμή που ανοίγεις την καρτέλα.</div>') +
@@ -850,7 +854,8 @@
 
   /* ---------- αλληλεπίδραση ---------- */
   function zoomX(f, ax) { if (!M || !M.bars.length) return; var x = ax == null ? Lay.R - Lay.pad : ax, i = iOfX(x); V.bw = clamp(V.bw * f, 1, 480); V.off = cOff(V.off + (iOfX(x) - i)); DIRTY = true }
-  function zoomY(f, ay) { var p = ay == null ? (V.y0 + V.y1) / 2 : pOfY(ay); V.yAuto = false; V.y0 = p - (p - V.y0) * f; V.y1 = p + (V.y1 - p) * f; DIRTY = true }
+  function setFollow(on) { V.follow = !!on; if (on) { V.yAuto = true } if (CFG.follow !== V.follow) { CFG.follow = V.follow; saveCfg() } var b = ROOT && ROOT.querySelector('.ffol'); if (b) b.classList.toggle('on', V.follow); DIRTY = true }
+  function zoomY(f, ay) { if (V.follow) setFollow(false); var p = ay == null ? (V.y0 + V.y1) / 2 : pOfY(ay); V.yAuto = false; V.y0 = p - (p - V.y0) * f; V.y1 = p + (V.y1 - p) * f; DIRTY = true }
   function bindChart() {
     var pts = new Map(), pinch = null;
     cv.addEventListener('wheel', function (e) { e.preventDefault(); var r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, f = Math.exp(-e.deltaY * 0.0015); if (e.ctrlKey || e.metaKey || x > Lay.R) zoomY(1 / f, y); else if (e.shiftKey) { V.off = cOff(V.off + e.deltaY / V.bw * 0.5); DIRTY = true } else zoomX(f, x) }, { passive: false });
@@ -862,6 +867,7 @@
       if (V.ldrag) { var lm = myLines().find(function (l) { return l.id === V.ldrag }); if (lm) { var st0 = M.tick || M.bucket; lm.p = +(Math.round(pOfY(y) / st0) * st0).toFixed(8); lm.al = 1; V.lmoved = true } cv.style.cursor = 'ns-resize'; return }
       if (!V.drag && !V.place) { var hv = lineAt(x, y), nh = hv ? hv.id : null; if (nh !== V.lhov) V.lhov = nh; cv.style.cursor = hv ? (hv.del ? 'pointer' : 'ns-resize') : 'crosshair' }
       var dg = V.drag; if (!dg) return;
+      if (V.follow && (Math.abs(x - dg.x) > 4 || Math.abs(y - dg.y) > 4)) setFollow(false);
       if (dg.axis) { var f = Math.exp((y - dg.y) * 0.01), mid = (dg.y0 + dg.y1) / 2, hh = (dg.y1 - dg.y0) / 2 * f; V.yAuto = false; V.y0 = mid - hh; V.y1 = mid + hh; return }
       V.off = cOff(dg.off + (x - dg.x) / V.bw);
       if (!V.yAuto) { var dp = (y - dg.y) / (Lay.B - Lay.T - 16) * (dg.y1 - dg.y0); V.y0 = dg.y0 + dp; V.y1 = dg.y1 + dp }
@@ -882,9 +888,9 @@
       DIRTY = true; return }
     if (t.hasAttribute('data-fsh')) { var k = t.getAttribute('data-fsh'); CFG.sh[k] = CFG.sh[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sh[k]); saveCfg(); if (k === 'opt' && CFG.sh.opt) optLevels(); if (k === 'mlv' && CFG.sh.mlv && !mpRow()) { try { W.__E9 && W.__E9.mp && W.__E9.mp() } catch (x) { } } if (CFG.sh[k]) toast(avail(k)); else toast(T('Κρυμμένο: ', 'Hidden: ') + t.textContent.replace(/\s*[\d–]+$/, '')); DIRTY = true; return }
     if (t.hasAttribute('data-fsub')) { k = t.getAttribute('data-fsub'); CFG.sub[k] = CFG.sub[k] ? 0 : 1; t.classList.toggle('on', !!CFG.sub[k]); saveCfg(); DIRTY = true; return }
-    if (t.hasAttribute('data-fz')) { var z = t.getAttribute('data-fz'); if (z === '+') zoomX(1.35); else if (z === '-') zoomX(1 / 1.35); else if (z === 'y') { V.yAuto = true; DIRTY = true } else { V.off = 0; V.yAuto = true; V.bw = CFG.mode === 'candle' ? 8 : 12; DIRTY = true } return }
+    if (t.hasAttribute('data-fz')) { var z = t.getAttribute('data-fz'); if (z === '+') zoomX(1.35); else if (z === '-') zoomX(1 / 1.35); else if (z === 'y') { V.yAuto = true; DIRTY = true } else if (z === 'f') { setFollow(!V.follow) } else { V.off = 0; V.yAuto = true; V.bw = CFG.mode === 'candle' ? 8 : 12; DIRTY = true } return }
     if (t.hasAttribute('data-fside')) { SIDE = t.getAttribute('data-fside'); ROOT.querySelectorAll('[data-fside]').forEach(function (b) { b.classList.toggle('on', b === t) }); renderSide(true); return }
-    if (t.hasAttribute('data-fat')) { var at = +t.getAttribute('data-fat'), b0 = M.bars[0]; if (!b0) return; var i = (at - b0.t) / TF[M.tf]; if (V.bw < 30) V.bw = 30; V.off = cOff(M.bars.length - 1 - i - (Lay.R / 2 - Lay.pad - V.bw / 2) / V.bw); V.yAuto = true; DIRTY = true; return }
+    if (t.hasAttribute('data-fat')) { var at = +t.getAttribute('data-fat'), b0 = M.bars[0]; if (!b0) return; if (V.follow) setFollow(false); var i = (at - b0.t) / TF[M.tf]; if (V.bw < 30) V.bw = 30; V.off = cOff(M.bars.length - 1 - i - (Lay.R / 2 - Lay.pad - V.bw / 2) / V.bw); V.yAuto = true; DIRTY = true; return }
     if (t.hasAttribute('data-ffull')) { fullTog(); return }
     if (t.id === 'fPause') { PAUSE = !PAUSE; t.textContent = PAUSE ? LX('▶ Συνέχεια') : LX('⏸ Πάγωμα'); DIRTY = true; return }
     if (t.id === 'fOptR') { optRender(true); return }
