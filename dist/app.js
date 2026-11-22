@@ -3400,7 +3400,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=328,VERS={sub:null,t:null};
+var APP_VER=329,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4148,16 +4148,52 @@ function tvoCopy(btn){var text=btn.getAttribute('data-tvoc'),lbl=btn.getAttribut
   var manual=function(){var row=btn.closest('.tvo-r'),inp=row&&row.querySelector('.tvo-v');if(!inp){var pre=btn.closest('.tvo-pine');inp=pre&&pre.querySelector('pre');if(inp){var r=document.createRange();r.selectNodeContents(inp);var sel=getSelection();sel.removeAllRanges();sel.addRange(r)}}else{inp.focus();inp.select()}
     toast('Ο browser δεν άφησε αυτόματη αντιγραφή: η τιμή είναι επιλεγμένη, πάτα Ctrl+C (στο κινητό: Αντιγραφή).')};
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){flash();toast('Αντιγράφηκε: '+lbl)},manual)}else manual()}
+/* 📈 Pine Script της θέσης: βελάκι + ετικέτα στην ώρα εισόδου, ζώνες ρίσκου/κέρδους από εκείνη τη στιγμή,
+   limit που περιμένει με λήξη και έτοιμο alert, έξοδος με αποτέλεσμα. Οι ώρες είναι σε ms (UTC) και εμφανίζονται σε ώρα Ελλάδας. */
+function tvoPine(t,o){var a=t.auto||{},q=function(x){return '"'+String(x==null?'':x).replace(/\\/g,'').replace(/"/g,"'").replace(/[\r\n]+/g,' ')+'"'},N=function(x){return isFinite(x)?tvoNum(x):'na'};
+  var at=+t.at||Date.now(),fill=+t.filledAt||(o.pend?0:at),exp=o.pend&&+t.exp>0?at+t.exp*36e5:0,closed=dmClosed(t)&&!t.nofill,xt=closed?+t.exitAt||0:0,cs=t.curStop!=null&&isFinite(+t.curStop)&&Math.abs(+t.curStop-n(t.stop))>1e-12?+t.curStop:NaN;
+  var who=t.src==='auto'?'🎓 Καθηγητής':'Θέση',strat=(t.title||a.name||a.strat||'').toString().slice(0,48),info=[strat,a.tf||'',a.score!=null?'βαθμός '+a.score:''].filter(Boolean).join(' · ');
+  var L=['//@version=5','indicator('+q('Καθηγητής · '+o.sy+' '+(o.short?'Short':'Long'))+', overlay=true, max_lines_count=20, max_labels_count=20, max_boxes_count=10)',
+    '// Δημιουργήθηκε από το Ημερολόγιο Συναλλαγών. Ώρες σε ms (UTC)· εμφανίζονται σε ώρα Ελλάδας.',
+    'isShort = '+(o.short?'true':'false'),'float entry = '+N(o.e),'float sl = '+N(o.sl),'float tp = '+N(o.tg),'float slNow = '+N(cs),
+    'barMs = timeframe.in_seconds() * 1000','al(x) => x > 0 ? x - x % barMs : x  // στην αρχή του κεριού, για να κάτσει το βελάκι ακριβώς στο κερί',
+    'tOpen = al('+Math.round(at)+')','tFill = al('+Math.round(fill)+')','tExp = '+Math.round(exp),'tExit = al('+Math.round(xt)+')','float exitPx = '+N(closed?n(t.exit):NaN),
+    'pending = '+(o.pend?'true':'false'),
+    'tz = "Europe/Athens"','fmt(x) => str.format_time(x, "dd/MM HH:mm", tz)',
+    'tStart = pending ? tOpen : tFill',
+    'tEnd = tExit > 0 ? tExit : pending and tExp > 0 ? tExp : time + 30 * (time - time[1])',
+    'var bool done = false',
+    'if barstate.islast and not done',
+    '    done := true',
+    '    cRisk = color.new(color.red, 82)','    cGain = color.new(color.green, 82)',
+    '    if not na(sl)','        box.new(tStart, isShort ? sl : entry, tEnd, isShort ? entry : sl, xloc=xloc.bar_time, bgcolor=cRisk, border_color=color.new(color.red, 40))',
+    '    if not na(tp)','        box.new(tStart, isShort ? entry : tp, tEnd, isShort ? tp : entry, xloc=xloc.bar_time, bgcolor=cGain, border_color=color.new(color.green, 40))',
+    '    line.new(tStart, entry, tEnd, entry, xloc=xloc.bar_time, color=color.gray, style=pending ? line.style_dashed : line.style_solid, width=2)',
+    '    if not na(slNow)','        line.new(tStart, slNow, tEnd, slNow, xloc=xloc.bar_time, color=color.orange, style=line.style_dotted, width=2)','        label.new(tEnd, slNow, "Stop τώρα " + str.tostring(slNow), xloc=xloc.bar_time, style=label.style_label_left, color=color.orange, textcolor=color.white, size=size.small)',
+    '    if pending',
+    '        label.new(tOpen, entry, "⏳ Limit " + (isShort ? "Short " : "Long ") + str.tostring(entry) + (tExp > 0 ? " · λήγει " + fmt(tExp) : ""), xloc=xloc.bar_time, style=isShort ? label.style_label_down : label.style_label_up, color=color.new(color.gray, 0), textcolor=color.white, size=size.normal)',
+    '        if tExp > 0','            line.new(tExp, low, tExp, high, xloc=xloc.bar_time, extend=extend.both, color=color.new(color.gray, 30), style=line.style_dashed)',
+    '    else',
+    '        label.new(tFill, entry, (isShort ? "▼ " : "▲ ") + '+q(who)+' + (isShort ? " Short " : " Long ") + str.tostring(entry) + " · " + fmt(tFill) + '+q(info?' · '+info:'')+', xloc=xloc.bar_time, yloc=isShort ? yloc.abovebar : yloc.belowbar, style=isShort ? label.style_label_down : label.style_label_up, color=isShort ? color.red : color.green, textcolor=color.white, size=size.normal)',
+    '    if tExit > 0 and not na(exitPx)',
+    '        label.new(tExit, exitPx, "✕ Έξοδος " + str.tostring(exitPx) + " · " + fmt(tExit) + '+q(closed&&isFinite(n(t.r))?' · '+(n(t.r)>=0?'+':'')+n(t.r).toFixed(2)+'R'+(t.closeSrc?' · '+t.closeSrc:''):'')+', xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.blue, 10), textcolor=color.white, size=size.small)',
+    '    if not na(sl)','        label.new(tEnd, sl, "SL " + str.tostring(sl), xloc=xloc.bar_time, style=label.style_label_left, color=color.red, textcolor=color.white, size=size.small)',
+    '    if not na(tp)','        label.new(tEnd, tp, "TP " + str.tostring(tp), xloc=xloc.bar_time, style=label.style_label_left, color=color.green, textcolor=color.white, size=size.small)',
+    '// 🔔 Alert: «Το limit του Καθηγητή γέμισε» (Alerts → Condition → αυτό το script)',
+    'hit = pending and time >= tOpen and (tExp == 0 or time <= tExp) and (isShort ? high >= entry : low <= entry)',
+    'alertcondition(hit, "Limit γέμισε", '+q(o.sy+': η τιμή έφτασε το limit του Καθηγητή')+')',
+    'plotshape(hit, "Limit γέμισε", shape.diamond, isShort ? location.abovebar : location.belowbar, color.yellow, size=size.tiny)'];
+  return L.join('\n')}
 function tvoOpen(id){var t=tvoTrade(id);if(!t)return;var a=t.auto||{},sy=dmSym(t.symbol),e=n(t.entry),sl=t.curStop!=null?n(t.curStop):n(t.stop),tg=n(t.target),lev=n(t.lev)||1,mg=n(t.margin),notional=isFinite(n(t.notional))&&n(t.notional)>0?n(t.notional):mg*lev,qty=e>0&&notional>0?notional/e:NaN,short=t.dir==='short',pend=dmIsPend(t);
   var url=exUrl('tv',sy)+(TVO_INT[a.tf]?'&interval='+TVO_INT[a.tf]:'');
-  var pine='//@version=5\nindicator("Καθηγητής · '+sy+' '+(short?'Short':'Long')+'", overlay=true)\nhline('+tvoNum(e)+', "Είσοδος", color=color.gray, linestyle=hline.style_dashed)\nhline('+tvoNum(sl)+', "Stop loss", color=color.red, linewidth=2)\nhline('+tvoNum(tg)+', "Take profit", color=color.green, linewidth=2)';
+  var pine=tvoPine(t,{sy:sy,e:e,sl:sl,tg:tg,short:short,pend:pend});
   var row=function(lbl,val,cls0,key){return '<div class="tvo-r"><span>'+lbl+'</span><input class="num tvo-v '+(cls0||'')+'" readonly value="'+esc(String(val))+'" aria-label="'+esc(lbl)+'" size="'+Math.max(4,String(val).length+1)+'">'+(val?'<button type="button" class="btn small" data-tvoc="'+esc(String(val))+'" data-tvol="'+esc(lbl)+'">📋</button>':'')+'</div>'};
   var m=$('#tvoModal');if(!m){m=document.createElement('div');m.id='tvoModal';m.className='tvo-bg';document.body.appendChild(m);m.addEventListener('click',function(ev){if(ev.target===m||ev.target.closest('[data-tvx]'))m.hidden=true;var c=ev.target.closest('[data-tvoc]');if(c)tvoCopy(c)});m.addEventListener('focusin',function(ev){if(ev.target.classList&&ev.target.classList.contains('tvo-v'))setTimeout(function(){try{ev.target.select()}catch(x){}},0)});document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&!m.hidden)m.hidden=true})}
   m.innerHTML='<div class="tvo" role="dialog" aria-modal="true" aria-label="Στείλε στο TradingView"><div class="formhead"><b>📈 '+esc(sy)+' · '+(short?'<span class="neg">▼ Short (Sell)</span>':'<span class="pos">▲ Long (Buy)</span>')+'</b><button type="button" class="linkbtn" data-tvx>✕</button></div>'+
     '<ol class="tvo-steps"><li>Πάτα <b>«Άνοιξε το γράφημα»</b> ('+(a.tf?'νόμισμα και timeframe '+esc(a.tf)+' έτοιμα':'το νόμισμα είναι έτοιμο')+').</li><li>Στο TradingView: κάτω πάνελ <b>Paper Trading</b>, ή δεξί κλικ στο γράφημα → <b>'+(short?'Sell':'Buy')+'</b>.</li><li>Διάλεξε <b>'+(pend||t.ord==='limit'?'Limit':'Market')+'</b>, τσέκαρε <b>Take Profit</b> και <b>Stop Loss</b> και αντίγραψε από εδώ τις τιμές με τα 📋.</li></ol>'+
     '<a class="btn primary tvo-go" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">📈 Άνοιξε το γράφημα στο TradingView</a>'+
     '<div class="tvo-g">'+row(pend||t.ord==='limit'?'Τιμή εισόδου (limit)':'Είσοδος',tvoNum(e))+row('Stop loss',tvoNum(sl),'neg')+row('Take profit',tvoNum(tg),'pos')+'</div><p class="tvo-info"><b class="'+(short?'neg':'pos')+'">'+(short?'Sell':'Buy')+'</b> · ποσότητα <b>'+esc(tvoNum(qty))+' '+esc(sy.replace(/(USDT|USDC|USD)$/,''))+'</b> · αξία <b>'+(isFinite(notional)?fmt(notional,2):'–')+' USDT</b> · x'+lev+'</p>'+
-    '<details class="tvo-pine"><summary>Προαιρετικά: γραμμές στο γράφημα (Pine Script)</summary><p class="muted">Στο TradingView: Pine Editor → επικόλληση → «Add to chart». Ζωγραφίζει είσοδο, stop και στόχο.</p><pre>'+esc(pine.replace(/\\n/g,'\n'))+'</pre><button type="button" class="btn small" data-tvoc="'+esc(pine)+'" data-tvol="Pine Script">📋 Αντιγραφή Pine Script</button></details>'+
+    '<details class="tvo-pine"><summary>📍 Pine Script: πού και πότε μπήκε ο Καθηγητής</summary><p class="muted">Στο TradingView: Pine Editor → επικόλληση → «Add to chart». Δείχνει <b>βελάκι και ώρα εισόδου</b>, ζώνες ρίσκου/κέρδους από τη στιγμή που μπήκε, το <b>limit που περιμένει με τη λήξη του</b> (και έτοιμο alert «Limit γέμισε»), το stop αν μετακινήθηκε και την έξοδο. Δείχνει ό,τι ίσχυε τη στιγμή της αντιγραφής.</p><pre>'+esc(pine.replace(/\\n/g,'\n'))+'</pre><button type="button" class="btn small" data-tvoc="'+esc(pine)+'" data-tvol="Pine Script">📋 Αντιγραφή Pine Script</button></details>'+
     '<p class="muted tvo-note">Η εντολή μένει πάντα δική σου επιβεβαίωση. Στο TradingView δεν πηγαίνει τίποτα αυτόματα.</p></div>';
   m.hidden=false;var go=m.querySelector('.tvo-go');if(go)go.focus()}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-tvo]');if(b){e.stopPropagation();e.preventDefault();tvoOpen(b.getAttribute('data-tvo'))}},true);
