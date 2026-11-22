@@ -3418,7 +3418,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=336,VERS={sub:null,t:null};
+var APP_VER=337,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -6012,7 +6012,7 @@ function prFace(){return PCHARS[prChar()].face}
 /* μικρή φωτογραφία για ένα μήνυμα: του χαρακτήρα που το έγραψε (παλιά μηνύματα χωρίς σήμανση: ο τωρινός) */
 function pAvTiny(ch){var c=PCHARS[ch]?ch:prChar();return '<span class="prof-svg pph tiny pavfix" aria-hidden="true"><img src="'+PCHARS[c].face+'" alt="" draggable="false"><i class="pph-eq"><b></b><b></b><b></b></i></span>'}
 function prRigHtml(){pstCur();if(prChar()==='sandra')return '<span class="prig c3 '+pstCls()+'"><span class="prig-h"><img class="c3b" src="c3_body.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>';
-  if(prChar()==='cigar')return '<span class="prig c2 '+pstCls()+'"><span class="prig-h"><img class="c2b" src="c2_body.webp" alt="" draggable="false"><img class="c2smk" src="c2_smoke.webp" alt="" draggable="false"><span class="c2puff"><i></i><i></i><i></i></span><i class="c2emb"></i><span class="c2ex"><i></i><i></i></span><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>';
+  if(prChar()==='cigar')return '<span class="prig c2 '+pstCls()+'"><span class="prig-h"><img class="c2b" src="c2_body.webp" alt="" draggable="false"><img class="c2smk" src="c2_smoke.webp" alt="" draggable="false"><span class="c2puff"><i></i><i></i><i></i></span><i class="c2emb"></i><span class="c2dm"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>';
   return '<span class="prig '+pstCls()+'"><img class="prig-b" src="prof_body2.webp" alt="" draggable="false"><span class="prig-h"><img src="prof_head2.webp" alt="" draggable="false"><i class="plid l"></i><i class="plid r"></i><span class="prig-fx"></span><span class="pst">'+pstLayer()+'</span></span></span>'}
 var UPF={got:0,seeded:0};
 function upfSave(){if(!S.db||!S.uid||S.uid==='me'||window.__TJ_BOT)return;try{S.db.collection('uprefs').doc(S.uid).set({pchar:prChar(),by:S.uid,at:Date.now()},{merge:true}).catch(function(){})}catch(e){}}
@@ -6024,7 +6024,7 @@ document.addEventListener('change',function(e){if(e.target&&e.target.id==='pChar
 function prHeads(){return Array.prototype.filter.call(document.querySelectorAll('.prig-h'),function(h){return h.offsetParent})}
 function prStart(){if(PR.on)return;try{PR.reduce=matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}PR.on=true;
   document.addEventListener('pointermove',function(e){PR.mx=e.clientX;PR.my=e.clientY;PR.moveAt=Date.now()},{passive:true});
-  try{pstApply()}catch(e){}prBlinkLoop();var HC=[],hAt=0,fAt=0;(function loop(){PR.raf=requestAnimationFrame(loop);if(document.hidden||document.body.classList.contains('station'))return;var t=performance.now();if(t-fAt<33)return;fAt=t;/* 30 fps αρκούν, και η λίστα κεφαλιών ανανεώνεται 1 φορά το δευτερόλεπτο αντί για κάθε frame */
+  try{pstApply()}catch(e){}prBlinkLoop();prPuffLoop(1);var HC=[],hAt=0,fAt=0;(function loop(){PR.raf=requestAnimationFrame(loop);if(document.hidden||document.body.classList.contains('station'))return;var t=performance.now();if(t-fAt<33)return;fAt=t;/* 30 fps αρκούν, και η λίστα κεφαλιών ανανεώνεται 1 φορά το δευτερόλεπτο αντί για κάθε frame */
     if(t-hAt>1000||(HC[0]&&!HC[0].isConnected)){HC=prHeads();hAt=t}if(!HC.length)return;prStep(HC)})()}
 function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*.5,T=PR.t;if(H.length===1&&(r.bottom<0||r.top>innerHeight||!r.width))return;
   var idle=now-PR.moveAt>4000||PR.mx<0;
@@ -6032,6 +6032,7 @@ function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r
   if(PR.mode==='eat'){var k=(now%420)/420;T.rx=4+Math.sin(k*Math.PI*2)*3;T.ry=0;T.rz=0;T.ty=1}
   else if(PR.mode==='shake'){var s=Math.sin(now/55);T.ry=s*6;T.rz=s*1.2;T.rx=0;T.ty=0}
   else if(PR.mode==='happy'){T.ty=-1.5+Math.sin(now/120)*1.2;T.rz=Math.sin(now/160)*3;T.ry=0;T.rx=-3}
+  else if(PR.mode==='puff'){var pe=now-PR.modeAt;if(pe<2900){var pw=Math.min(1,pe/700);T.rx=7*pw;T.ry=-10*pw;T.rz=-6*pw;T.tx=-.7*pw;T.ty=.6*pw}else if(pe<3300){T.rx=-3;T.ry=-5;T.rz=-2;T.tx=0;T.ty=0}else{T.rx=-10;T.ry=-3;T.rz=3;T.tx=.2;T.ty=-.7}}
   else if(PR.mode==='daze'){T.rz=Math.sin(now/180)*2;T.ry=Math.cos(now/220)*3.5;T.rx=2;T.ty=.5}
   else if(!idle&&!PR.reduce){var dx=(PR.mx-cx)/Math.max(300,innerWidth*.45),dy=(PR.my-cy)/Math.max(300,innerHeight*.5);dx=Math.max(-1,Math.min(1,dx));dy=Math.max(-1,Math.min(1,dy));
     T.ry=dx*6;T.rx=-dy*3.5;T.rz=dx*.8;T.tx=dx*.5;T.ty=dy*.3}
@@ -6047,6 +6048,10 @@ function prStep(H){var now=Date.now(),r=H[0].getBoundingClientRect(),cx=r.left+r
   var tr2='perspective(900px) translate('+(c.tx*.4).toFixed(2)+'%,'+(c.ty*.3).toFixed(2)+'%) rotateX('+(c.rx*.3).toFixed(2)+'deg) rotateY('+(c.ry*.45).toFixed(2)+'deg) rotateZ('+(c.rz*.35+br*.15).toFixed(2)+'deg)';
   H.forEach(function(h){h.style.transform=h.parentNode&&(h.parentNode.classList.contains('c2')||h.parentNode.classList.contains('c3'))?tr2:tr})}
 function prBlink(hold){var L=document.querySelectorAll('.plid');Array.prototype.forEach.call(L,function(x){x.classList.add('on')});setTimeout(function(){Array.prototype.forEach.call(L,function(x){x.classList.remove('on')})},hold||110)}
+function prPuff(){var R=document.querySelectorAll('.prig.c2:not(.pko)');if(!R.length||(PR.mode&&PR.mode!=='puff'))return false;var now=Date.now();PR.mode='puff';PR.modeAt=now;PR.modeUntil=now+9500;
+  Array.prototype.forEach.call(R,function(x){x.classList.remove('puff');void x.offsetWidth;x.classList.add('puff')});clearTimeout(PR.puffOff);PR.puffOff=setTimeout(function(){Array.prototype.forEach.call(document.querySelectorAll('.prig.c2.puff'),function(x){x.classList.remove('puff')})},13500);return true}
+try{window.prPuff=prPuff}catch(e){}
+function prPuffLoop(first){clearTimeout(PR.puffT);PR.puffT=setTimeout(function(){if(!document.hidden&&!PR.reduce&&prChar()==='cigar')prPuff();prPuffLoop()},first?6000+Math.random()*4000:52000+Math.random()*16000)}
 function prBlinkLoop(){clearTimeout(PR.blinkT);PR.blinkT=setTimeout(function(){if(!document.hidden){prBlink();if(Math.random()<.18)setTimeout(function(){prBlink()},260)}prBlinkLoop()},2200+Math.random()*4200)}
 /* αντιδράσεις: ώθηση στο κεφάλι (σαν ελατήριο) + ύφος για λίγο */
 function prReact(kind,dir){var v=PR.v;dir=dir||(Math.random()<.5?-1:1);
