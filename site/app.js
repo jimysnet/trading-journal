@@ -3400,7 +3400,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=330,VERS={sub:null,t:null};
+var APP_VER=331,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -4171,12 +4171,12 @@ function tvoPine(t,o){var a=t.auto||{},q=function(x){return '"'+String(x==null?'
     '    line.new(tStart, entry, tEnd, entry, xloc=xloc.bar_time, color=color.gray, style=pending ? line.style_dashed : line.style_solid, width=2)',
     '    if not na(slNow)','        line.new(tStart, slNow, tEnd, slNow, xloc=xloc.bar_time, color=color.orange, style=line.style_dotted, width=2)','        label.new(tEnd, slNow, "SL τώρα " + str.tostring(slNow), xloc=xloc.bar_time, style=label.style_label_left, color=color.orange, textcolor=color.white, size=size.small)',
     '    if pending',
-    '        label.new(tOpen, entry, "⏳", xloc=xloc.bar_time, style=isShort ? label.style_label_down : label.style_label_up, color=color.new(color.gray, 0), textcolor=color.white, size=size.small, tooltip="Limit " + (isShort ? "Short " : "Long ") + str.tostring(entry) + (tExp > 0 ? " · λήγει " + fmt(tExp) : "")'+q(info?' · '+info:'')+')',
+    '        label.new(tOpen, entry, "⏳", xloc=xloc.bar_time, style=isShort ? label.style_label_down : label.style_label_up, color=color.new(color.gray, 0), textcolor=color.white, size=size.small, tooltip="Limit " + (isShort ? "Short " : "Long ") + str.tostring(entry) + (tExp > 0 ? " · λήγει " + fmt(tExp) : "") + '+q(info?' · '+info:'')+')',
     '        if tExp > 0','            line.new(tExp, low, tExp, high, xloc=xloc.bar_time, extend=extend.both, color=color.new(color.gray, 30), style=line.style_dashed)',
     '    else',
     '        label.new(tFill, entry, isShort ? "▼" : "▲", xloc=xloc.bar_time, yloc=isShort ? yloc.abovebar : yloc.belowbar, style=isShort ? label.style_label_down : label.style_label_up, color=isShort ? color.red : color.green, textcolor=color.white, size=size.small, tooltip='+q(who.replace(/^🎓 /,''))+' + (isShort ? " Short " : " Long ") + str.tostring(entry) + " · " + fmt(tFill) + '+q(info?' · '+info:'')+')',
     '    if tExit > 0 and not na(exitPx)',
-    '        label.new(tExit, exitPx, '+q(closed&&isFinite(n(t.r))?'✕ '+(n(t.r)>=0?'+':'')+n(t.r).toFixed(2)+'R':'✕')+', xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.blue, 10), textcolor=color.white, size=size.small, tooltip="Έξοδος " + str.tostring(exitPx) + " · " + fmt(tExit)'+q(t.closeSrc?' · '+t.closeSrc:'')+')',
+    '        label.new(tExit, exitPx, '+q(closed&&isFinite(n(t.r))?'✕ '+(n(t.r)>=0?'+':'')+n(t.r).toFixed(2)+'R':'✕')+', xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.blue, 10), textcolor=color.white, size=size.small, tooltip="Έξοδος " + str.tostring(exitPx) + " · " + fmt(tExit) + '+q(t.closeSrc?' · '+t.closeSrc:'')+')',
     '    if not na(sl)','        label.new(tEnd, sl, "SL " + str.tostring(sl), xloc=xloc.bar_time, style=label.style_label_left, color=color.red, textcolor=color.white, size=size.small)',
     '    if not na(tp)','        label.new(tEnd, tp, "TP " + str.tostring(tp), xloc=xloc.bar_time, style=label.style_label_left, color=color.green, textcolor=color.white, size=size.small)',
     '// 🔔 Alert: «Το limit του Καθηγητή γέμισε» (Alerts → Condition → αυτό το script)',
