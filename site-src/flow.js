@@ -106,19 +106,26 @@
     })
   }
   /* footprint προηγούμενων λεπτών: τα τελευταία aggTrades (πηγαίνει πίσω όσο επιτρέπει ένα λογικό όριο αιτημάτων) */
+  /* κατέβασμα ιστορικού συναλλαγών στο άνοιγμα (footprint, big trades): σελίδες των 1000 με αριθμό συναλλαγής, 6 παράλληλα,
+     έως 12 ώρες πίσω. Spot έως 240 σελίδες (βάρος 2 η καθεμία), Futures έως 48 (βάρος 20: κάτω από το όριο της Binance) */
   function backfill() {
-    var m = M, path = m.venue === 'f' ? '/fapi/v1/aggTrades' : '/api/v3/aggTrades', n = 0, MAX = m.venue === 'f' ? 24 : 40, oldest = Date.now() - 12 * 36e5;
+    var m = M, path = m.venue === 'f' ? '/fapi/v1/aggTrades' : '/api/v3/aggTrades', n = 0, MAX = m.venue === 'f' ? 48 : 240, PAR = 6, oldest = Date.now() - 12 * 36e5, top = null, stop = false;
     m.bf = { n: 0, from: NaN };
-    function page(fromId) {
-      return bn(m.venue, path, 'symbol=' + m.pair + '&limit=1000' + (fromId != null ? '&fromId=' + fromId : '')).then(function (a) {
-        if (m !== M || !a || !a.length) return;
-        var lim = m.liveFrom || Infinity;
-        a.forEach(function (x) { if (x.T < lim) addTrade(+x.p, +x.q, x.T, x.m, true) });
-        n++; m.bf.n = n; m.bf.from = a[0].T; m.fpVer++; DIRTY = true;
-        if (n < MAX && a[0].T > oldest && a[0].a > 0) return page(Math.max(0, a[0].a - 1000));
-      })
-    }
-    page(null).then(function () { if (m === M) { if (m.grpH) { flushOrder(m.grpH); m.grpH = null } var by = function (a, b) { return a.t - b.t }; m.big.sort(by); m.sw.sort(by); m.bfDone = true; DIRTY = true; renderSide(true); renderHead() } }).catch(function () { if (m === M) m.bfDone = true })
+    var get = function (fromId) { return bn(m.venue, path, 'symbol=' + m.pair + '&limit=1000' + (fromId != null ? '&fromId=' + fromId : '')).catch(function () { return null }) };
+    var eat = function (a) {
+      if (m !== M || !a || !a.length) return; var lim = m.liveFrom || Infinity;
+      a.forEach(function (x) { if (x.T < lim) addTrade(+x.p, +x.q, x.T, x.m, true) });
+      n++; m.bf.n = n; if (!(a[0].T >= m.bf.from)) m.bf.from = a[0].T; m.fpVer++; DIRTY = true;
+      if (a[0].T <= oldest || a[0].a <= 0) stop = true
+    };
+    var batch = function (k) {
+      if (m !== M || stop || k >= MAX) return Promise.resolve(); var ids = [];
+      for (var j = 0; j < PAR && k + j < MAX; j++) { var id = top - 1000 * (k + j); if (id < 0) break; ids.push(id) }
+      if (!ids.length) return Promise.resolve();
+      return Promise.all(ids.map(get)).then(function (R) { for (var i = 0; i < R.length; i++) { if (!R[i] || !R[i].length) { stop = true; break } eat(R[i]); if (stop) break } return batch(k + ids.length) })
+    };
+    get(null).then(function (a) { if (m !== M || !a || !a.length) return; eat(a); top = a[0].a; return batch(1) })
+      .then(function () { if (m === M) { if (m.grpH) { flushOrder(m.grpH); m.grpH = null } var by = function (a, b) { return a.t - b.t }; m.big.sort(by); m.sw.sort(by); m.bfDone = true; DIRTY = true; renderSide(true); renderHead() } }).catch(function () { if (m === M) m.bfDone = true })
   }
   function loadOI() {
     var m = M; if (m.venue !== 'f') return;
