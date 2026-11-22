@@ -4900,6 +4900,7 @@ var BT=[
   {id:'ic',mid:'s-ichimoku',t:'Σπάσιμο σύννεφου Ichimoku',rule:'Long: η τιμή κλείνει πάνω από το σύννεφο (για πρώτη φορά) με Tenkan (9) πάνω από Kijun (26). Stop: λίγο κάτω από το Kijun.'},
   {id:'fc',mid:'s-fibconf',t:'Swing σε σημείο σύγκλισης',rule:'Long σε ανοδική τάση (τιμή πάνω από EMA 50): pullback στη ζώνη Fibonacci 0,5-0,618 της τελευταίας ανοδικής κίνησης (swing των 50 κεριών), με κλείσιμο πράσινο μέσα ή πάνω από τη ζώνη. Stop: κάτω από το 0,786.'},
   {id:'sw',mid:'s-smc',t:'Liquidity sweep (SMC)',rule:'Long: το κερί κάνει νέο χαμηλό 20 κεριών (παίρνει τα stops) αλλά κλείνει πράσινο ξανά πάνω από το προηγούμενο χαμηλό. Stop: κάτω από τη σκιά του sweep. Short: το αντίθετο στα υψηλά.'},
+  {id:'sf',mid:'s-smc',t:'Sweep + FVG (ICT)',rule:'Long: (1) sweep: κερί κάνει νέο χαμηλό 20 κεριών και κλείνει ξανά πάνω του· (2) μέσα σε 10 κεριά δυνατό πράσινο κερί (σώμα ≥ 0,8 ATR) που σπάει το υψηλό γύρω από το sweep και αφήνει FVG ≥ 0,15 ATR· (3) είσοδος όταν η τιμή γυρίσει πρώτη φορά στο FVG (μέσα σε 20 κεριά) και κλείσει πάνω από τη βάση του, χωρίς να έχει χάσει το χαμηλό του sweep. Stop: κάτω από τη σκιά του sweep. Short: το αντίθετο στα υψηλά.'},
   {id:'r2',mid:'s-rsi2',t:'Mean reversion με RSI(2)',rule:'Long: τιμή πάνω από SMA 200 και RSI(2) κάτω από 10. Έξοδος: κλείσιμο πάνω από SMA 5 (χωρίς σταθερό στόχο). Stop ασφαλείας: 2 ATR. Short: τιμή κάτω από SMA 200, RSI(2) πάνω από 90, έξοδος κάτω από SMA 5.'},
   {id:'ib',mid:'s-ibbo',t:'Inside bar breakout',rule:'Long: τιμή πάνω από EMA 50, inside bar στο προηγούμενο κερί, και τώρα κλείσιμο πάνω από το υψηλό του μητρικού κεριού. Stop: το χαμηλό του μητρικού.'},
   {id:'sp',mid:'s-spring',t:'Wyckoff spring',rule:'Range 40 κεριών χωρίς τάση (ADX κάτω από 25). Long: το κερί σπάει κάτω από τη στήριξη του range και κλείνει πράσινο ξανά μέσα. Stop: κάτω από τη σκιά. Short (upthrust): το αντίθετο στο πάνω άκρο.'},
@@ -4956,6 +4957,18 @@ function mprofLevels(b,int){var N=b.length,poc=new Array(N).fill(NaN),vah=new Ar
   order.forEach(function(k){var p=P[k-1];if(!p)return;G[k].forEach(function(j){poc[j]=p.poc;vah[j]=p.vah;val[j]=p.val})});return {poc:poc,vah:vah,val:val}}
 function hhv(a,f,t){var m=-Infinity;for(var i=f;i<=t;i++)m=Math.max(m,a[i].h);return m}
 function llv(a,f,t){var m=Infinity;for(var i=f;i<=t;i++)m=Math.min(m,a[i].l);return m}
+/* 🎯 Sweep + FVG (ICT): sweep ρευστότητας → displacement με FVG → πρώτη επιστροφή στο FVG. Επιστρέφει stop ή null. */
+function btSweepFvg(b,I,i,d,atr,fix){if(i<60)return null;var x=b[i],c=x.c;
+  for(var s=i-3;s>=i-30&&s>=25;s--){var y=b[s],lvl=d>0?llv(b,s-20,s-1):hhv(b,s-20,s-1);if(!(d>0?y.l<lvl&&y.c>lvl:y.h>lvl&&y.c<lvl))continue;
+    var ex=d>0?y.l:y.h,brk=d>0?hhv(b,s-5,s):llv(b,s-5,s),k=-1,zLo=0,zHi=0;
+    for(var j=s+2;j<=Math.min(s+11,i-1);j++){var a2=b[j-2],m1=b[j-1],z=b[j],at=I.atr[j-1]||atr,body=(m1.c-m1.o)*d;
+      if(body>=0.8*at&&(d>0?m1.c>brk:m1.c<brk)){var gap=d>0?z.l-a2.h:a2.l-z.h;if(gap>=0.15*at){k=j;zLo=d>0?a2.h:z.h;zHi=d>0?z.l:a2.l;break}}}
+    if(k<0||i-k>20||i<=k)continue;
+    var lost=false,touched=false;for(var q=s+1;q<i;q++){if(d>0?b[q].l<ex:b[q].h>ex){lost=true;break}if(q>k&&(d>0?b[q].l<=zHi:b[q].h>=zLo)){touched=true;break}}
+    if(lost||touched)return null;
+    if(d>0?x.l<=zHi&&c>=zLo&&x.l>ex:x.h>=zLo&&c<=zHi&&x.h<ex)return fix(d>0?ex-0.2*atr:ex+0.2*atr);
+    return null}
+  return null}
 function btSignal(id,b,I,i,d){
   if(GENSP[id])return genSignal(GENSP[id],b,I,i,d);
   var x=b[i],c=x.c,atr=I.atr[i];if(!isFinite(atr)||!atr)return null;
@@ -4989,6 +5002,7 @@ function btSignal(id,b,I,i,d){
       var z1=sH-(sH-sL)*0.618,z2=sH-(sH-sL)*0.5;if(x.l<=z2&&x.l>=z1-0.3*atr&&c>z1&&c>x.o)return fix(sH-(sH-sL)*0.786-0.2*atr);return null}
     if(!(c<I.e50[i]&&I.e50[i]<I.e50[i-5]))return null;il=i-1;for(var q6=i-1;q6>=i-20;q6--)if(b[q6].l<b[il].l)il=q6;sL=b[il].l;ih=il;for(var q7=il;q7>=il-50&&q7>=0;q7--)if(b[q7].h>b[ih].h)ih=q7;sH=b[ih].h;if(il-ih<5||sH-sL<3*atr)return null;
     var y1=sL+(sH-sL)*0.618,y2=sL+(sH-sL)*0.5;if(x.h>=y2&&x.h<=y1+0.3*atr&&c<y1&&c<x.o)return fix(sL+(sH-sL)*0.786+0.2*atr);return null}
+  if(id==='sf')return btSweepFvg(b,I,i,d,atr,fix);
   if(id==='sw'){var pl=llv(b,i-20,i-1),ph=hhv(b,i-20,i-1);if(d>0&&x.l<pl&&c>pl&&c>x.o)return fix(x.l-0.2*atr);if(d<0&&x.h>ph&&c<ph&&c<x.o)return fix(x.h+0.2*atr);return null}
   if(id==='r2'){if(!isFinite(I.s200[i])||!isFinite(I.rsi2[i]))return null;if(d>0&&c>I.s200[i]&&I.rsi2[i]<10)return c-2*atr;if(d<0&&c<I.s200[i]&&I.rsi2[i]>90)return c+2*atr;return null}
   if(id==='ib'){var mo=b[i-2],ins=b[i-1];if(!(ins.h<mo.h&&ins.l>mo.l))return null;if(d>0&&c>I.e50[i]&&c>mo.h)return fix(mo.l);if(d<0&&c<I.e50[i]&&c<mo.l)return fix(mo.h);return null}
@@ -5182,7 +5196,7 @@ function doBt(){
 
 /* ----- 4. suggestion for now ----- */
 var NOW={last:null},nowCtl=null;
-var FIT={pb:'trend',mx:'trend',dc:'trend',bo:'trend',rv:'range',sq:'squeeze',rt:'trend',dv:'range',vw:'trend',or:'trend',ic:'trend',fc:'trend',sw:'range',r2:'trend',ib:'trend',sp:'range',tf:'trend',sc:'trend',e9:'trend',mv:'range',mk:'trend'};
+var FIT={pb:'trend',mx:'trend',dc:'trend',bo:'trend',rv:'range',sq:'squeeze',rt:'trend',dv:'range',vw:'trend',or:'trend',ic:'trend',fc:'trend',sw:'range',sf:'range',r2:'trend',ib:'trend',sp:'range',tf:'trend',sc:'trend',e9:'trend',mv:'range',mk:'trend'};
 function regime(b,I){
   var i=b.length-1,c=b[i].c,e20=I.e20[i],e50=I.e50[i],adx=I.adx[i],atr=I.atr[i],rsi=I.rsi[i];
   var sl=isFinite(I.e50[i-10])?(e50-I.e50[i-10])/atr:0;
@@ -7534,7 +7548,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=332,VERS={sub:null,t:null};
+var APP_VER=333,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
