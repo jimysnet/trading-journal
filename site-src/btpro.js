@@ -62,34 +62,35 @@
       var x = b[i]; if (x.t < P.from || x.t > P.to) continue;
       var e = x.c, atr = I.atr[i], st = P.stopMode === 'atr' && isFinite(atr) ? e - d * P.stopK * atr : P.stopMode === 'pct' ? e * (1 - d * P.stopPct / 100) : g.st;
       var rk = Math.abs(e - st); if (!(rk > 0)) continue;
-      var tg = notgt ? NaN : e + d * P.tgt * rk, sl = st, be = false, ex = null, xi = i, hit = '';
+      var tg = notgt ? NaN : e + d * P.tgt * rk, sl = st, be = false, ex = null, xi = i, hit = '', pos = { hc: e };
       for (var j = i + 1; j < b.length; j++) {
         var y = b[j];
         if (d > 0) { if (y.o <= sl) { ex = y.o; hit = 'stop' } else if (y.l <= sl) { ex = sl; hit = 'stop' } else if (isFinite(tg) && y.o >= tg) { ex = y.o; hit = 'tgt' } else if (isFinite(tg) && y.h >= tg) { ex = tg; hit = 'tgt' } }
         else { if (y.o >= sl) { ex = y.o; hit = 'stop' } else if (y.h >= sl) { ex = sl; hit = 'stop' } else if (isFinite(tg) && y.o <= tg) { ex = y.o; hit = 'tgt' } else if (isFinite(tg) && y.l <= tg) { ex = tg; hit = 'tgt' } }
-        if (ex == null && P.tgtMode === 'strat' && A.exitOnClose(job.id, b, I, j, d, { hc: e })) { ex = y.c; hit = 'exit' }
+        if (ex == null && P.tgtMode === 'strat' && A.exitOnClose(job.id, b, I, j, d, pos)) { ex = y.c; hit = 'exit' }
+        if (ex == null) pos.hc = d > 0 ? Math.max(pos.hc, y.c) : Math.min(pos.hc, y.c);
         if (ex == null && P.maxBars > 0 && j - i >= P.maxBars) { ex = y.c; hit = 'time' }
         if (ex != null) { xi = j; break }
         if (P.be && !be && (y.c - e) * d >= rk) { sl = e; be = true }
       }
       if (ex == null) break; /* ανοιχτή στο τέλος του ιστορικού: δεν μετράει */
       var r = (ex - e) * d / rk - (e + ex) * cost / rk; if (hit === 'stop' && be) hit = 'be';
-      out.push({ id: job.id, coin: job.coin, tf: job.tf, d: d, t: x.t, xt: b[xi].t, r: r, bars: xi - i, hit: hit });
+      out.push({ id: job.id, coin: job.coin, tf: job.tf, d: d, t: x.t, xt: b[xi].t, r: r, rg: (ex - e) * d / rk, cost: (e + ex) * cost / rk, e: e, s: st, x: ex, bars: xi - i, hit: hit });
       busyTo = xi
     }
     return out
   }
   function metrics(T, P) {
     var n = T.length, m = { n: n }; if (!n) return m;
-    var w = 0, gp = 0, gl = 0, sum = 0, sq = 0, streak = 0, worst = 0, hold = 0;
-    T.forEach(function (t) { sum += t.r; sq += t.r * t.r; hold += t.bars; if (t.r > 0) { w++; gp += t.r; streak = 0 } else { gl -= t.r; streak++; worst = Math.max(worst, streak) } });
+    var w = 0, gp = 0, gl = 0, sum = 0, sq = 0, streak = 0, worst = 0, hold = 0, sg = 0, sc = 0;
+    T.forEach(function (t) { sg += t.rg || 0; sc += t.cost || 0; sum += t.r; sq += t.r * t.r; hold += t.bars; if (t.r > 0) { w++; gp += t.r; streak = 0 } else { gl -= t.r; streak++; worst = Math.max(worst, streak) } });
     var avg = sum / n, sd = Math.sqrt(Math.max(0, sq / n - avg * avg));
     var E = [...T].sort(function (a, b) { return a.xt - b.xt }), eq = P.cap, peak = P.cap, dd = 0, cR = 0, pkR = 0, ddR = 0, curve = [{ t: E[0].t, v: P.cap, r: 0 }];
     E.forEach(function (t) { eq *= 1 + t.r * P.risk / 100; if (eq < 0) eq = 0; peak = Math.max(peak, eq); dd = Math.max(dd, (peak - eq) / peak); cR += t.r; pkR = Math.max(pkR, cR); ddR = Math.max(ddR, pkR - cR); curve.push({ t: t.xt, v: eq, r: cR }) });
     var yrs = Math.max(1 / 52, (E[E.length - 1].xt - E[0].t) / (365.25 * 864e5));
     var mon = {}; E.forEach(function (t) { var dt = new Date(t.xt), k = dt.getFullYear() * 100 + dt.getMonth(); mon[k] = (mon[k] || 0) + t.r });
     var mk = Object.keys(mon), mp = mk.filter(function (k) { return mon[k] > 0 }).length;
-    m.wr = w / n * 100; m.avg = avg; m.sum = sum; m.pf = gl > 0 ? gp / gl : gp > 0 ? Infinity : 0; m.sqn = sd > 0 ? Math.sqrt(Math.min(n, 100)) * avg / sd : 0;
+    m.wr = w / n * 100; m.avg = avg; m.avgG = sg / n; m.avgC = sc / n; m.sum = sum; m.pf = gl > 0 ? gp / gl : gp > 0 ? Infinity : 0; m.sqn = sd > 0 ? Math.sqrt(Math.min(n, 100)) * avg / sd : 0;
     m.dd = dd * 100; m.ddR = ddR; m.ret = (eq / P.cap - 1) * 100; m.cagr = (Math.pow(Math.max(eq, 1e-9) / P.cap, 1 / yrs) - 1) * 100; m.streak = worst; m.hold = hold / n; m.curve = curve; m.mon = mon; m.monPos = mk.length ? mp / mk.length * 100 : NaN; m.yrs = yrs;
     return m
   }
@@ -107,7 +108,7 @@
   function run() {
     if (RUN.busy) { RUN.stop = true; return }
     var J = jobs(); if (!J.length) { A.toast('Διάλεξε τουλάχιστον μία στρατηγική, ένα νόμισμα και ένα timeframe.'); return }
-    save(); RUN.busy = true; RUN.stop = false; RUN.grid = null; btnState(); var t0 = Date.now(), k = 0;
+    save(); RUN.busy = true; RUN.stop = false; RUN.grid = null; RUN.chk = null; btnState(); var t0 = Date.now(), k = 0;
     var next = function () {
       if (RUN.stop || k >= J.length) return Promise.resolve();
       var j = J[k++]; prog('Σήματα ' + j.id.toUpperCase() + ' · ' + j.coin + ' ' + j.tf + ' (' + k + '/' + J.length + ')…', (k - 1) / J.length);
@@ -184,6 +185,7 @@
       if (t.id === 'bpGridBtn') { t.disabled = true; t.textContent = '⏳ Υπολογίζω 36 συνδυασμούς…'; setTimeout(grid, 30); return }
       if (t.hasAttribute('data-bp3')) { CFG.view3d = t.getAttribute('data-bp3'); save3(); render(); return }
       if (t.id === 'bpAsk') return ask();
+      if (t.id === 'bpChkBtn') { t.disabled = true; t.textContent = '⏳ Ελέγχω…'; setTimeout(check, 30); return }
       if (t.hasAttribute('data-bpsort')) { RUN.sort = t.getAttribute('data-bpsort'); render(); return }
     });
     ROOT.addEventListener('change', function (ev) {
@@ -206,7 +208,7 @@
     if (!a.n) { O.innerHTML = '<div class="empty">Καμία συναλλαγή με αυτές τις ρυθμίσεις. Δοκίμασε περισσότερα νομίσματα, μεγαλύτερη περίοδο ή άλλο timeframe.</div>'; return }
     var verdict = a.n < 30 ? ['⚪', 'Λίγες συναλλαγές (' + a.n + '): κανένα συμπέρασμα ακόμα.'] : R.oos.n >= 15 && R.oos.avg > 0.05 && a.avg > 0.05 && a.pf > 1.15 ? ['🟢', 'Θετικό και μέσα και έξω από το δείγμα. Αξίζει δοκιμή στο demo.'] : a.avg > 0 && (R.oos.avg || 0) <= 0 ? ['🟠', 'Κερδίζει στο παλιό κομμάτι αλλά όχι στο τελευταίο ' + CFG.oos + '%: πιθανό overfitting ή άλλαξε η αγορά.'] : a.avg > 0 ? ['🟡', 'Οριακά θετικό: μικρό πλεονέκτημα που μπορεί να το φάνε τα κόστη.'] : ['🔴', 'Αρνητικό μετά τα κόστη.'];
     var h = '<div class="bpverd">' + verdict[0] + ' <b>' + verdict[1] + '</b> <span class="muted">· ' + R.J.length + ' δοκιμές σε ' + R.sec.toFixed(1) + '″' + (R.partial ? ' · σταμάτησε νωρίτερα' : '') + '</span></div>';
-    h += '<div class="bpkpis">' + kpi('Συναλλαγές', a.n.toLocaleString('el-GR'), '', a.yrs.toFixed(1) + ' χρόνια') + kpi('Επιτυχία', a.wr.toFixed(1) + '%') + kpi('Μέσο R', fR(a.avg), cls(a.avg), 'σύνολο ' + fR(a.sum, 1)) + kpi('Profit factor', isFinite(a.pf) ? a.pf.toFixed(2) : '∞', a.pf >= 1 ? 'pos' : 'neg') +
+    h += '<div class="bpkpis">' + kpi('Συναλλαγές', a.n.toLocaleString('el-GR'), '', a.yrs.toFixed(1) + ' χρόνια') + kpi('Επιτυχία', a.wr.toFixed(1) + '%') + kpi('Μέσο R', fR(a.avg), cls(a.avg), 'σύνολο ' + fR(a.sum, 1)) + kpi('Χωρίς κόστη', fR(a.avgG), cls(a.avgG), 'τα κόστη τρώνε ' + (a.avgC || 0).toFixed(2) + 'R/συν.') + kpi('Profit factor', isFinite(a.pf) ? a.pf.toFixed(2) : '∞', a.pf >= 1 ? 'pos' : 'neg') +
       kpi('Απόδοση', fP(a.ret, 0), cls(a.ret), 'CAGR ' + fP(a.cagr)) + kpi('Μέγιστη πτώση', '−' + a.dd.toFixed(1) + '%', 'neg', fR(-a.ddR, 1)) + kpi('SQN', a.sqn.toFixed(2), a.sqn >= 2 ? 'pos' : a.sqn < 1 ? 'neg' : '', a.sqn >= 3 ? 'εξαιρετικό' : a.sqn >= 2 ? 'καλό' : a.sqn >= 1 ? 'μέτριο' : 'αδύναμο') + kpi('Χειρότερο σερί', a.streak + ' ήττες', '', 'μέση διάρκεια ' + a.hold.toFixed(0) + ' κεριά') + kpi('Θετικοί μήνες', isFinite(a.monPos) ? a.monPos.toFixed(0) + '%' : '–') + '</div>';
     h += '<div class="bpsplit"><div><b>Μέσα στο δείγμα</b> (' + (100 - CFG.oos) + '%): ' + (R.ins.n || 0) + ' συν. · <span class="num ' + cls(R.ins.avg) + '">' + fR(R.ins.avg) + '</span> · PF ' + (isFinite(R.ins.pf) ? (R.ins.pf || 0).toFixed(2) : '∞') + '</div><div><b>Εκτός δείγματος</b> (τελευταίο ' + CFG.oos + '%' + (isFinite(R.oosFrom) ? ', από ' + new Date(R.oosFrom).toLocaleDateString('el-GR') : '') + '): ' + (R.oos.n || 0) + ' συν. · <span class="num ' + cls(R.oos.avg) + '">' + fR(R.oos.avg) + '</span> · PF ' + (isFinite(R.oos.pf) ? (R.oos.pf || 0).toFixed(2) : '∞') + '</div></div>';
     h += '<div class="bpcharts"><div class="bpbox"><div class="bpbt">📈 Κεφάλαιο (με ρίσκο ' + CFG.risk + '% ανά συναλλαγή) και πτώση από κορυφή</div><canvas id="bpEq" height="230"></canvas></div><div class="bpbox"><div class="bpbt">📊 Κατανομή αποτελεσμάτων (R)</div><canvas id="bpHist" height="230"></canvas></div></div>';
@@ -215,13 +217,14 @@
     /* tables */
     var srt = RUN.sort || 'sum', tbl = function (title, G, lab) {
       var rows = Object.keys(G).map(function (k) { var m = metrics(G[k], R.P); m.k = k; return m }).sort(function (x, y) { return (y[srt] || 0) - (x[srt] || 0) });
-      return '<div class="bpbox"><div class="bpbt">' + title + '</div><div class="bptw"><table class="bpt"><thead><tr><th>' + esc(lab) + '</th>' + [['n', 'Συν.'], ['wr', 'Επιτ.'], ['avg', 'Μέσο R'], ['sum', 'Σύνολο R'], ['pf', 'PF'], ['dd', 'Πτώση'], ['sqn', 'SQN']].map(function (c) { return '<th><button type="button" class="linkbtn' + (srt === c[0] ? ' on' : '') + '" data-bpsort="' + c[0] + '">' + c[1] + (srt === c[0] ? ' ▾' : '') + '</button></th>' }).join('') + '</tr></thead><tbody>' +
-        rows.map(function (m) { return '<tr><td>' + esc(lab === 'Στρατηγική' ? (nm[m.k] || m.k) : m.k) + '</td><td class="num">' + m.n + '</td><td class="num">' + m.wr.toFixed(0) + '%</td><td class="num ' + cls(m.avg) + '">' + fR(m.avg) + '</td><td class="num ' + cls(m.sum) + '">' + fR(m.sum, 1) + '</td><td class="num">' + (isFinite(m.pf) ? m.pf.toFixed(2) : '∞') + '</td><td class="num neg">−' + m.dd.toFixed(1) + '%</td><td class="num">' + m.sqn.toFixed(2) + '</td></tr>' }).join('') + '</tbody></table></div></div>'
+      return '<div class="bpbox"><div class="bpbt">' + title + '</div><div class="bptw"><table class="bpt"><thead><tr><th>' + esc(lab) + '</th>' + [['n', 'Συν.'], ['wr', 'Επιτ.'], ['avg', 'Μέσο R'], ['avgG', 'Χωρίς κόστη'], ['sum', 'Σύνολο R'], ['pf', 'PF'], ['dd', 'Πτώση'], ['sqn', 'SQN']].map(function (c) { return '<th><button type="button" class="linkbtn' + (srt === c[0] ? ' on' : '') + '" data-bpsort="' + c[0] + '">' + c[1] + (srt === c[0] ? ' ▾' : '') + '</button></th>' }).join('') + '</tr></thead><tbody>' +
+        rows.map(function (m) { return '<tr><td>' + esc(lab === 'Στρατηγική' ? (nm[m.k] || m.k) : m.k) + '</td><td class="num">' + m.n + '</td><td class="num">' + m.wr.toFixed(0) + '%</td><td class="num ' + cls(m.avg) + '">' + fR(m.avg) + '</td><td class="num ' + cls(m.avgG) + '">' + fR(m.avgG) + '</td><td class="num ' + cls(m.sum) + '">' + fR(m.sum, 1) + '</td><td class="num">' + (isFinite(m.pf) ? m.pf.toFixed(2) : '∞') + '</td><td class="num neg">−' + m.dd.toFixed(1) + '%</td><td class="num">' + m.sqn.toFixed(2) + '</td></tr>' }).join('') + '</tbody></table></div></div>'
     };
     h += tbl('🏆 Ανά στρατηγική', group(R.T, function (t) { return t.id }), 'Στρατηγική') + '<div class="bpcharts">' + tbl('Ανά νόμισμα', group(R.T, function (t) { return t.coin }), 'Νόμισμα') + tbl('Ανά timeframe', group(R.T, function (t) { return t.tf }), 'TF') + '</div>';
     h += tbl('Ανά στρατηγική × timeframe', group(R.T, function (t) { return (nm[t.id] || t.id) + ' · ' + t.tf }), 'Συνδυασμός');
     /* parameter map */
     h += '<div class="bpbox" id="bpGrid"><div class="bpbt">🗻 Χάρτης παραμέτρων: στόχος × stop (ATR)</div>' + (RUN.grid ? gridHtml() : '<p class="muted">Δοκιμάζει 36 συνδυασμούς (στόχος 1–4R × stop 0,75–3 ATR) με τα ίδια σήματα και δείχνει αν το αποτέλεσμα είναι «σταθερό οροπέδιο» (καλό) ή «μυτερή κορυφή» (επικίνδυνο: τυχαίο). <button type="button" class="btn small" id="bpGridBtn">🗻 Φτιάξε τον χάρτη</button></p>') + '</div>';
+    h += '<div class="bpbox" id="bpChk"><div class="bpbt">🔍 Έλεγχος ορθότητας</div>' + (RUN.chk ? RUN.chk : '<p class="muted">Ξανατρέχει τις ίδιες δοκιμές με την <b>κλασική μηχανή</b> της σελίδας (το παλιό backtest), συγκρίνει πλήθος και μέσο R, και σου δίνει <b>πραγματικές συναλλαγές με ημερομηνία και τιμές</b> για να τις δεις στο TradingView. <button type="button" class="btn small" id="bpChkBtn">🔍 Έλεγξε</button></p>') + '</div>';
     h += '<div class="bprun"><button type="button" class="btn small" id="bpAsk">🎓 Ρώτα τον Καθηγητή για τα αποτελέσματα</button><span class="muted">Τα αποτελέσματα του παρελθόντος δεν εγγυώνται τα μελλοντικά· το demo είναι η επόμενη δοκιμή.</span></div>';
     O.innerHTML = h; RUN.drawnW = 0; charts()
   }
@@ -305,6 +308,27 @@
     }, function (u) { var m = u.m; return '<b>' + esc(u.s) + '</b> · ' + esc(u.c) + '<br>' + m.n + ' συν. · επιτ. ' + m.wr.toFixed(0) + '%<br>μέσο <b class="' + cls(m.avg) + '">' + fR(m.avg) + '</b> · σύνολο ' + fR(m.sum, 1) + '<br>PF ' + (isFinite(m.pf) ? m.pf.toFixed(2) : '∞') + ' · πτώση −' + m.dd.toFixed(1) + '%' })
       .catch(function () { el.innerHTML = '<p class="muted" style="padding:1rem">Το 3D δεν φορτώθηκε (χωρίς WebGL ή χωρίς σύνδεση στο cdnjs). Οι πίνακες από κάτω έχουν τα ίδια νούμερα.</p>' })
   }
+  /* 🔍 σύγκριση με την κλασική μηχανή (runBt) στις ίδιες συνθήκες: έξοδος και stop της στρατηγικής, ίδιος στόχος/κόστη */
+  function check() {
+    var R = RUN.res; if (!R || !A.run) { RUN.chk = '<p class="muted">Δεν γίνεται έλεγχος σε αυτή την έκδοση.</p>'; render(); return }
+    var nm = {}; stratList().forEach(function (s) { nm[s.id] = s.t }); var dirs = R.P.dir === 'long' ? [1] : R.P.dir === 'short' ? [-1] : [1, -1];
+    var P = Object.assign({}, R.P, { tgtMode: 'strat', stopMode: 'strat', be: false, maxBars: 0 }), rows = [], ok = 0, all = 0, sample = [];
+    R.J.slice(0, 12).forEach(function (j) {
+      var o = BARS[j.coin + '|' + j.tf]; if (!o || !o.I || !SIG[j.id + '|' + j.coin + '|' + j.tf]) return;
+      var mine = simulate(j, P), old = A.run(o.b, j.id, dirs, P.tgt, P.fee + P.slip, P.from === -Infinity ? null : P.from, P.to === Infinity ? null : P.to);
+      var ma = mine.length ? mine.reduce(function (s2, t) { return s2 + t.r }, 0) / mine.length : 0, oa = old.length ? old.reduce(function (s2, t) { return s2 + t.r }, 0) / old.length : 0;
+      var same = Math.abs(mine.length - old.length) <= 1 && Math.abs(ma - oa) < 0.02; all++; if (same) ok++;
+      rows.push('<tr><td>' + esc(nm[j.id] || j.id) + ' · ' + j.coin + ' ' + j.tf + '</td><td class="num">' + mine.length + ' / ' + old.length + '</td><td class="num">' + fR(ma) + ' / ' + fR(oa) + '</td><td>' + (same ? '✅' : '⚠️') + '</td></tr>');
+      mine.slice(-2).forEach(function (t) { sample.push(t) })
+    });
+    var f = function (x) { return !isFinite(x) ? '–' : Math.abs(x) >= 100 ? x.toFixed(2) : Math.abs(x) >= 1 ? x.toFixed(4) : x.toPrecision(5) }, dt = function (t) { var d = new Date(t); return d.toLocaleDateString('el-GR') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') };
+    RUN.chk = '<p><b>' + (ok === all ? '✅ Η νέα μηχανή δίνει τα ίδια αποτελέσματα με την κλασική σε ' + ok + '/' + all + ' δοκιμές.' : '⚠️ Διαφορά σε ' + (all - ok) + '/' + all + ' δοκιμές: στείλε μου φωτογραφία.') + '</b> <span class="muted">(Pro / κλασική)</span></p>' +
+      '<div class="bptw"><table class="bpt"><thead><tr><th>Δοκιμή</th><th>Συναλλαγές</th><th>Μέσο R</th><th></th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' +
+      '<p class="muted" style="margin-top:.6rem">Δείγμα πραγματικών συναλλαγών για έλεγχο στο TradingView (ώρα Ελλάδας· η είσοδος γίνεται στο <b>κλείσιμο</b> του κεριού του σήματος):</p><div class="bptw"><table class="bpt"><thead><tr><th>Στρατηγική</th><th>Νόμισμα</th><th>Είσοδος</th><th>Κατ.</th><th>Τιμή</th><th>Stop</th><th>Έξοδος</th><th>Πώς</th><th>R καθαρό</th></tr></thead><tbody>' +
+      sample.slice(0, 12).map(function (t) { return '<tr><td>' + esc(nm[t.id] || t.id) + '</td><td>' + t.coin + ' ' + t.tf + '</td><td>' + dt(t.t + TFMS[t.tf]) + '</td><td>' + (t.d > 0 ? '▲ Long' : '▼ Short') + '</td><td class="num">' + f(t.e) + '</td><td class="num">' + f(t.s) + '</td><td class="num">' + f(t.x) + ' · ' + dt(t.xt) + '</td><td>' + ({ stop: 'stop', tgt: 'στόχος', exit: 'κανόνας', time: 'χρόνος', be: 'breakeven' }[t.hit] || t.hit) + '</td><td class="num ' + cls(t.r) + '">' + fR(t.r) + '</td></tr>' }).join('') + '</tbody></table></div>';
+    render(); setTimeout(function () { var e = $('#bpChk'); if (e) e.scrollIntoView({ behavior: 'smooth', block: 'center' }) }, 50)
+  }
+
   function gridHtml() {
     var G = RUN.grid, b = G.best, mx = 0; G.G.forEach(function (r) { r.forEach(function (c) { mx = Math.max(mx, Math.abs(c.avg)) }) }); mx = mx || 1;
     var h = '<div class="bpcharts"><div><div id="bpSurf" class="bp3d" style="height:340px"></div></div><div class="bptw"><table class="bpm bpgrid"><thead><tr><th>Στόχος ↓ / Stop →</th>' + G.SK.map(function (k) { return '<th>' + k + ' ATR</th>' }).join('') + '</tr></thead><tbody>' +
