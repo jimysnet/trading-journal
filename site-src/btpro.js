@@ -23,7 +23,8 @@
     try { localStorage.setItem('tj-bp', JSON.stringify(CFG)) } catch (e) { }
     try { var db = A.db(), u = A.uid(); if (db && u && u !== 'me' && !W.__TJ_BOT) db.collection('uprefs').doc(u + '_bt').set({ cfg: JSON.stringify(CFG), at: Date.now() }).catch(function () { }) } catch (e) { }
   }
-  function stratList() { return A.BT.map(function (s) { return { id: s.id, t: s.t, fit: A.FIT[s.id] || (s.gen ? (s.fit || 'trend') : 'trend'), gen: !!s.gen, rule: s.rule || '' } }) }
+  var TTLS = [{ id: 'ttl1', t: '🐢 Turtle Σύστημα 1 (20/10)', fit: 'trend', ttl: 1, rule: 'Είσοδος στο σπάσιμο υψηλού/χαμηλού 20 κεριών, έξοδος στο αντίθετο κανάλι 10 κεριών, stop 2N, έως 4 μονάδες ανά +0,5N. Οι κανόνες της είναι δικοί της: στόχος/stop/breakeven των ρυθμίσεων δεν εφαρμόζονται.' }, { id: 'ttl2', t: '🐢 Turtle Σύστημα 2 (55/20)', fit: 'trend', ttl: 2, rule: 'Είσοδος στο σπάσιμο υψηλού/χαμηλού 55 κεριών, έξοδος στο αντίθετο κανάλι 20 κεριών, stop 2N, έως 4 μονάδες ανά +0,5N (όπως το προφίλ 🐢 Turtle 1D). Οι κανόνες της είναι δικοί της: στόχος/stop/breakeven των ρυθμίσεων δεν εφαρμόζονται.' }];
+  function stratList() { return (A.ttl ? TTLS : []).concat(A.BT.map(function (s) { return { id: s.id, t: s.t, fit: A.FIT[s.id] || (s.gen ? (s.fit || 'trend') : 'trend'), gen: !!s.gen, rule: s.rule || '' } })) }
   function llv(b, a, c) { var m = Infinity; for (var k = Math.max(0, a); k <= c; k++)m = Math.min(m, b[k].l); return m }
   function hhv(b, a, c) { var m = -Infinity; for (var k = Math.max(0, a); k <= c; k++)m = Math.max(m, b[k].h); return m }
 
@@ -36,6 +37,7 @@
   /* φάση 1: όλα τα σήματα μιας στρατηγικής σε ένα νόμισμα/TF (μία φορά, μετά μένουν στη μνήμη) */
   function signals(id, coin, tf) {
     var key = id + '|' + coin + '|' + tf; if (SIG[key]) return Promise.resolve(SIG[key]);
+    if (/^ttl[12]$/.test(id)) return bars(coin, tf).then(function () { SIG[key] = { L: [], n: 0, ttl: 1 }; return SIG[key] });
     return bars(coin, tf).then(function (o) {
       var b = o.b, I = o.I, L = []; if (!I) { SIG[key] = { L: L, n: 0 }; return SIG[key] }
       return new Promise(function (res) {
@@ -55,6 +57,10 @@
   /* φάση 2: είσοδος στο κλείσιμο του κεριού του σήματος, έξοδος με τις ρυθμίσεις (stop/στόχος/breakeven/μέγιστη διάρκεια/κόστη) */
   function simulate(job, P) {
     var o = BARS[job.coin + '|' + job.tf], b = o.b, I = o.I, S = SIG[job.id + '|' + job.coin + '|' + job.tf], out = [], busyTo = -1, notgt = A.NOTGT[job.id] && P.tgtMode === 'strat';
+    if (/^ttl[12]$/.test(job.id)) { /* 🐢 η μηχανή Turtle της σελίδας (ίδια με το προφίλ Turtle 1D): pyramiding έως 4 μονάδες, έξοδος στο κανάλι */
+      if (!A.ttl || b.length < 80) return out; var R0 = A.ttl(b, { sys: job.id === 'ttl2' ? 2 : 1, units: 4, fee: (P.fee || 0) + (P.slip || 0), dirs: P.dir });
+      (R0.tr || []).forEach(function (t) { if (t.t < P.from || t.t > P.to) return; out.push({ id: job.id, coin: job.coin, tf: job.tf, d: t.d, t: t.t, xt: t.xt, r: t.r, rg: t.gross, cost: t.gross - t.r, e: t.e, s: t.e - t.d * 2 * t.N, x: t.x, bars: t.bars || Math.round((t.xt - t.t) / TFMS[job.tf]), hit: t.why === 'stop' ? 'stop' : 'exit', units: t.units }) });
+      return out }
     var cost = (P.fee + P.slip) / 100;
     for (var s = 0; s < S.L.length; s++) {
       var g = S.L[s], i = g.i, d = g.d; if (i <= busyTo) continue;
@@ -129,7 +135,7 @@
     TG.forEach(function (tg) {
       var row = []; SK.forEach(function (sk) {
         var P = Object.assign({}, RUN.res.P, { tgt: tg, tgtMode: 'fixed', stopMode: 'atr', stopK: sk }), T = [];
-        RUN.res.J.forEach(function (j) { if (SIG[j.id + '|' + j.coin + '|' + j.tf] && BARS[j.coin + '|' + j.tf]) T = T.concat(simulate(j, P)) });
+        RUN.res.J.forEach(function (j) { if (!/^ttl/.test(j.id) && SIG[j.id + '|' + j.coin + '|' + j.tf] && BARS[j.coin + '|' + j.tf]) T = T.concat(simulate(j, P)) });
         var m = metrics(T, P), c = { tg: tg, sk: sk, avg: m.avg || 0, n: m.n, pf: m.pf || 0, sum: m.sum || 0 }; row.push(c); if (m.n >= 30 && (!best || c.avg > best.avg)) best = c
       }); G.push(row)
     });
@@ -145,7 +151,7 @@
     ROOT.innerHTML = '<div class="bp">' +
       '<p class="muted bpintro">Διάλεξε <b>όσες στρατηγικές θες</b>, νομίσματα και timeframes, όρισε στόχο, stop και κόστη, και τρέξε τες <b>σε όλο το ιστορικό</b> (Binance: 15m έως 3 μήνες, 1h έως 1,5 χρόνο, 4h έως 4 χρόνια, 1D έως 7 χρόνια). Είσοδος στο κλείσιμο του κεριού του σήματος· όλα τα κεριά είναι κλειστά, χωρίς ματιά στο μέλλον.</p>' +
       '<div class="bpsec"><div class="bph">1 · Στρατηγικές <span class="muted" id="bpSN"></span><span class="bpq"><button type="button" class="linkbtn" data-bpq="all">όλες</button> · <button type="button" class="linkbtn" data-bpq="trend">τάσης</button> · <button type="button" class="linkbtn" data-bpq="range">εύρους</button> · <button type="button" class="linkbtn" data-bpq="gen">του Εργαστηρίου</button> · <button type="button" class="linkbtn" data-bpq="none">καμία</button></span></div>' +
-      grp('↗ Τάσης', SL.filter(function (s) { return !s.gen && s.fit === 'trend' })) + grp('↔ Εύρους / αντιστροφής', SL.filter(function (s) { return !s.gen && s.fit !== 'trend' })) + grp('🧬 Εργαστήριο', SL.filter(function (s) { return s.gen })) + '</div>' +
+      grp('🐢 Turtle', SL.filter(function (s) { return /^ttl/.test(s.id) })) + grp('↗ Τάσης', SL.filter(function (s) { return !s.gen && s.fit === 'trend' && !/^ttl/.test(s.id) })) + grp('↔ Εύρους / αντιστροφής', SL.filter(function (s) { return !s.gen && s.fit !== 'trend' })) + grp('🧬 Εργαστήριο', SL.filter(function (s) { return s.gen })) + '</div>' +
       '<div class="bpsec"><div class="bph">2 · Νομίσματα και timeframes <span class="bpq"><button type="button" class="linkbtn" data-bpcq="all">όλα</button> · <button type="button" class="linkbtn" data-bpcq="top">BTC/ETH/SOL</button></span></div><div class="bpg">' + coins.map(function (c) { return chip('data-bpco', c, CFG.coins.indexOf(c) >= 0, esc(c)) }).join('') + '<input id="bpAddC" class="bpin" placeholder="+ νόμισμα" maxlength="10" aria-label="Πρόσθεσε νόμισμα"></div>' +
       '<div class="bpg">' + TFS.map(function (t) { return chip('data-bptf', t, CFG.tfs.indexOf(t) >= 0, t) }).join('') + '</div></div>' +
       '<div class="bpsec"><div class="bph">3 · Κανόνες</div><div class="bpf">' +
@@ -314,7 +320,7 @@
     var nm = {}; stratList().forEach(function (s) { nm[s.id] = s.t }); var dirs = R.P.dir === 'long' ? [1] : R.P.dir === 'short' ? [-1] : [1, -1];
     var P = Object.assign({}, R.P, { tgtMode: 'strat', stopMode: 'strat', be: false, maxBars: 0 }), rows = [], ok = 0, all = 0, sample = [];
     R.J.slice(0, 12).forEach(function (j) {
-      var o = BARS[j.coin + '|' + j.tf]; if (!o || !o.I || !SIG[j.id + '|' + j.coin + '|' + j.tf]) return;
+      var o = BARS[j.coin + '|' + j.tf]; if (/^ttl/.test(j.id) || !o || !o.I || !SIG[j.id + '|' + j.coin + '|' + j.tf]) return;
       var mine = simulate(j, P), old = A.run(o.b, j.id, dirs, P.tgt, P.fee + P.slip, P.from === -Infinity ? null : P.from, P.to === Infinity ? null : P.to);
       var ma = mine.length ? mine.reduce(function (s2, t) { return s2 + t.r }, 0) / mine.length : 0, oa = old.length ? old.reduce(function (s2, t) { return s2 + t.r }, 0) / old.length : 0;
       var same = Math.abs(mine.length - old.length) <= 1 && Math.abs(ma - oa) < 0.02; all++; if (same) ok++;
