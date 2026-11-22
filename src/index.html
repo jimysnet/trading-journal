@@ -7534,7 +7534,7 @@ function ttlAuto(force){var p=typeof APF!=='undefined'&&apfGet(TTLA.id);if(!p||p
       if(cur&&cur.dmLog)d.dmLog=cur.dmLog;W.push(put('demo',id,d).then(function(){if(!cur)try{apDayEv('open',x.c,'🐢 Turtle '+(x.d>0?'long':'short')+' '+x.c+' ('+x.u.length+' μονάδες)')}catch(e){}}).catch(function(){}))});
     return Promise.all(W)})}).catch(function(e){try{apAdd('','scan','🐢 Turtle: '+String(e&&e.message||e).slice(0,140))}catch(_){}}).then(function(){TTLA.busy=false})}
 /* ---- 🔄 Όλα τα μέλη στην ίδια έκδοση: η νεότερη σελίδα γράφει τον αριθμό της· οι παλαιότερες ξαναφορτώνουν μόνες τους ---- */
-var APP_VER=331,VERS={sub:null,t:null};
+var APP_VER=332,VERS={sub:null,t:null};
 function verSub(){if(!S.db||VERS.sub)return;VERS.sub=1;try{VERS.sub=S.db.collection('meta').doc('ver').onSnapshot(function(sn){var d=sn.exists&&sn.data()||{},v=+d.v||0;
   if(v<APP_VER&&qCanSave()){S.db.collection('meta').doc('ver').set({v:APP_VER,at:Date.now(),by:S.uid}).catch(function(){})}
   else if(v>APP_VER)verReload(v)},function(){})}catch(e){}}
@@ -8296,8 +8296,13 @@ function tvoPine(t,o){var a=t.auto||{},q=function(x){return '"'+String(x==null?'
     'tz = "Europe/Athens"','fmt(x) => str.format_time(x, "dd/MM HH:mm", tz)',
     'tStart = pending ? tOpen : tFill',
     'tEnd = tExit > 0 ? tExit : pending and tExp > 0 ? tExp : time + 30 * (time - time[1])',
+    'coin = '+q(o.sy.replace(/(USDT|USDC|USD|PERP)$/,'')),
+    'rightCoin = syminfo.basecurrency == coin or str.startswith(syminfo.ticker, coin)',
     'var bool done = false',
-    'if barstate.islast and not done',
+    'if barstate.islast and not done and not rightCoin',
+    '    done := true',
+    '    label.new(bar_index, high, "⚠️ Αυτό το script είναι για " + coin + " · άνοιξε το γράφημα " + coin + "USDT", style=label.style_label_down, color=color.orange, textcolor=color.black, size=size.normal)',
+    'if barstate.islast and not done and rightCoin',
     '    done := true',
     '    cRisk = color.new(color.red, 82)','    cGain = color.new(color.green, 82)',
     '    if not na(sl)','        box.new(tStart, isShort ? sl : entry, tEnd, isShort ? entry : sl, xloc=xloc.bar_time, bgcolor=cRisk, border_color=color.new(color.red, 40))',
